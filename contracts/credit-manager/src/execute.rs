@@ -1,8 +1,6 @@
 use cosmwasm_std::{
     to_binary, Addr, CosmosMsg, DepsMut, Empty, Env, MessageInfo, Response, StdResult, WasmMsg,
 };
-use cw721::OwnerOfResponse;
-use cw721_base::QueryMsg;
 
 use account_nft::msg::ExecuteMsg as NftExecuteMsg;
 use rover::coins::Coins;
@@ -15,6 +13,10 @@ use crate::deposit::deposit;
 use crate::health::assert_below_max_ltv;
 use crate::repay::repay;
 use crate::state::{ACCOUNT_NFT, ALLOWED_COINS, ALLOWED_VAULTS, ORACLE, OWNER, RED_BANK};
+use crate::utils::assert_is_token_owner;
+use crate::vault::{
+    deposit_into_vault, request_unlock_from_vault, unlock_from_vault, withdraw_from_vault,
+};
 
 pub fn create_credit_account(deps: DepsMut, user: Addr) -> ContractResult<Response> {
     let contract_addr = ACCOUNT_NFT.load(deps.storage)?;
@@ -85,12 +87,19 @@ pub fn update_config(
 
     if let Some(vaults) = new_config.allowed_vaults {
         vaults.iter().try_for_each(|unchecked| {
-            let vault = deps.api.addr_validate(unchecked)?;
-            ALLOWED_VAULTS.save(deps.storage, &vault, &Empty {})
+            let vault = unchecked.check(deps.api)?;
+            ALLOWED_VAULTS.save(deps.storage, vault.address(), &Empty {})
         })?;
         response = response
             .add_attribute("key", "allowed_vaults")
-            .add_attribute("value", vaults.join(", "));
+            .add_attribute(
+                "value",
+                vaults
+                    .iter()
+                    .map(|v| v.0.clone())
+                    .collect::<Vec<String>>()
+                    .join(", "),
+            );
     }
 
     if let Some(unchecked) = new_config.red_bank {
@@ -136,6 +145,35 @@ pub fn dispatch_actions(
                 token_id: token_id.to_string(),
                 coin: coin.clone(),
             }),
+            Action::VaultDeposit { vault, assets } => callbacks.push(CallbackMsg::VaultDeposit {
+                token_id: token_id.to_string(),
+                vault: vault.check(deps.api)?,
+                coins: assets.clone(),
+            }),
+            Action::VaultWithdraw { vault, shares } => callbacks.push(CallbackMsg::VaultWithdraw {
+                token_id: token_id.to_string(),
+                vault: vault.check(deps.api)?,
+                shares: *shares,
+            }),
+            Action::VaultForceWithdraw { vault, shares } => {
+                callbacks.push(CallbackMsg::VaultForceWithdraw {
+                    token_id: token_id.to_string(),
+                    vault: vault.check(deps.api)?,
+                    shares: *shares,
+                })
+            }
+            Action::VaultRequestUnlock { vault, shares } => {
+                callbacks.push(CallbackMsg::VaultRequestUnlock {
+                    token_id: token_id.to_string(),
+                    vault: vault.check(deps.api)?,
+                    shares: *shares,
+                })
+            }
+            Action::VaultUnlock { id, vault } => callbacks.push(CallbackMsg::VaultUnlock {
+                token_id: token_id.to_string(),
+                vault: vault.check(deps.api)?,
+                position_id: *id,
+            }),
         }
     }
 
@@ -175,25 +213,30 @@ pub fn execute_callback(
         CallbackMsg::AssertBelowMaxLTV { token_id } => {
             assert_below_max_ltv(deps.as_ref(), env, &token_id)
         }
+        CallbackMsg::VaultDeposit {
+            token_id,
+            vault,
+            coins,
+        } => deposit_into_vault(deps, env, &token_id, vault, &coins),
+        CallbackMsg::VaultWithdraw {
+            token_id,
+            vault,
+            shares,
+        } => withdraw_from_vault(deps, &token_id, vault, shares, false),
+        CallbackMsg::VaultForceWithdraw {
+            token_id,
+            vault,
+            shares,
+        } => withdraw_from_vault(deps, &token_id, vault, shares, true),
+        CallbackMsg::VaultRequestUnlock {
+            token_id,
+            vault,
+            shares,
+        } => request_unlock_from_vault(deps, &token_id, vault, shares),
+        CallbackMsg::VaultUnlock {
+            token_id,
+            vault,
+            position_id,
+        } => unlock_from_vault(deps, env, &token_id, vault, position_id),
     }
-}
-
-pub fn assert_is_token_owner(deps: &DepsMut, user: &Addr, token_id: &str) -> ContractResult<()> {
-    let contract_addr = ACCOUNT_NFT.load(deps.storage)?;
-    let owner_res: OwnerOfResponse = deps.querier.query_wasm_smart(
-        contract_addr,
-        &QueryMsg::OwnerOf {
-            token_id: token_id.to_string(),
-            include_expired: None,
-        },
-    )?;
-
-    if user != &owner_res.owner {
-        return Err(ContractError::NotTokenOwner {
-            user: user.to_string(),
-            token_id: token_id.to_string(),
-        });
-    }
-
-    Ok(())
 }

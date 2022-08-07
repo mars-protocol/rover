@@ -17,6 +17,7 @@ library = []
 account-nft = { version = "0.1", path = "../account-nft", features = ["library"] }
 mock-oracle = { version = "1.0", path = "../../contracts/mock-oracle", features = ["library"] }
 mock-red-bank = { version = "1.0", path = "../../contracts/mock-red-bank", features = ["library"] }
+mock-vault = { version = "1.0", path = "../../contracts/mock-vault", features = ["library"] }
 rover = { version = "0.1", path = "../../packages/rover" }
 
 cosmwasm-std = "1.0"

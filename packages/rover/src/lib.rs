@@ -3,6 +3,7 @@ use cosmwasm_std::Uint128;
 pub mod adapters;
 pub mod coins;
 pub mod error;
+pub mod extensions;
 pub mod health;
 pub mod msg;
 

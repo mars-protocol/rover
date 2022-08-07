@@ -40,6 +40,18 @@ pub enum ContractError {
     #[error("No debt to repay")]
     NoDebt,
 
+    #[error("Not enough funds for action")]
+    NotEnoughFunds,
+
+    #[error("Needed: {needed:?}, Actual {actual:?}")]
+    NotEnoughShares { needed: Uint128, actual: Uint128 },
+
+    #[error("{0} does not have a position in this vault")]
+    NoPosition(String),
+
+    #[error("Position {0} was not a valid position for this token id in this vault")]
+    NoPositionMatch(String),
+
     #[error("{user:?} is not the owner of {token_id:?}")]
     NotTokenOwner { user: String, token_id: String },
 
@@ -49,9 +61,18 @@ pub enum ContractError {
     #[error("{0}")]
     Overflow(#[from] OverflowError),
 
+    #[error("Reply id: {0} not valid")]
+    ReplyIdError(u64),
+
+    #[error("{0}")]
+    RequirementsNotMet(String),
+
     #[error("{0}")]
     Std(#[from] StdError),
 
     #[error("{user:?} is not authorized to {action:?}")]
     Unauthorized { user: String, action: String },
+
+    #[error("There is more time left on the lock period for this unlocking position")]
+    UnlockNotReady,
 }

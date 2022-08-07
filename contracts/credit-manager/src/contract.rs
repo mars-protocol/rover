@@ -1,6 +1,8 @@
-use cosmwasm_std::{entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response};
+use cosmwasm_std::{
+    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response,
+};
 use cw2::set_contract_version;
-use rover::error::ContractResult;
+use rover::error::{ContractError, ContractResult};
 
 use rover::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
@@ -10,6 +12,10 @@ use crate::instantiate::store_config;
 use crate::query::{
     query_all_assets, query_all_debt_shares, query_all_total_debt_shares, query_allowed_coins,
     query_allowed_vaults, query_config, query_position, query_total_debt_shares,
+};
+use crate::vault::{
+    handle_unlock_reply, handle_unlock_request_reply, handle_withdraw_reply,
+    VAULT_REQUEST_REPLY_ID, VAULT_UNLOCK_REPLY_ID, VAULT_WITHDRAW_REPLY_ID,
 };
 
 const CONTRACT_NAME: &str = "crates.io:rover-credit-manager";
@@ -41,6 +47,16 @@ pub fn execute(
         ExecuteMsg::UpdateCreditAccount { token_id, actions } => {
             dispatch_actions(deps, env, info, &token_id, &actions)
         }
+    }
+}
+
+#[cfg_attr(not(feature = "library"), entry_point)]
+pub fn reply(deps: DepsMut, env: Env, reply: Reply) -> ContractResult<Response> {
+    match reply.id {
+        VAULT_WITHDRAW_REPLY_ID => handle_withdraw_reply(deps, env, reply),
+        VAULT_REQUEST_REPLY_ID => handle_unlock_request_reply(deps, env, reply),
+        VAULT_UNLOCK_REPLY_ID => handle_unlock_reply(deps, env, reply),
+        id => Err(ContractError::ReplyIdError(id)),
     }
 }
 

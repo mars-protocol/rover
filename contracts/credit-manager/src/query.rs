@@ -1,6 +1,7 @@
 use cosmwasm_std::{Addr, Decimal, Deps, Env, Order, StdResult, Uint128};
 use cw_storage_plus::Bound;
 
+use rover::adapters::{VaultBase, VaultPosition, VaultUnchecked};
 use rover::error::ContractResult;
 use rover::msg::query::{
     CoinBalanceResponseItem, CoinShares, CoinValue, ConfigResponse, DebtSharesValue,
@@ -34,11 +35,13 @@ pub fn query_position(
 ) -> ContractResult<PositionResponse> {
     let coin_asset_values = get_coin_balances_values(deps, token_id)?;
     let debt_shares_values = get_debt_shares_values(deps, env, token_id)?;
+    let vault_positions = get_vault_positions(deps, token_id)?;
 
     Ok(PositionResponse {
         token_id: token_id.to_string(),
         coins: coin_asset_values,
         debt_shares: debt_shares_values,
+        vault_positions,
     })
 }
 
@@ -154,17 +157,15 @@ pub fn query_all_debt_shares(
 /// of setting the value to `false`.
 pub fn query_allowed_vaults(
     deps: Deps,
-    start_after: Option<String>,
+    start_after: Option<VaultUnchecked>,
     limit: Option<u32>,
-) -> StdResult<Vec<String>> {
-    let addr: Addr;
-    let start = match &start_after {
-        Some(addr_str) => {
-            addr = deps.api.addr_validate(addr_str)?;
-            Some(Bound::exclusive(&addr))
-        }
-        None => None,
-    };
+) -> StdResult<Vec<VaultUnchecked>> {
+    let start = start_after
+        .map(|unchecked| -> StdResult<_> {
+            let vault = unchecked.check(deps.api)?;
+            Ok(Bound::exclusive(vault.0))
+        })
+        .transpose()?;
 
     let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
 
@@ -176,6 +177,26 @@ pub fn query_allowed_vaults(
             Ok(addr.to_string())
         })
         .collect()
+}
+
+pub fn get_vault_positions(
+    deps: Deps,
+    token_id: NftTokenId,
+) -> ContractResult<Vec<VaultPositionWithAddr>> {
+    Ok(VAULT_POSITIONS
+        .prefix(token_id)
+        .range(deps.storage, None, None, Order::Ascending)
+        .collect::<StdResult<Vec<_>>>()?
+        .iter()
+        .map(|(a, p)| VaultPositionWithAddr {
+            addr: a.to_string(),
+            position: VaultPosition {
+                unlocked: p.unlocked,
+                locked: p.locked,
+                unlocking: p.clone().unlocking,
+            },
+        })
+        .collect())
 }
 
 /// NOTE: This implementation of the query function assumes the map `ALLOWED_COINS` only saves `true`.

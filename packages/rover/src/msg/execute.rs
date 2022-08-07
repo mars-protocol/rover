@@ -1,8 +1,10 @@
-use cosmwasm_std::{to_binary, Addr, Coin, CosmosMsg, StdResult, WasmMsg};
+use crate::adapters::{Vault, VaultUnchecked};
+use cosmwasm_std::{to_binary, Addr, Coin, CosmosMsg, StdResult, Uint128, WasmMsg};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::msg::instantiate::ConfigUpdates;
+use crate::Shares;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -37,6 +39,29 @@ pub enum Action {
     Borrow(Coin),
     /// Repay coin of specified amount back to Red Bank
     Repay(Coin),
+    /// Deposit assets into vault strategy
+    VaultDeposit {
+        vault: VaultUnchecked,
+        assets: Vec<Coin>,
+    },
+    /// Withdraw assets from vault
+    VaultWithdraw {
+        vault: VaultUnchecked,
+        shares: Shares,
+    },
+    /// A privileged action only to be used by Rover. Same as `VaultWithdraw` except it bypasses any lockup period
+    /// restrictions on the vault. Used only in the case position is unhealthy and requires immediate liquidation.
+    VaultForceWithdraw {
+        vault: VaultUnchecked,
+        shares: Shares,
+    },
+    /// Requests unlocking of shares for a vault with a required lock period
+    VaultRequestUnlock {
+        vault: VaultUnchecked,
+        shares: Shares,
+    },
+    /// Withdraws the assets for unlocking position id from vault. Required time must have elapsed.
+    VaultUnlock { id: Uint128, vault: VaultUnchecked },
 }
 
 /// Internal actions made by the contract with pre-validated inputs
@@ -52,6 +77,36 @@ pub enum CallbackMsg {
     /// Calculate the account's max loan-to-value health factor. If above 1,
     /// emits a `position_changed` event. If 1 or below, raises an error.
     AssertBelowMaxLTV { token_id: String },
+    /// Adds list of assets to a vault strategy
+    VaultDeposit {
+        token_id: String,
+        vault: Vault,
+        coins: Vec<Coin>,
+    },
+    /// Exchanges vault LP shares for assets
+    VaultWithdraw {
+        token_id: String,
+        vault: Vault,
+        shares: Shares,
+    },
+    /// Used only for liquidations
+    VaultForceWithdraw {
+        token_id: String,
+        vault: Vault,
+        shares: Shares,
+    },
+    /// Requests unlocking of shares for a vault with a lock period
+    VaultRequestUnlock {
+        token_id: String,
+        vault: Vault,
+        shares: Uint128,
+    },
+    /// Withdraws assets from vault for a locked position having a lockup period that has been fulfilled
+    VaultUnlock {
+        token_id: String,
+        vault: Vault,
+        position_id: Uint128,
+    },
 }
 
 impl CallbackMsg {

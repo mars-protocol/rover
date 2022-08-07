@@ -1,3 +1,4 @@
+use crate::adapters::{VaultPosition, VaultUnchecked};
 use cosmwasm_std::{Decimal, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -7,9 +8,9 @@ use serde::{Deserialize, Serialize};
 pub enum QueryMsg {
     /// Owner & account nft address. Response type: `ConfigResponse`
     Config,
-    /// Whitelisted vaults. Response type: `Vec<String>`
+    /// Whitelisted vaults. Response type: `Vec<VaultUnchecked>`
     AllowedVaults {
-        start_after: Option<String>,
+        start_after: Option<VaultUnchecked>,
         limit: Option<u32>,
     },
     /// Whitelisted coins. Response type: `Vec<String>`
@@ -85,6 +86,13 @@ pub struct DebtSharesValue {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
+pub struct VaultPositionWithAddr {
+    pub addr: String,
+    pub position: VaultPosition,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
 pub struct PositionResponse {
     /// Unique NFT token id that represents the cross-margin account. The owner of this NFT, owns the account.
     pub token_id: String,
@@ -92,6 +100,8 @@ pub struct PositionResponse {
     pub coins: Vec<CoinValue>,
     /// All debt positions with its value
     pub debt_shares: Vec<DebtSharesValue>,
+    /// All vault positions
+    pub vault_positions: Vec<VaultPositionWithAddr>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]

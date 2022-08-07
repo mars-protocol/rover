@@ -63,14 +63,14 @@ impl RedBank {
     pub fn query_debt(
         &self,
         querier: &QuerierWrapper,
-        user_address: &Addr,
+        addr: &Addr,
         denom: &str,
     ) -> StdResult<Uint128> {
         let response: UserAssetDebtResponse =
             querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
                 contract_addr: self.address().to_string(),
                 msg: to_binary(&QueryMsg::UserAssetDebt {
-                    user_address: user_address.to_string(),
+                    user_address: addr.to_string(),
                     denom: denom.to_string(),
                 })?,
             }))?;
