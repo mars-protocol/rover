@@ -1,17 +1,18 @@
-use cosmwasm_std::{Coin, DepsMut, Env, Response, StdError, StdResult, Uint128};
 use std::cmp::min;
+
+use cosmwasm_std::{Coin, DepsMut, Env, Response, Uint128};
 
 use rover::error::{ContractError, ContractResult};
 
-use crate::deposit::assert_coin_is_whitelisted;
 use crate::state::{COIN_BALANCES, DEBT_SHARES, RED_BANK, TOTAL_DEBT_SHARES};
+use crate::utils::assert_coin_is_whitelisted;
 
 pub fn repay(deps: DepsMut, env: Env, token_id: &str, coin: Coin) -> ContractResult<Response> {
     if coin.amount.is_zero() {
         return Err(ContractError::NoAmount);
     }
 
-    assert_coin_is_whitelisted(deps.storage, &coin.denom)?;
+    assert_coin_is_whitelisted(deps.storage, &coin)?;
 
     let red_bank = RED_BANK.load(deps.storage)?;
     let total_debt_amount =
@@ -52,16 +53,12 @@ pub fn repay(deps: DepsMut, env: Env, token_id: &str, coin: Coin) -> ContractRes
     )?;
 
     // Decrement token's coin balance position
-    COIN_BALANCES.update(
-        deps.storage,
-        (token_id, &coin.denom),
-        |current_amount| -> StdResult<_> {
-            current_amount
-                .unwrap_or_else(Uint128::zero)
-                .checked_sub(amount_to_repay)
-                .map_err(StdError::overflow)
-        },
-    )?;
+    COIN_BALANCES.update(deps.storage, (token_id, &coin.denom), |current_amount| {
+        current_amount
+            .unwrap_or_else(Uint128::zero)
+            .checked_sub(amount_to_repay)
+            .map_err(ContractError::Overflow)
+    })?;
 
     let red_bank_repay_msg = red_bank.repay_msg(&Coin {
         denom: coin.denom,

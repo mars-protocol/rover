@@ -1,9 +1,10 @@
-use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
-use credit_manager::borrow::DEFAULT_DEBT_SHARES_PER_COIN_BORROWED;
 use std::ops::{Add, Mul, Sub};
 
+use cosmwasm_std::{Addr, Coin, Decimal, OverflowError, OverflowOperation, Uint128};
+
+use credit_manager::borrow::DEFAULT_DEBT_SHARES_PER_COIN_BORROWED;
 use rover::error::ContractError;
-use rover::msg::execute::Action::{Borrow, Deposit, Repay};
+use rover::msg::execute::Action::{Borrow, Deposit, Repay, Withdraw};
 
 use crate::helpers::{assert_err, AccountToFund, CoinInfo, MockEnv, DEFAULT_RED_BANK_COIN_BALANCE};
 
@@ -152,11 +153,56 @@ fn test_raises_when_repaying_what_is_not_owed() {
     assert_err(res, ContractError::NoDebt)
 }
 
-// TODO: After withdraw is implemented, complete this test
-// Should do a deposit, borrow another denom, withdraw some
-// and then attempt to repay with not enough in assets
 #[test]
-fn test_raises_when_not_enough_assets_to_repay() {}
+fn test_raises_when_not_enough_assets_to_repay() {
+    let uosmo_info = CoinInfo {
+        denom: "uosmo".to_string(),
+        price: Decimal::from_atomics(25u128, 2).unwrap(),
+        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
+        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
+    };
+
+    let uatom_info = CoinInfo {
+        denom: "atom".to_string(),
+        price: Decimal::from_atomics(9u128, 0).unwrap(),
+        max_ltv: Decimal::from_atomics(8u128, 1).unwrap(),
+        liquidation_threshold: Decimal::from_atomics(85u128, 2).unwrap(),
+    };
+
+    let user = Addr::unchecked("user");
+
+    let mut mock = MockEnv::new()
+        .allowed_coins(&[uosmo_info.clone(), uatom_info.clone()])
+        .fund_account(AccountToFund {
+            addr: user.clone(),
+            funds: vec![Coin::new(300u128, uatom_info.denom.clone())],
+        })
+        .build()
+        .unwrap();
+
+    let token_id_a = mock.create_credit_account(&user).unwrap();
+
+    let res = mock.update_credit_account(
+        &token_id_a,
+        &user,
+        vec![
+            Deposit(uatom_info.to_coin(Uint128::from(300u128))),
+            Borrow(uosmo_info.to_coin(Uint128::from(50u128))),
+            Withdraw(uosmo_info.to_coin(Uint128::from(10u128))),
+            Repay(uosmo_info.to_coin(Uint128::from(50u128))),
+        ],
+        &[uatom_info.to_coin(Uint128::from(300u128))],
+    );
+
+    assert_err(
+        res,
+        ContractError::Overflow(OverflowError {
+            operation: OverflowOperation::Sub,
+            operand1: "40".to_string(),
+            operand2: "50".to_string(),
+        }),
+    )
+}
 
 #[test]
 fn test_successful_repay() {
