@@ -4,13 +4,14 @@ use cw721_base::QueryMsg;
 
 use rover::adapters::Vault;
 use rover::error::{ContractError, ContractResult};
+use rover::extensions::Stringify;
 
-use crate::state::{ACCOUNT_NFT, ALLOWED_COINS, ALLOWED_VAULTS, ASSETS};
+use crate::state::{ACCOUNT_NFT, ALLOWED_COINS, ALLOWED_VAULTS, COIN_BALANCES};
 
 pub fn assert_vault_is_whitelisted(storage: &mut dyn Storage, vault: &Vault) -> ContractResult<()> {
-    let is_whitelisted = ALLOWED_VAULTS.has(storage, vault.0.clone());
+    let is_whitelisted = ALLOWED_VAULTS.has(storage, vault.address());
     if !is_whitelisted {
-        return Err(ContractError::NotWhitelisted(vault.0.to_string()));
+        return Err(ContractError::NotWhitelisted(vault.address().to_string()));
     }
     Ok(())
 }
@@ -30,18 +31,11 @@ pub fn assert_denoms_match_vault_reqs(
     if !all_req_coins_present || assets.len() != vault_info.assets.len() {
         return Err(ContractError::RequirementsNotMet(format!(
             "Required assets: {} do not match given assets: {}",
-            stringify_list(&vault_info.assets),
-            stringify_list(assets)
+            vault_info.assets.as_slice().to_string(),
+            assets.to_string()
         )));
     }
     Ok(())
-}
-
-fn stringify_list(reqs: &[Coin]) -> String {
-    reqs.iter()
-        .map(|coin| coin.clone().denom)
-        .collect::<Vec<String>>()
-        .join(", ")
 }
 
 pub fn assert_coins_are_whitelisted(
@@ -82,7 +76,7 @@ pub fn assert_is_token_owner(deps: &DepsMut, user: &Addr, token_id: &str) -> Con
 }
 
 pub fn increment_position(storage: &mut dyn Storage, token_id: &str, coin: &Coin) -> StdResult<()> {
-    ASSETS.update(
+    COIN_BALANCES.update(
         storage,
         (token_id, &coin.denom),
         |value_opt| -> StdResult<_> {

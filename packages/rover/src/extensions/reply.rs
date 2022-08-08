@@ -13,7 +13,7 @@ pub struct AssetTransferMsg {
     pub amount: Vec<Coin>,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
 pub struct UnlockEvent {
     pub id: Uint128,
     pub vault_addr: String,

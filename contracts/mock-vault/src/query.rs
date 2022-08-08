@@ -1,8 +1,11 @@
-use cosmwasm_std::{Coin, Deps, Order, StdResult, Storage, Uint128};
+use cosmwasm_std::{Coin, Deps, Order, StdError, StdResult, Storage, Uint128};
 
-use rover::msg::vault::{UnlockingTokens, VaultInfo};
+use rover::msg::vault::{UnlockingPosition, VaultInfo};
 
-use crate::state::{ASSETS, LOCKUP_TIME, LP_TOKEN_DENOM, TOTAL_VAULT_SHARES, UNLOCKING_TOKENS};
+use crate::state::{
+    ASSETS, LOCKUP_TIME, LP_TOKEN_DENOM, TOTAL_VAULT_SHARES, UNLOCKING_COINS,
+    UNLOCK_REQUEST_QUEUE_TIME,
+};
 
 pub fn query_assets_for_shares(storage: &dyn Storage, shares: Uint128) -> StdResult<Vec<Coin>> {
     let total_shares_opt = TOTAL_VAULT_SHARES.may_load(storage)?;
@@ -26,13 +29,25 @@ pub fn query_vault_info(deps: Deps) -> StdResult<VaultInfo> {
     Ok(VaultInfo {
         assets: get_all_vault_assets(deps.storage)?,
         lockup: LOCKUP_TIME.load(deps.storage)?,
+        unlock_request_queue: UNLOCK_REQUEST_QUEUE_TIME.load(deps.storage)?,
         token_denom: LP_TOKEN_DENOM.load(deps.storage)?,
     })
 }
 
-pub fn query_unlocking_positions(deps: Deps, addr: String) -> StdResult<Vec<UnlockingTokens>> {
+pub fn query_unlocking_position(deps: Deps, id: Uint128) -> StdResult<UnlockingPosition> {
+    UNLOCKING_COINS
+        .range(deps.storage, None, None, Order::Ascending)
+        .collect::<StdResult<Vec<_>>>()?
+        .iter()
+        .flat_map(|(_, positions)| positions)
+        .find(|p| p.id == id)
+        .map(Clone::clone)
+        .ok_or_else(|| StdError::generic_err("Id not found"))
+}
+
+pub fn query_unlocking_positions(deps: Deps, addr: String) -> StdResult<Vec<UnlockingPosition>> {
     let addr = deps.api.addr_validate(addr.as_str())?;
-    let res = UNLOCKING_TOKENS.load(deps.storage, addr)?;
+    let res = UNLOCKING_COINS.load(deps.storage, addr)?;
     Ok(res)
 }
 

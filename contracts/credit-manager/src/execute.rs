@@ -2,12 +2,6 @@ use cosmwasm_std::{
     to_binary, Addr, CosmosMsg, DepsMut, Empty, Env, MessageInfo, Response, StdResult, WasmMsg,
 };
 
-use account_nft::msg::ExecuteMsg as NftExecuteMsg;
-use rover::coins::Coins;
-use rover::error::{ContractError, ContractResult};
-use rover::msg::execute::{Action, CallbackMsg};
-use rover::msg::instantiate::ConfigUpdates;
-
 use crate::borrow::borrow;
 use crate::deposit::deposit;
 use crate::health::assert_below_max_ltv;
@@ -15,8 +9,15 @@ use crate::repay::repay;
 use crate::state::{ACCOUNT_NFT, ALLOWED_COINS, ALLOWED_VAULTS, ORACLE, OWNER, RED_BANK};
 use crate::utils::assert_is_token_owner;
 use crate::vault::{
-    deposit_into_vault, request_unlock_from_vault, unlock_from_vault, withdraw_from_vault,
+    deposit_into_vault, request_unlock_from_vault, withdraw_from_vault,
+    withdraw_unlocked_from_vault,
 };
+use account_nft::msg::ExecuteMsg as NftExecuteMsg;
+use rover::coins::Coins;
+use rover::error::{ContractError, ContractResult};
+use rover::extensions::Stringify;
+use rover::msg::execute::{Action, CallbackMsg};
+use rover::msg::instantiate::ConfigUpdates;
 
 pub fn create_credit_account(deps: DepsMut, user: Addr) -> ContractResult<Response> {
     let contract_addr = ACCOUNT_NFT.load(deps.storage)?;
@@ -92,14 +93,7 @@ pub fn update_config(
         })?;
         response = response
             .add_attribute("key", "allowed_vaults")
-            .add_attribute(
-                "value",
-                vaults
-                    .iter()
-                    .map(|v| v.0.clone())
-                    .collect::<Vec<String>>()
-                    .join(", "),
-            );
+            .add_attribute("value", vaults.to_string())
     }
 
     if let Some(unchecked) = new_config.red_bank {
@@ -169,11 +163,13 @@ pub fn dispatch_actions(
                     shares: *shares,
                 })
             }
-            Action::VaultUnlock { id, vault } => callbacks.push(CallbackMsg::VaultUnlock {
-                token_id: token_id.to_string(),
-                vault: vault.check(deps.api)?,
-                position_id: *id,
-            }),
+            Action::VaultUnlock { id, vault } => {
+                callbacks.push(CallbackMsg::VaultWithdrawUnlocked {
+                    token_id: token_id.to_string(),
+                    vault: vault.check(deps.api)?,
+                    position_id: *id,
+                })
+            }
         }
     }
 
@@ -233,10 +229,10 @@ pub fn execute_callback(
             vault,
             shares,
         } => request_unlock_from_vault(deps, &token_id, vault, shares),
-        CallbackMsg::VaultUnlock {
+        CallbackMsg::VaultWithdrawUnlocked {
             token_id,
             vault,
             position_id,
-        } => unlock_from_vault(deps, env, &token_id, vault, position_id),
+        } => withdraw_unlocked_from_vault(deps, env, &token_id, vault, position_id),
     }
 }

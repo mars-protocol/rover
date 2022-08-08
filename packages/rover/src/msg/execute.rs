@@ -102,7 +102,7 @@ pub enum CallbackMsg {
         shares: Uint128,
     },
     /// Withdraws assets from vault for a locked position having a lockup period that has been fulfilled
-    VaultUnlock {
+    VaultWithdrawUnlocked {
         token_id: String,
         vault: Vault,
         position_id: Uint128,

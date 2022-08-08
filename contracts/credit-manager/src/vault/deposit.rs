@@ -4,7 +4,7 @@ use rover::adapters::{Vault, VaultPosition};
 use rover::error::{ContractError, ContractResult};
 use rover::NftTokenId;
 
-use crate::state::{ASSETS, ORACLE, TOTAL_VAULT_SHARES, VAULT_POSITIONS};
+use crate::state::{COIN_BALANCES, ORACLE, TOTAL_VAULT_SHARES, VAULT_POSITIONS};
 use crate::utils::{
     assert_coins_are_whitelisted, assert_denoms_match_vault_reqs, assert_vault_is_whitelisted,
 };
@@ -22,9 +22,9 @@ pub fn deposit_into_vault(
     assert_vault_is_whitelisted(deps.storage, &vault)?;
     assert_denoms_match_vault_reqs(deps.querier, &vault, coins)?;
 
-    // Decrement token's assets amount
+    // Decrement token's coin balance amount
     coins.iter().try_for_each(|coin| -> ContractResult<_> {
-        ASSETS.update(
+        COIN_BALANCES.update(
             deps.storage,
             (token_id, &coin.denom),
             |amount_opt| -> ContractResult<_> {
@@ -45,7 +45,7 @@ pub fn deposit_into_vault(
     let total_vault_value =
         vault.query_total_value(&deps.querier, &oracle, &env.contract.address)?;
     let total_shares = TOTAL_VAULT_SHARES
-        .may_load(deps.storage, vault.0.clone())?
+        .may_load(deps.storage, vault.address().clone())?
         .unwrap_or(Uint128::zero());
     let shares_to_add = if total_shares.is_zero() {
         DEFAULT_VAULT_SHARES
@@ -58,7 +58,7 @@ pub fn deposit_into_vault(
 
     VAULT_POSITIONS.update(
         deps.storage,
-        (token_id, vault.0.clone()),
+        (token_id, vault.address().clone()),
         |position_opt| -> ContractResult<_> {
             let p = position_opt.unwrap_or(VaultPosition {
                 unlocked: Uint128::zero(),
@@ -83,7 +83,7 @@ pub fn deposit_into_vault(
     // Increment total shares
     TOTAL_VAULT_SHARES.update(
         deps.storage,
-        vault.0.clone(),
+        vault.address().clone(),
         |shares_opt| -> ContractResult<_> {
             Ok(match shares_opt {
                 None => shares_to_add,

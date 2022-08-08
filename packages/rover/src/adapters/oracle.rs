@@ -1,12 +1,12 @@
-use cosmwasm_std::{
-    to_binary, Addr, Api, Coin, Decimal, QuerierWrapper, QueryRequest, StdResult, WasmQuery,
-};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 use std::ops::Add;
 
-use crate::error::ContractResult;
+use cosmwasm_std::{Addr, Api, Coin, Decimal, QuerierWrapper, StdResult};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+
 use mock_oracle::msg::QueryMsg;
+
+use crate::error::ContractResult;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 pub struct OracleBase<T>(T);

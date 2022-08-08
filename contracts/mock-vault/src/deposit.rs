@@ -36,7 +36,7 @@ pub fn deposit(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractErr
         Ok(())
     })?;
 
-    // Send LP tokens to
+    // Send vault tokens to
     let minted = mock_lp_token_mint(deps, shares_to_add)?;
     let transfer_msg = CosmosMsg::Bank(BankMsg::Send {
         to_address: info.sender.to_string(),

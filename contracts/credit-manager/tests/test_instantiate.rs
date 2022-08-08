@@ -1,6 +1,5 @@
-use crate::helpers::{assert_contents_equal, CoinInfo, MockEnv};
+use crate::helpers::{assert_contents_equal, CoinInfo, MockEnv, VaultTestInfo};
 use cosmwasm_std::Decimal;
-
 pub mod helpers;
 
 #[test]
@@ -30,9 +29,24 @@ fn test_nft_contract_addr_not_set_on_instantiate() {
 #[test]
 fn test_allowed_vaults_set_on_instantiate() {
     let allowed_vaults = vec![
-        "vault_contract_1".to_string(),
-        "vault_contract_2".to_string(),
-        "vault_contract_3".to_string(),
+        VaultTestInfo {
+            lp_token_denom: "vault_contract_1".to_string(),
+            lockup: None,
+            unlock_request_queue: None,
+            asset_denoms: vec![],
+        },
+        VaultTestInfo {
+            lp_token_denom: "vault_contract_2".to_string(),
+            lockup: None,
+            unlock_request_queue: None,
+            asset_denoms: vec![],
+        },
+        VaultTestInfo {
+            lp_token_denom: "vault_contract_3".to_string(),
+            lockup: None,
+            unlock_request_queue: None,
+            asset_denoms: vec![],
+        },
     ];
 
     let mock = MockEnv::new()
@@ -40,13 +54,19 @@ fn test_allowed_vaults_set_on_instantiate() {
         .build()
         .unwrap();
     let res = mock.query_allowed_vaults(None, None);
-    assert_contents_equal(res, allowed_vaults);
+    assert_contents_equal(
+        res,
+        allowed_vaults
+            .iter()
+            .map(|info| mock.get_vault(info))
+            .collect(),
+    );
 }
 
 #[test]
 fn test_raises_on_invalid_vaults_addr() {
     let mock = MockEnv::new()
-        .allowed_vaults(&["%%%INVALID%%%".to_string()])
+        .pre_deployed_vaults(&["%%%INVALID%%%"])
         .build();
 
     if mock.is_ok() {

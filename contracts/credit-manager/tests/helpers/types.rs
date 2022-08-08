@@ -16,12 +16,12 @@ pub struct CoinInfo {
     pub liquidation_threshold: Decimal,
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
-pub struct VaultInfo {
+#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
+pub struct VaultTestInfo {
     pub lp_token_denom: String,
     pub lockup: Option<u64>,
+    pub unlock_request_queue: Option<u64>,
     pub asset_denoms: Vec<String>,
-    pub pre_fund: Uint128,
 }
 
 impl CoinInfo {

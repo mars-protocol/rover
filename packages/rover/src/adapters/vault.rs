@@ -1,32 +1,52 @@
 use cosmwasm_std::{
     to_binary, Addr, Api, BalanceResponse, BankQuery, Coin, CosmosMsg, Decimal, QuerierWrapper,
-    QueryRequest, StdResult, WasmMsg, WasmQuery,
+    QueryRequest, StdResult, Uint128, WasmMsg, WasmQuery,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::adapters::Oracle;
 use crate::error::ContractResult;
-use crate::msg::vault::{ExecuteMsg, QueryMsg, UnlockingTokens, VaultInfo};
+use crate::extensions::Stringify;
+use crate::msg::vault::{ExecuteMsg, QueryMsg, UnlockingPosition, VaultInfo};
 use crate::Shares;
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct VaultPosition {
     pub unlocked: Shares,
     pub locked: Shares,
-    pub unlocking: Vec<UnlockingTokens>,
+    pub unlocking: Vec<VaultUnlockingId>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct VaultBase<T>(pub T);
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct VaultUnlockingId {
+    /// Unique identifier representing the unlocking position. Needed for `ExecuteMsg::Unlock {}` call.
+    pub id: Uint128,
+    /// Number of vault tokens
+    pub amount: Uint128,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+pub struct VaultBase<T>(T);
+
+impl<T> VaultBase<T> {
+    pub fn new(address: T) -> VaultBase<T> {
+        VaultBase(address)
+    }
+
+    pub fn address(&self) -> &T {
+        &self.0
+    }
+}
 
 pub type VaultUnchecked = VaultBase<String>;
 pub type Vault = VaultBase<Addr>;
 
 impl From<&Vault> for VaultUnchecked {
     fn from(vault: &Vault) -> Self {
-        Self(vault.0.to_string())
+        Self(vault.address().to_string())
     }
 }
 
@@ -39,6 +59,15 @@ impl VaultUnchecked {
 impl From<Vault> for VaultUnchecked {
     fn from(v: Vault) -> Self {
         Self(v.0.to_string())
+    }
+}
+
+impl Stringify for Vec<VaultUnchecked> {
+    fn to_string(&self) -> String {
+        self.iter()
+            .map(|v| v.address().clone())
+            .collect::<Vec<String>>()
+            .join(", ")
     }
 }
 
@@ -75,6 +104,17 @@ impl Vault {
         querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
             contract_addr: self.0.to_string(),
             msg: to_binary(&QueryMsg::Info {})?,
+        }))
+    }
+
+    pub fn query_unlocking_position_info(
+        &self,
+        querier: &QuerierWrapper,
+        id: Uint128,
+    ) -> StdResult<UnlockingPosition> {
+        querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
+            contract_addr: self.0.to_string(),
+            msg: to_binary(&QueryMsg::UnlockingPosition { id })?,
         }))
     }
 

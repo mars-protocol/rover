@@ -1,14 +1,14 @@
 use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
 
 use mock_vault::contract::STARTING_SHARES;
-use rover::msg::execute::Action::{Deposit, VaultDeposit, VaultWithdraw};
+use rover::msg::execute::Action::{Deposit, VaultDeposit};
 
-use crate::helpers::{get_asset, AccountToFund, CoinInfo, MockEnv, VaultTestInfo};
+use crate::helpers::{AccountToFund, CoinInfo, MockEnv, VaultTestInfo};
 
 pub mod helpers;
 
 #[test]
-fn test_withdraw_with_unlocked_vault() {
+fn test_deposit_into_unlocked_vault() {
     let uatom = CoinInfo {
         denom: "uatom".to_string(),
         price: Decimal::from_atomics(100u128, 0).unwrap(),
@@ -60,38 +60,44 @@ fn test_withdraw_with_unlocked_vault() {
                 vault: vault.clone(),
                 assets: vec![Coin::new(23u128, "uatom"), Coin::new(120u128, "uosmo")],
             },
-            VaultWithdraw {
-                vault,
-                shares: STARTING_SHARES,
-            },
         ],
         &[Coin::new(200u128, "uatom"), Coin::new(400u128, "uosmo")],
     )
     .unwrap();
 
-    // Assert token's updated position
-    let res = mock.query_position(&token_id);
-    // assert_eq!(res.vault_positions.len(), 0); TODO: Add purge callback
-    let atom = get_asset("uatom", &res.coins);
-    assert_eq!(atom.amount, Uint128::from(200u128));
-    let osmo = get_asset("uosmo", &res.coins);
-    assert_eq!(osmo.amount, Uint128::from(400u128));
-
-    // Assert Rover indeed has those on hand in the bank
-    let atom = mock.query_balance(&mock.rover, "uatom");
-    assert_eq!(atom.amount, Uint128::from(200u128));
-    let osmo = mock.query_balance(&mock.rover, "uosmo");
-    assert_eq!(osmo.amount, Uint128::from(400u128));
-
-    // Assert Rover does not have the vault tokens anymore
     let lp_balance = mock.query_balance(&mock.rover, &leverage_vault.lp_token_denom);
-    assert_eq!(Uint128::zero(), lp_balance.amount);
+    assert_eq!(STARTING_SHARES, lp_balance.amount);
+
+    let res = mock.query_position(&token_id);
+    assert_eq!(res.vault_positions.len(), 1);
+    assert_eq!(
+        STARTING_SHARES,
+        res.vault_positions.first().unwrap().position.unlocked
+    );
+    assert_eq!(
+        Uint128::zero(),
+        res.vault_positions.first().unwrap().position.locked
+    );
+
+    let assets = mock.query_preview_redeem(
+        &vault,
+        res.vault_positions.first().unwrap().position.unlocked,
+    );
+
+    let osmo_withdraw = assets.iter().find(|coin| coin.denom == "uosmo").unwrap();
+    assert_eq!(osmo_withdraw.amount, Uint128::from(120u128));
+    let atom_withdraw = assets.iter().find(|coin| coin.denom == "uatom").unwrap();
+    assert_eq!(atom_withdraw.amount, Uint128::from(23u128));
 }
 
-// test withdraw works on uneven numbers. Is vault supposed to round down? e.g. 23 / 2
-// Separate actions (two transactions), versus one big one (deposit + withdraw in same)
-// test_withdraw_with_unlocked_vault
-// test only token_owner can do a vault withdraw
-// test_failure_when_withdrawing_when_no_unlocked_positions_available
+// Assert total shares have been incremented correctly
+// test LP tokens are sent back to Rover
+// test only token_owner can do a vault deposit
+// VaultRequirements query is accurate
+// test_deposit_into_unlocked_vault
+// adding first transaction to vault
+// test multiple vaults to make sure deposits don't leak
+// test trying to deposit too much (that they don't have in their wallet)
+// test refund is happening if uneven deposit
+// in query config, and update config
 // assert vault is whitelisted
-// test if no unlocked but only unlocking ones that are ready to be withdrawn

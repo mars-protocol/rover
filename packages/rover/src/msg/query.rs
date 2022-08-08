@@ -91,7 +91,7 @@ pub struct VaultPositionWithAddr {
     pub position: VaultPosition,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
 pub struct PositionResponse {
     /// Unique NFT token id that represents the cross-margin account. The owner of this NFT, owns the account.

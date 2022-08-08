@@ -1,11 +1,11 @@
 use cosmwasm_std::{
-    to_binary, Coin, CosmosMsg, DepsMut, Env, Reply, Response, SubMsg, Uint128, WasmMsg,
+    to_binary, Coin, CosmosMsg, DepsMut, Reply, Response, SubMsg, Uint128, WasmMsg,
 };
 
-use rover::adapters::{Vault, VaultBase, VaultPosition};
+use rover::adapters::{Vault, VaultPosition, VaultUnlockingId};
 use rover::error::{ContractError, ContractResult};
 use rover::extensions::AttrParse;
-use rover::msg::vault::{ExecuteMsg, UnlockingTokens};
+use rover::msg::vault::ExecuteMsg;
 use rover::NftTokenId;
 
 use crate::state::{VAULT_POSITIONS, VAULT_REQUEST_TEMP_AMOUNT_VAR, VAULT_REQUEST_TEMP_TOKEN_VAR};
@@ -30,7 +30,7 @@ pub fn request_unlock_from_vault(
 
     let unlock_msg = SubMsg::reply_on_success(
         CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: vault.0.to_string(),
+            contract_addr: vault.address().to_string(),
             funds: vec![Coin {
                 denom: vault_info.token_denom,
                 amount: shares,
@@ -45,18 +45,12 @@ pub fn request_unlock_from_vault(
         .add_attribute("action", "rover/credit_manager/vault/request_unlock"))
 }
 
-pub fn handle_unlock_request_reply(
-    deps: DepsMut,
-    env: Env,
-    reply: Reply,
-) -> ContractResult<Response> {
+pub fn handle_unlock_request_reply(deps: DepsMut, reply: Reply) -> ContractResult<Response> {
     let token_id = VAULT_REQUEST_TEMP_TOKEN_VAR.load(deps.storage)?;
     let shares = VAULT_REQUEST_TEMP_AMOUNT_VAR.load(deps.storage)?;
 
     let unlock_event = reply.parse_unlock_event()?;
     let vault_addr = deps.api.addr_validate(unlock_event.vault_addr.as_str())?;
-    let vault = VaultBase(vault_addr.clone());
-    let vault_info = vault.query_vault_info(&deps.querier)?;
 
     VAULT_POSITIONS.update(
         deps.storage,
@@ -67,10 +61,9 @@ pub fn handle_unlock_request_reply(
             }
 
             let mut p = position_opt.unwrap();
-            p.unlocking.push(UnlockingTokens {
+            p.unlocking.push(VaultUnlockingId {
                 id: unlock_event.id,
                 amount: shares,
-                unlocked_at: env.block.time.plus_seconds(vault_info.lockup.unwrap()),
             });
 
             Ok(VaultPosition {
@@ -81,5 +74,8 @@ pub fn handle_unlock_request_reply(
         },
     )?;
 
-    Ok(Response::new().add_attribute("action", "rover/credit_manager/vault/withdraw/handle_reply"))
+    Ok(Response::new().add_attribute(
+        "action",
+        "rover/credit_manager/vault/unlock_request/handle_reply",
+    ))
 }

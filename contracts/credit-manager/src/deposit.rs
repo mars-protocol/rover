@@ -3,7 +3,7 @@ use cosmwasm_std::{Coin, Response, Storage, Uint128};
 use rover::coins::Coins;
 use rover::error::{ContractError, ContractResult};
 
-use crate::state::{ALLOWED_COINS, COIN_BALANCES};
+use crate::state::ALLOWED_COINS;
 use crate::utils::increment_position;
 
 pub fn deposit(

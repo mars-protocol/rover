@@ -24,7 +24,7 @@ pub fn withdraw_from_vault(
 
     VAULT_POSITIONS.update(
         deps.storage,
-        (token_id, vault.0.clone()),
+        (token_id, vault.address().clone()),
         |p_opt| match p_opt {
             None => Err(ContractError::NotEnoughFunds {}),
             Some(p) => Ok(VaultPosition {
@@ -37,7 +37,7 @@ pub fn withdraw_from_vault(
 
     TOTAL_VAULT_SHARES.update(
         deps.storage,
-        vault.0.clone(),
+        vault.address().clone(),
         |total_shares_opt| -> ContractResult<Shares> {
             let total_shares = total_shares_opt.ok_or_else(|| ContractError::NotEnoughShares {
                 needed: shares,
@@ -53,7 +53,7 @@ pub fn withdraw_from_vault(
     let vault_info = vault.query_vault_info(&deps.querier)?;
     let withdraw_msg = SubMsg::reply_on_success(
         CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: vault.0.to_string(),
+            contract_addr: vault.address().to_string(),
             funds: vec![Coin {
                 denom: vault_info.token_denom,
                 amount: shares,

@@ -14,8 +14,8 @@ use crate::query::{
     query_allowed_vaults, query_config, query_position, query_total_debt_shares,
 };
 use crate::vault::{
-    handle_unlock_reply, handle_unlock_request_reply, handle_withdraw_reply,
-    VAULT_REQUEST_REPLY_ID, VAULT_UNLOCK_REPLY_ID, VAULT_WITHDRAW_REPLY_ID,
+    handle_unlock_request_reply, handle_withdraw_reply, handle_withdraw_unlocked_reply,
+    VAULT_REQUEST_REPLY_ID, VAULT_WITHDRAW_REPLY_ID, VAULT_WITHDRAW_UNLOCKED_REPLY_ID,
 };
 
 const CONTRACT_NAME: &str = "crates.io:rover-credit-manager";
@@ -54,8 +54,8 @@ pub fn execute(
 pub fn reply(deps: DepsMut, env: Env, reply: Reply) -> ContractResult<Response> {
     match reply.id {
         VAULT_WITHDRAW_REPLY_ID => handle_withdraw_reply(deps, env, reply),
-        VAULT_REQUEST_REPLY_ID => handle_unlock_request_reply(deps, env, reply),
-        VAULT_UNLOCK_REPLY_ID => handle_unlock_reply(deps, env, reply),
+        VAULT_REQUEST_REPLY_ID => handle_unlock_request_reply(deps, reply),
+        VAULT_WITHDRAW_UNLOCKED_REPLY_ID => handle_withdraw_unlocked_reply(deps, env, reply),
         id => Err(ContractError::ReplyIdError(id)),
     }
 }
