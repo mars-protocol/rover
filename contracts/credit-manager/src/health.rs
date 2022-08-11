@@ -40,6 +40,13 @@ pub fn assert_below_max_ltv(
         return Err(ContractError::AboveMaxLTV);
     }
 
+    // if position.above_max_ltv {
+    //     return Err(ContractError::AboveMaxLTV {
+    //         token_id: token_id.to_string(),
+    //         max_ltv_health_factor: val_or_not_applicable(position.max_ltv_health_factor),
+    //     });
+    // }
+
     let event = Event::new("position_changed")
         .add_attribute("timestamp", env.block.time.seconds().to_string())
         .add_attribute("height", env.block.height.to_string())

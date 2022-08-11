@@ -3,6 +3,7 @@ use std::cmp::min;
 use cosmwasm_std::{Coin, DepsMut, Env, Response};
 
 use rover::error::{ContractError, ContractResult};
+use rover::repay::RepayCalculation;
 
 use crate::state::{DEBT_SHARES, RED_BANK, TOTAL_DEBT_SHARES};
 use crate::utils::{assert_coin_is_whitelisted, decrement_coin_balance};
@@ -14,25 +15,13 @@ pub fn repay(deps: DepsMut, env: Env, token_id: &str, coin: Coin) -> ContractRes
 
     assert_coin_is_whitelisted(deps.storage, &coin)?;
 
-    let red_bank = RED_BANK.load(deps.storage)?;
-    let total_debt_amount =
-        red_bank.query_debt(&deps.querier, &env.contract.address, &coin.denom)?;
-
-    // Calculate how many shares user is attempting to pay back
-    let total_debt_shares = TOTAL_DEBT_SHARES.load(deps.storage, &coin.denom)?;
-    let debt_shares_to_decrement =
-        total_debt_shares.checked_multiply_ratio(coin.amount, total_debt_amount)?;
-
-    // Payback amount should not exceed token's current debt
-    let current_debt = DEBT_SHARES
-        .load(deps.storage, (token_id, &coin.denom))
-        .map_err(|_| ContractError::NoDebt)?;
-    let shares_to_repay = min(current_debt, debt_shares_to_decrement);
-    let amount_to_repay = if current_debt > debt_shares_to_decrement {
-        coin.amount
-    } else {
-        total_debt_amount.checked_multiply_ratio(current_debt, total_debt_shares)?
-    };
+    let RepayCalculation {
+        red_bank,
+        total_debt_shares,
+        current_debt,
+        shares_to_repay,
+        amount_to_repay,
+    } = repay_calculation(&deps, &env, token_id, &coin)?;
 
     // Decrement token's debt position
     if shares_to_repay >= current_debt {
@@ -71,4 +60,39 @@ pub fn repay(deps: DepsMut, env: Env, token_id: &str, coin: Coin) -> ContractRes
         .add_attribute("action", "rover/credit_manager/repay")
         .add_attribute("debt_shares_repaid", shares_to_repay)
         .add_attribute("coins_repaid", amount_to_repay))
+}
+
+pub fn repay_calculation(
+    deps: &DepsMut,
+    env: &Env,
+    token_id: &str,
+    coin: &Coin,
+) -> ContractResult<RepayCalculation> {
+    let red_bank = RED_BANK.load(deps.storage)?;
+    let total_debt_amount =
+        red_bank.query_debt(&deps.querier, &env.contract.address, &coin.denom)?;
+
+    // Calculate how many shares user is attempting to pay back
+    let total_debt_shares = TOTAL_DEBT_SHARES.load(deps.storage, &coin.denom)?;
+    let debt_shares_to_decrement =
+        total_debt_shares.checked_multiply_ratio(coin.amount, total_debt_amount)?;
+
+    // Payback amount should not exceed token's current debt
+    let current_debt = DEBT_SHARES
+        .load(deps.storage, (token_id, &coin.denom))
+        .map_err(|_| ContractError::NoDebt)?;
+    let shares_to_repay = min(current_debt, debt_shares_to_decrement);
+    let amount_to_repay = if current_debt > debt_shares_to_decrement {
+        coin.amount
+    } else {
+        total_debt_amount.checked_multiply_ratio(current_debt, total_debt_shares)?
+    };
+
+    Ok(RepayCalculation {
+        red_bank,
+        total_debt_shares,
+        current_debt,
+        shares_to_repay,
+        amount_to_repay,
+    })
 }

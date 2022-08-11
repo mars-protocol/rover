@@ -2,6 +2,7 @@ use std::collections::BTreeMap;
 use std::fmt;
 
 use crate::extensions::Stringify;
+use crate::msg::query::CoinValue;
 use cosmwasm_std::{Coin, StdError, StdResult, Uint128};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -76,5 +77,14 @@ impl fmt::Display for Coins {
             .collect::<Vec<_>>()
             .join(",");
         write!(f, "{}", s)
+    }
+}
+
+impl From<CoinValue> for Coin {
+    fn from(cv: CoinValue) -> Self {
+        Self {
+            denom: cv.denom.clone(),
+            amount: cv.amount,
+        }
     }
 }

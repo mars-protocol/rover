@@ -22,6 +22,7 @@ pub fn deposit(
 
     received_coins.deduct(coin)?;
 
+    // increase the token's coin balance
     increment_coin_balance(storage, nft_token_id, coin)?;
 
     Ok(response
