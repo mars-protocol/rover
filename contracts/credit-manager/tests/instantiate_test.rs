@@ -1,300 +1,130 @@
-use cosmwasm_std::Addr;
-use cw_multi_test::Executor;
-
-use rover::adapters::{OracleBase, RedBankBase};
-use rover::msg::query::{ConfigResponse, QueryMsg};
-use rover::msg::InstantiateMsg;
-
-use crate::helpers::{assert_contents_equal, mock_app, mock_contract};
+use crate::helpers::{assert_contents_equal, CoinInfo, MockEnv};
+use cosmwasm_std::Decimal;
 
 pub mod helpers;
 
 #[test]
 fn test_owner_set_on_instantiate() {
-    let mut app = mock_app();
-    let code_id = app.store_code(mock_contract());
-    let owner = Addr::unchecked("owner");
-
-    let msg = InstantiateMsg {
-        owner: owner.to_string(),
-        allowed_vaults: vec![],
-        allowed_coins: vec![],
-        red_bank: RedBankBase::new("red_bank_contract".to_string()),
-        oracle: OracleBase::new("oracle_contract".to_string()),
-    };
-
-    let contract_addr = app
-        .instantiate_contract(code_id, owner.clone(), &msg, &[], "mock-account-nft", None)
-        .unwrap();
-
-    let res: ConfigResponse = app
-        .wrap()
-        .query_wasm_smart(contract_addr, &QueryMsg::Config {})
-        .unwrap();
-
+    let owner = "owner_addr";
+    let mock = MockEnv::new().owner(owner).build().unwrap();
+    let res = mock.query_config();
     assert_eq!(owner, res.owner);
 }
 
 #[test]
 fn test_raises_on_invalid_owner_addr() {
-    let mut app = mock_app();
-    let manager_code_id = app.store_code(mock_contract());
-    let owner = Addr::unchecked("%%%INVALID%%%");
-
-    let msg = InstantiateMsg {
-        owner: owner.to_string(),
-        allowed_vaults: vec![],
-        allowed_coins: vec![],
-        red_bank: RedBankBase::new("red_bank_contract".to_string()),
-        oracle: OracleBase::new("oracle_contract".to_string()),
-    };
-
-    let instantiate_res =
-        app.instantiate_contract(manager_code_id, owner, &msg, &[], "mock-contract", None);
-
-    if instantiate_res.is_ok() {
+    let owner = "%%%INVALID%%%";
+    let res = MockEnv::new().owner(owner).build();
+    if res.is_ok() {
         panic!("Should have thrown an error");
     }
 }
 
 #[test]
 fn test_nft_contract_addr_not_set_on_instantiate() {
-    let mut app = mock_app();
-    let owner = Addr::unchecked("owner");
-    let code_id = app.store_code(mock_contract());
-
-    let contract_addr = app
-        .instantiate_contract(
-            code_id,
-            owner.clone(),
-            &InstantiateMsg {
-                owner: owner.to_string(),
-                allowed_vaults: vec![],
-                allowed_coins: vec![],
-                red_bank: RedBankBase::new("red_bank_contract".to_string()),
-                oracle: OracleBase::new("oracle_contract".to_string()),
-            },
-            &[],
-            "manager-mock-account-nft",
-            None,
-        )
-        .unwrap();
-
-    let res: ConfigResponse = app
-        .wrap()
-        .query_wasm_smart(contract_addr, &QueryMsg::Config {})
-        .unwrap();
-
+    let mock = MockEnv::new().no_nft_contract().build().unwrap();
+    let res = mock.query_config();
     assert_eq!(res.account_nft, None);
 }
 
 #[test]
 fn test_allowed_vaults_set_on_instantiate() {
-    let mut app = mock_app();
-    let code_id = app.store_code(mock_contract());
-    let owner = Addr::unchecked("owner");
-
     let allowed_vaults = vec![
-        "vaultcontract1".to_string(),
-        "vaultcontract2".to_string(),
-        "vaultcontract3".to_string(),
+        "vault_contract_1".to_string(),
+        "vault_contract_2".to_string(),
+        "vault_contract_3".to_string(),
     ];
 
-    let msg = InstantiateMsg {
-        owner: owner.to_string(),
-        allowed_vaults: allowed_vaults.clone(),
-        allowed_coins: vec![],
-        red_bank: RedBankBase::new("red_bank_contract".to_string()),
-        oracle: OracleBase::new("oracle_contract".to_string()),
-    };
-
-    let contract_addr = app
-        .instantiate_contract(
-            code_id,
-            owner,
-            &msg,
-            &[],
-            "mock-credit-manager-contract",
-            None,
-        )
+    let mock = MockEnv::new()
+        .allowed_vaults(&allowed_vaults)
+        .build()
         .unwrap();
-
-    let vaults_res: Vec<String> = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr,
-            &QueryMsg::AllowedVaults {
-                start_after: None,
-                limit: None,
-            },
-        )
-        .unwrap();
-
-    assert_contents_equal(vaults_res, allowed_vaults);
+    let res = mock.query_allowed_vaults(None, None);
+    assert_contents_equal(res, allowed_vaults);
 }
 
 #[test]
 fn test_raises_on_invalid_vaults_addr() {
-    let mut app = mock_app();
-    let manager_code_id = app.store_code(mock_contract());
-    let owner = Addr::unchecked("owner");
+    let mock = MockEnv::new()
+        .allowed_vaults(&["%%%INVALID%%%".to_string()])
+        .build();
 
-    let msg = InstantiateMsg {
-        owner: owner.to_string(),
-        allowed_vaults: vec!["%%%INVALID%%%".to_string()],
-        allowed_coins: vec![],
-        red_bank: RedBankBase::new("red_bank_contract".to_string()),
-        oracle: OracleBase::new("oracle_contract".to_string()),
-    };
-
-    let instantiate_res =
-        app.instantiate_contract(manager_code_id, owner, &msg, &[], "mock-contract", None);
-
-    if instantiate_res.is_ok() {
+    if mock.is_ok() {
         panic!("Should have thrown an error");
     }
 }
 
 #[test]
 fn test_allowed_coins_set_on_instantiate() {
-    let mut app = mock_app();
-    let code_id = app.store_code(mock_contract());
-    let owner = Addr::unchecked("owner");
-
     let allowed_coins = vec![
-        "uosmo".to_string(),
-        "uatom".to_string(),
-        "umars".to_string(),
-        "ujake".to_string(),
+        CoinInfo {
+            denom: "uosmo".to_string(),
+            price: Decimal::from_atomics(25u128, 2).unwrap(),
+            max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
+            liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
+        },
+        CoinInfo {
+            denom: "uatom".to_string(),
+            price: Decimal::from_atomics(25u128, 2).unwrap(),
+            max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
+            liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
+        },
+        CoinInfo {
+            denom: "umars".to_string(),
+            price: Decimal::from_atomics(25u128, 2).unwrap(),
+            max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
+            liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
+        },
+        CoinInfo {
+            denom: "ujake".to_string(),
+            price: Decimal::from_atomics(25u128, 2).unwrap(),
+            max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
+            liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
+        },
     ];
-
-    let msg = InstantiateMsg {
-        owner: owner.to_string(),
-        allowed_vaults: vec![],
-        allowed_coins: allowed_coins.clone(),
-        red_bank: RedBankBase::new("red_bank_contract".to_string()),
-        oracle: OracleBase::new("oracle_contract".to_string()),
-    };
-
-    let contract_addr = app
-        .instantiate_contract(
-            code_id,
-            owner,
-            &msg,
-            &[],
-            "mock-credit-manager-contract",
-            None,
-        )
+    let mock = MockEnv::new()
+        .allowed_coins(&allowed_coins)
+        .build()
         .unwrap();
 
-    let coins_res: Vec<String> = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr,
-            &QueryMsg::AllowedCoins {
-                start_after: None,
-                limit: None,
-            },
-        )
-        .unwrap();
-
-    assert_contents_equal(coins_res, allowed_coins)
+    let res = mock.query_allowed_coins(None, None);
+    assert_contents_equal(
+        res,
+        allowed_coins
+            .iter()
+            .map(|info| info.denom.clone())
+            .collect(),
+    )
 }
 
 #[test]
 fn test_red_bank_set_on_instantiate() {
-    let mut app = mock_app();
-    let code_id = app.store_code(mock_contract());
-    let owner = Addr::unchecked("owner");
-    let red_bank_addr = "red_bank_contract".to_string();
-
-    let msg = InstantiateMsg {
-        owner: owner.to_string(),
-        allowed_vaults: vec![],
-        allowed_coins: vec![],
-        red_bank: RedBankBase::new("red_bank_contract".to_string()),
-        oracle: OracleBase::new("oracle_contract".to_string()),
-    };
-
-    let contract_addr = app
-        .instantiate_contract(code_id, owner, &msg, &[], "mock-account-nft", None)
-        .unwrap();
-
-    let res: ConfigResponse = app
-        .wrap()
-        .query_wasm_smart(contract_addr, &QueryMsg::Config {})
-        .unwrap();
-
+    let red_bank_addr = "mars_red_bank_contract_123".to_string();
+    let mock = MockEnv::new().red_bank(&red_bank_addr).build().unwrap();
+    let res = mock.query_config();
     assert_eq!(red_bank_addr, res.red_bank);
 }
 
 #[test]
 fn test_raises_on_invalid_red_bank_addr() {
-    let mut app = mock_app();
-    let manager_code_id = app.store_code(mock_contract());
-    let owner = Addr::unchecked("owner");
-
-    let msg = InstantiateMsg {
-        owner: owner.to_string(),
-        allowed_coins: vec![],
-        allowed_vaults: vec![],
-        red_bank: RedBankBase::new("%%%INVALID%%%".to_string()),
-        oracle: OracleBase::new("oracle_contract".to_string()),
-    };
-
-    let instantiate_res =
-        app.instantiate_contract(manager_code_id, owner, &msg, &[], "mock-contract", None);
-
-    if instantiate_res.is_ok() {
+    let mock = MockEnv::new().red_bank("%%%INVALID%%%").build();
+    if mock.is_ok() {
         panic!("Should have thrown an error");
     }
 }
 
 #[test]
 fn test_oracle_set_on_instantiate() {
-    let mut app = mock_app();
-    let code_id = app.store_code(mock_contract());
-    let owner = Addr::unchecked("owner");
-    let oracle_contract = "oracle_contract".to_string();
-
-    let msg = InstantiateMsg {
-        owner: owner.to_string(),
-        allowed_coins: vec![],
-        allowed_vaults: vec![],
-        red_bank: RedBankBase::new("red_bank_contract".to_string()),
-        oracle: OracleBase::new("oracle_contract".to_string()),
-    };
-
-    let contract_addr = app
-        .instantiate_contract(code_id, owner, &msg, &[], "mock-account-nft", None)
-        .unwrap();
-
-    let res: ConfigResponse = app
-        .wrap()
-        .query_wasm_smart(contract_addr, &QueryMsg::Config {})
-        .unwrap();
-
+    let oracle_contract = "oracle_contract_456".to_string();
+    let mock = MockEnv::new().oracle(&oracle_contract).build().unwrap();
+    let res = mock.query_config();
     assert_eq!(oracle_contract, res.oracle);
 }
 
 #[test]
 fn test_raises_on_invalid_oracle_addr() {
-    let mut app = mock_app();
-    let manager_code_id = app.store_code(mock_contract());
-    let owner = Addr::unchecked("owner");
-
-    let msg = InstantiateMsg {
-        owner: owner.to_string(),
-        allowed_vaults: vec![],
-        allowed_coins: vec![],
-        red_bank: RedBankBase::new("red_bank_contract".to_string()),
-        oracle: OracleBase::new("%%%INVALID%%%".to_string()),
-    };
-
-    let instantiate_res =
-        app.instantiate_contract(manager_code_id, owner, &msg, &[], "mock-contract", None);
-
-    if instantiate_res.is_ok() {
+    let mock = MockEnv::new().oracle("%%%INVALID%%%").build();
+    if mock.is_ok() {
         panic!("Should have thrown an error");
     }
 }

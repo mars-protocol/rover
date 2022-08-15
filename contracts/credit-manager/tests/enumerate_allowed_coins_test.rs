@@ -1,137 +1,29 @@
-use cosmwasm_std::Addr;
-use cw_multi_test::Executor;
-
-use rover::adapters::{OracleBase, RedBankBase};
-use rover::msg::{InstantiateMsg, QueryMsg};
-
-use crate::helpers::{mock_app, mock_contract};
+use crate::helpers::{build_mock_coin_infos, MockEnv};
 
 pub mod helpers;
 
 #[test]
 fn test_pagination_on_allowed_coins_query_works() {
-    let mut app = mock_app();
-    let code_id = app.store_code(mock_contract());
-    let owner = Addr::unchecked("owner");
-
-    let allowed_coins = vec![
-        "coin_1".to_string(),
-        "coin_2".to_string(),
-        "coin_3".to_string(),
-        "coin_4".to_string(),
-        "coin_5".to_string(),
-        "coin_6".to_string(),
-        "coin_7".to_string(),
-        "coin_8".to_string(),
-        "coin_9".to_string(),
-        "coin_10".to_string(),
-        "coin_11".to_string(),
-        "coin_12".to_string(),
-        "coin_13".to_string(),
-        "coin_14".to_string(),
-        "coin_15".to_string(),
-        "coin_16".to_string(),
-        "coin_17".to_string(),
-        "coin_18".to_string(),
-        "coin_19".to_string(),
-        "coin_20".to_string(),
-        "coin_21".to_string(),
-        "coin_22".to_string(),
-        "coin_23".to_string(),
-        "coin_24".to_string(),
-        "coin_25".to_string(),
-        "coin_26".to_string(),
-        "coin_27".to_string(),
-        "coin_28".to_string(),
-        "coin_29".to_string(),
-        "coin_30".to_string(),
-        "coin_31".to_string(),
-        "coin_32".to_string(),
-    ];
-
-    let msg = InstantiateMsg {
-        owner: owner.to_string(),
-        allowed_vaults: vec![],
-        allowed_coins: allowed_coins.clone(),
-        red_bank: RedBankBase::new("red_bank_contract".to_string()),
-        oracle: OracleBase::new("oracle_contract".to_string()),
-    };
-
-    let contract_addr = app
-        .instantiate_contract(code_id, owner, &msg, &[], "mock-contract", None)
+    let allowed_coins = build_mock_coin_infos(32);
+    let mock = MockEnv::new()
+        .allowed_coins(&build_mock_coin_infos(32))
+        .build()
         .unwrap();
 
-    let coins_res: Vec<String> = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr.clone(),
-            &QueryMsg::AllowedCoins {
-                start_after: None,
-                limit: Some(58u32),
-            },
-        )
-        .unwrap();
+    let coins_res = mock.query_allowed_coins(None, Some(58_u32));
 
     // Assert maximum is observed
     assert_eq!(coins_res.len(), 30);
 
-    let coins_res: Vec<String> = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr.clone(),
-            &QueryMsg::AllowedCoins {
-                start_after: None,
-                limit: Some(2u32),
-            },
-        )
-        .unwrap();
+    let coins_res = mock.query_allowed_coins(None, Some(2_u32));
 
     // Assert limit request is observed
     assert_eq!(coins_res.len(), 2);
 
-    let coins_res_a: Vec<String> = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr.clone(),
-            &QueryMsg::AllowedCoins {
-                start_after: None,
-                limit: None,
-            },
-        )
-        .unwrap();
-
-    let coins_res_b: Vec<String> = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr.clone(),
-            &QueryMsg::AllowedCoins {
-                start_after: Some(coins_res_a.last().unwrap().clone()),
-                limit: None,
-            },
-        )
-        .unwrap();
-
-    let coins_res_c: Vec<String> = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr.clone(),
-            &QueryMsg::AllowedCoins {
-                start_after: Some(coins_res_b.last().unwrap().clone()),
-                limit: None,
-            },
-        )
-        .unwrap();
-
-    let coins_res_d: Vec<String> = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr,
-            &QueryMsg::AllowedCoins {
-                start_after: Some(coins_res_c.last().unwrap().clone()),
-                limit: None,
-            },
-        )
-        .unwrap();
+    let coins_res_a = mock.query_allowed_coins(None, None);
+    let coins_res_b = mock.query_allowed_coins(Some(coins_res_a.last().unwrap().clone()), None);
+    let coins_res_c = mock.query_allowed_coins(Some(coins_res_b.last().unwrap().clone()), None);
+    let coins_res_d = mock.query_allowed_coins(Some(coins_res_c.last().unwrap().clone()), None);
 
     // Assert default is observed
     assert_eq!(coins_res_a.len(), 10);
@@ -149,5 +41,7 @@ fn test_pagination_on_allowed_coins_query_works() {
         .collect();
 
     assert_eq!(combined.len(), allowed_coins.len());
-    assert!(allowed_coins.iter().all(|item| combined.contains(item)));
+    assert!(allowed_coins
+        .iter()
+        .all(|item| combined.contains(&item.denom)));
 }

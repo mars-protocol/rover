@@ -1,27 +1,17 @@
 use std::ops::{Mul, Sub};
 
 use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
-use cw_multi_test::{App, Executor};
 
 use credit_manager::borrow::DEFAULT_DEBT_UNITS_PER_COIN_BORROWED;
 use rover::error::ContractError;
 use rover::msg::execute::Action::{Borrow, Deposit};
-use rover::msg::query::CoinShares;
-use rover::msg::ExecuteMsg::UpdateCreditAccount;
-use rover::msg::QueryMsg;
 
-use crate::helpers::{
-    assert_err, fund_red_bank, get_token_id, mock_app, mock_create_credit_account, query_config,
-    query_position, query_red_bank_debt, setup_credit_manager, CoinInfo,
-};
+use crate::helpers::{assert_err, AccountToFund, CoinInfo, MockEnv, DEFAULT_RED_BANK_COIN_BALANCE};
 
 pub mod helpers;
 
 #[test]
 fn test_only_token_owner_can_borrow() {
-    let mut app = mock_app();
-    let owner = Addr::unchecked("owner");
-
     let coin_info = CoinInfo {
         denom: "uosmo".to_string(),
         price: Decimal::from_atomics(25u128, 2).unwrap(),
@@ -29,19 +19,18 @@ fn test_only_token_owner_can_borrow() {
         liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
     };
 
-    let mock = setup_credit_manager(&mut app, &owner, vec![coin_info.clone()], vec![]);
-    let res = mock_create_credit_account(&mut app, &mock.credit_manager, &Addr::unchecked("user"))
+    let user = Addr::unchecked("user");
+    let mut mock = MockEnv::new()
+        .allowed_coins(&[coin_info.clone()])
+        .build()
         .unwrap();
-    let token_id = get_token_id(res);
+    let token_id = mock.create_credit_account(&user).unwrap();
 
     let another_user = Addr::unchecked("another_user");
-    let res = app.execute_contract(
-        another_user.clone(),
-        mock.credit_manager.clone(),
-        &UpdateCreditAccount {
-            token_id: token_id.clone(),
-            actions: vec![Borrow(coin_info.to_coin(Uint128::new(12312u128)))],
-        },
+    let res = mock.update_credit_account(
+        &token_id,
+        &another_user,
+        vec![Borrow(coin_info.to_coin(Uint128::new(12312u128)))],
         &[],
     );
 
@@ -56,8 +45,6 @@ fn test_only_token_owner_can_borrow() {
 
 #[test]
 fn test_can_only_borrow_what_is_whitelisted() {
-    let mut app = mock_app();
-    let owner = Addr::unchecked("owner");
     let coin_info = CoinInfo {
         denom: "uosmo".to_string(),
         price: Decimal::from_atomics(25u128, 2).unwrap(),
@@ -65,21 +52,17 @@ fn test_can_only_borrow_what_is_whitelisted() {
         liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
     };
 
-    let mock = setup_credit_manager(&mut app, &owner, vec![coin_info], vec![]);
     let user = Addr::unchecked("user");
-    let res = mock_create_credit_account(&mut app, &mock.credit_manager, &user).unwrap();
-    let token_id = get_token_id(res);
+    let mut mock = MockEnv::new().allowed_coins(&[coin_info]).build().unwrap();
+    let token_id = mock.create_credit_account(&user).unwrap();
 
-    let res = app.execute_contract(
-        user.clone(),
-        mock.credit_manager,
-        &UpdateCreditAccount {
-            token_id,
-            actions: vec![Borrow(Coin {
-                denom: "usomething".to_string(),
-                amount: Uint128::from(234u128),
-            })],
-        },
+    let res = mock.update_credit_account(
+        &token_id,
+        &user,
+        vec![Borrow(Coin {
+            denom: "usomething".to_string(),
+            amount: Uint128::from(234u128),
+        })],
         &[],
     );
 
@@ -91,7 +74,6 @@ fn test_can_only_borrow_what_is_whitelisted() {
 
 #[test]
 fn test_borrowing_zero_does_nothing() {
-    let mut app = mock_app();
     let coin_info = CoinInfo {
         denom: "uosmo".to_string(),
         price: Decimal::from_atomics(25u128, 2).unwrap(),
@@ -99,94 +81,67 @@ fn test_borrowing_zero_does_nothing() {
         liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
     };
 
-    let mock = setup_credit_manager(
-        &mut app,
-        &Addr::unchecked("owner"),
-        vec![coin_info.clone()],
-        vec![],
-    );
     let user = Addr::unchecked("user");
-    let res = mock_create_credit_account(&mut app, &mock.credit_manager, &user).unwrap();
-    let token_id = get_token_id(res);
+    let mut mock = MockEnv::new()
+        .allowed_coins(&[coin_info.clone()])
+        .build()
+        .unwrap();
+    let token_id = mock.create_credit_account(&user).unwrap();
 
-    let res = app.execute_contract(
-        user.clone(),
-        mock.credit_manager.clone(),
-        &UpdateCreditAccount {
-            token_id: token_id.clone(),
-            actions: vec![Borrow(coin_info.to_coin(Uint128::zero()))],
-        },
+    let res = mock.update_credit_account(
+        &token_id,
+        &user,
+        vec![Borrow(coin_info.to_coin(Uint128::zero()))],
         &[],
     );
 
     assert_err(res, ContractError::NoAmount);
 
-    let position = query_position(&app, &mock.credit_manager, &token_id);
+    let position = mock.query_position(&token_id);
     assert_eq!(position.coins.len(), 0);
     assert_eq!(position.debt_shares.len(), 0);
 }
 
 #[test]
 fn test_success_when_new_debt_asset() {
-    let user = Addr::unchecked("user");
     let coin_info = CoinInfo {
         denom: "uosmo".to_string(),
         price: Decimal::from_atomics(25u128, 2).unwrap(),
         max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
         liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
     };
-    let mut app = App::new(|router, _, storage| {
-        router
-            .bank
-            .init_balance(
-                storage,
-                &user,
-                vec![Coin::new(300u128, coin_info.denom.clone())],
-            )
-            .unwrap();
-    });
+    let user = Addr::unchecked("user");
+    let mut mock = MockEnv::new()
+        .allowed_coins(&[coin_info.clone()])
+        .fund_account(AccountToFund {
+            addr: user.clone(),
+            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+        })
+        .build()
+        .unwrap();
+    let token_id = mock.create_credit_account(&user).unwrap();
 
-    let mock = setup_credit_manager(
-        &mut app,
-        &Addr::unchecked("owner"),
-        vec![coin_info.clone()],
-        vec![],
-    );
-    let res = mock_create_credit_account(&mut app, &mock.credit_manager, &user).unwrap();
-    let token_id = get_token_id(res);
-
-    let config = query_config(&app, &mock.credit_manager.clone());
-
-    fund_red_bank(
-        &mut app,
-        config.red_bank.clone(),
-        vec![Coin::new(1000u128, coin_info.denom.clone())],
-    );
-
-    let position = query_position(&app, &mock.credit_manager, &token_id);
+    let position = mock.query_position(&token_id);
     assert_eq!(position.coins.len(), 0);
     assert_eq!(position.debt_shares.len(), 0);
-    app.execute_contract(
-        user,
-        mock.credit_manager.clone(),
-        &UpdateCreditAccount {
-            token_id: token_id.clone(),
-            actions: vec![
-                Deposit(Coin {
-                    denom: coin_info.denom.clone(),
-                    amount: Uint128::from(300u128),
-                }),
-                Borrow(Coin {
-                    denom: coin_info.denom.clone(),
-                    amount: Uint128::from(42u128),
-                }),
-            ],
-        },
+    mock.update_credit_account(
+        &token_id,
+        &user,
+        vec![
+            Deposit(Coin {
+                denom: coin_info.denom.clone(),
+                amount: Uint128::from(300u128),
+            }),
+            Borrow(Coin {
+                denom: coin_info.denom.clone(),
+                amount: Uint128::from(42u128),
+            }),
+        ],
         &[Coin::new(300u128, coin_info.denom.clone())],
     )
     .unwrap();
 
-    let position = query_position(&app, &mock.credit_manager, &token_id);
+    let position = mock.query_position(&token_id);
     assert_eq!(position.coins.len(), 1);
     let asset_res = position.coins.first().unwrap();
     assert_eq!(
@@ -213,28 +168,17 @@ fn test_success_when_new_debt_asset() {
         coin_info.price * Decimal::from_atomics(debt_amount, 0).unwrap()
     );
 
-    let coin = app
-        .wrap()
-        .query_balance(mock.credit_manager.clone(), coin_info.denom.clone())
-        .unwrap();
+    let coin = mock.query_balance(&mock.rover, &coin_info.denom);
     assert_eq!(coin.amount, Uint128::from(342u128));
 
-    let coin = app
-        .wrap()
-        .query_balance(config.red_bank, coin_info.denom.clone())
-        .unwrap();
+    let config = mock.query_config();
+    let coin = mock.query_balance(&Addr::unchecked(config.red_bank), &coin_info.denom);
     assert_eq!(
         coin.amount,
-        Uint128::from(1000u128).sub(Uint128::from(42u128))
+        DEFAULT_RED_BANK_COIN_BALANCE.sub(Uint128::from(42u128))
     );
 
-    let res: CoinShares = app
-        .wrap()
-        .query_wasm_smart(
-            mock.credit_manager,
-            &QueryMsg::TotalDebtShares(coin_info.denom),
-        )
-        .unwrap();
+    let res = mock.query_total_debt_shares(&coin_info.denom);
     assert_eq!(
         res.shares,
         Uint128::from(42u128).mul(DEFAULT_DEBT_UNITS_PER_COIN_BORROWED)
@@ -243,89 +187,55 @@ fn test_success_when_new_debt_asset() {
 
 #[test]
 fn test_debt_shares_with_debt_amount() {
-    let user_a = Addr::unchecked("user_a");
-    let user_b = Addr::unchecked("user_b");
     let coin_info = CoinInfo {
         denom: "uosmo".to_string(),
         price: Decimal::from_atomics(25u128, 2).unwrap(),
         max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
         liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
     };
-    let mut app = App::new(|router, _, storage| {
-        router
-            .bank
-            .init_balance(
-                storage,
-                &user_a,
-                vec![Coin::new(300u128, coin_info.denom.clone())],
-            )
-            .unwrap();
-        router
-            .bank
-            .init_balance(
-                storage,
-                &user_b,
-                vec![Coin::new(450u128, coin_info.denom.clone())],
-            )
-            .unwrap();
-    });
+    let user_a = Addr::unchecked("user_a");
+    let user_b = Addr::unchecked("user_b");
+    let mut mock = MockEnv::new()
+        .allowed_coins(&[coin_info.clone()])
+        .fund_account(AccountToFund {
+            addr: user_a.clone(),
+            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+        })
+        .fund_account(AccountToFund {
+            addr: user_b.clone(),
+            funds: vec![Coin::new(450u128, coin_info.denom.clone())],
+        })
+        .build()
+        .unwrap();
+    let token_id_a = mock.create_credit_account(&user_a).unwrap();
+    let token_id_b = mock.create_credit_account(&user_b).unwrap();
 
-    let mock = setup_credit_manager(
-        &mut app,
-        &Addr::unchecked("owner"),
-        vec![coin_info.clone()],
-        vec![],
-    );
-    let res = mock_create_credit_account(&mut app, &mock.credit_manager, &user_a).unwrap();
-    let token_id_a = get_token_id(res);
-    let res = mock_create_credit_account(&mut app, &mock.credit_manager, &user_b).unwrap();
-    let token_id_b = get_token_id(res);
-
-    let config = query_config(&app, &mock.credit_manager.clone());
-
-    fund_red_bank(
-        &mut app,
-        config.red_bank.clone(),
-        vec![Coin::new(1000u128, coin_info.denom.clone())],
-    );
-
-    app.execute_contract(
-        user_a,
-        mock.credit_manager.clone(),
-        &UpdateCreditAccount {
-            token_id: token_id_a.clone(),
-            actions: vec![
-                Deposit(coin_info.to_coin(Uint128::from(300u128))),
-                Borrow(coin_info.to_coin(Uint128::from(50u128))),
-            ],
-        },
+    mock.update_credit_account(
+        &token_id_a,
+        &user_a,
+        vec![
+            Deposit(coin_info.to_coin(Uint128::from(300u128))),
+            Borrow(coin_info.to_coin(Uint128::from(50u128))),
+        ],
         &[Coin::new(300u128, coin_info.denom.clone())],
     )
     .unwrap();
 
-    let interim_red_bank_debt = query_red_bank_debt(
-        &app,
-        &mock.credit_manager,
-        &config.red_bank,
-        &coin_info.denom,
-    );
+    let interim_red_bank_debt = mock.query_red_bank_debt(&coin_info.denom);
 
-    app.execute_contract(
-        user_b,
-        mock.credit_manager.clone(),
-        &UpdateCreditAccount {
-            token_id: token_id_b.clone(),
-            actions: vec![
-                Deposit(coin_info.to_coin(Uint128::from(450u128))),
-                Borrow(coin_info.to_coin(Uint128::from(50u128))),
-            ],
-        },
+    mock.update_credit_account(
+        &token_id_b,
+        &user_b,
+        vec![
+            Deposit(coin_info.to_coin(Uint128::from(450u128))),
+            Borrow(coin_info.to_coin(Uint128::from(50u128))),
+        ],
         &[Coin::new(450u128, coin_info.denom.clone())],
     )
     .unwrap();
 
     let token_a_shares = Uint128::from(50u128).mul(DEFAULT_DEBT_UNITS_PER_COIN_BORROWED);
-    let position = query_position(&app, &mock.credit_manager, &token_id_a);
+    let position = mock.query_position(&token_id_a);
     let debt_position_a = position.debt_shares.first().unwrap();
     assert_eq!(debt_position_a.shares, token_a_shares.clone());
     assert_eq!(debt_position_a.denom, coin_info.denom);
@@ -333,29 +243,19 @@ fn test_debt_shares_with_debt_amount() {
     let token_b_shares = Uint128::from(50u128)
         .mul(DEFAULT_DEBT_UNITS_PER_COIN_BORROWED)
         .multiply_ratio(Uint128::from(50u128), interim_red_bank_debt.amount);
-    let position = query_position(&app, &mock.credit_manager, &token_id_b);
+    let position = mock.query_position(&token_id_b);
     let debt_position_b = position.debt_shares.first().unwrap();
     assert_eq!(debt_position_b.shares, token_b_shares.clone());
     assert_eq!(debt_position_b.denom, coin_info.denom);
 
-    let total: CoinShares = app
-        .wrap()
-        .query_wasm_smart(
-            mock.credit_manager.clone(),
-            &QueryMsg::TotalDebtShares(coin_info.denom.clone()),
-        )
-        .unwrap();
+    let total = mock.query_total_debt_shares(&coin_info.denom);
+
     assert_eq!(
         total.shares,
         debt_position_a.shares + debt_position_b.shares
     );
 
-    let red_bank_debt = query_red_bank_debt(
-        &app,
-        &mock.credit_manager,
-        &config.red_bank,
-        &coin_info.denom,
-    );
+    let red_bank_debt = mock.query_red_bank_debt(&coin_info.denom);
 
     let a_amount_owed = red_bank_debt
         .amount

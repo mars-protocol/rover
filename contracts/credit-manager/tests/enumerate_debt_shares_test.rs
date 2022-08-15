@@ -1,15 +1,10 @@
 use cosmwasm_std::{Addr, Coin, Uint128};
-use cw_multi_test::{App, Executor};
 
 use credit_manager::borrow::DEFAULT_DEBT_UNITS_PER_COIN_BORROWED;
 use rover::msg::execute::Action;
 use rover::msg::query::SharesResponseItem;
-use rover::msg::{ExecuteMsg, QueryMsg};
 
-use crate::helpers::{
-    build_mock_coin_infos, fund_red_bank, get_token_id, mock_create_credit_account, query_config,
-    setup_credit_manager, CoinCreator,
-};
+use crate::helpers::{build_mock_coin_infos, AccountToFund, MockEnv};
 
 pub mod helpers;
 
@@ -60,186 +55,109 @@ fn test_pagination_on_all_debt_shares_query_works() {
         Coin::new(10u128, "coin_32"),
     ];
 
-    let mut app = App::new(|router, _, storage| {
-        router
-            .bank
-            .init_balance(storage, &user_a, user_a_coins.clone())
-            .unwrap();
-        router
-            .bank
-            .init_balance(storage, &user_b, user_b_coins.clone())
-            .unwrap();
-        router
-            .bank
-            .init_balance(storage, &user_c, user_c_coins.clone())
-            .unwrap();
-    });
+    let mut mock = MockEnv::new()
+        .fund_account(AccountToFund {
+            addr: user_a.clone(),
+            funds: user_a_coins.clone(),
+        })
+        .fund_account(AccountToFund {
+            addr: user_b.clone(),
+            funds: user_b_coins.clone(),
+        })
+        .fund_account(AccountToFund {
+            addr: user_c.clone(),
+            funds: user_c_coins.clone(),
+        })
+        .allowed_coins(&build_mock_coin_infos(32))
+        .build()
+        .unwrap();
 
-    let mock_coin_infos = build_mock_coin_infos(32);
-
-    let mock = setup_credit_manager(
-        &mut app,
-        &Addr::unchecked("owner"),
-        mock_coin_infos.clone(),
-        vec![],
-    );
-
-    let config = query_config(&app, &mock.credit_manager.clone());
-
-    fund_red_bank(&mut app, config.red_bank, mock_coin_infos.to_coins(1000));
-
-    let res = mock_create_credit_account(&mut app, &mock.credit_manager, &user_a).unwrap();
-    let token_id_a = get_token_id(res);
-    app.execute_contract(
-        user_a.clone(),
-        mock.credit_manager.clone(),
-        &ExecuteMsg::UpdateCreditAccount {
-            token_id: token_id_a.clone(),
-            actions: user_a_coins
-                .iter()
-                .flat_map(|coin| {
-                    vec![
-                        Action::Deposit(coin.clone()),
-                        Action::Borrow(Coin {
-                            denom: coin.denom.clone(),
-                            amount: Uint128::from(1u128),
-                        }),
-                    ]
-                })
-                .collect::<Vec<Action>>(),
-        },
+    let token_id_a = mock.create_credit_account(&user_a).unwrap();
+    mock.update_credit_account(
+        &token_id_a,
+        &user_a,
+        user_a_coins
+            .iter()
+            .flat_map(|coin| {
+                vec![
+                    Action::Deposit(coin.clone()),
+                    Action::Borrow(Coin {
+                        denom: coin.denom.clone(),
+                        amount: Uint128::from(1u128),
+                    }),
+                ]
+            })
+            .collect::<Vec<Action>>(),
         &user_a_coins,
     )
     .unwrap();
 
-    let res = mock_create_credit_account(&mut app, &mock.credit_manager, &user_b).unwrap();
-    let token_id_b = get_token_id(res);
-    app.execute_contract(
-        user_b.clone(),
-        mock.credit_manager.clone(),
-        &ExecuteMsg::UpdateCreditAccount {
-            token_id: token_id_b.clone(),
-            actions: user_b_coins
-                .iter()
-                .flat_map(|coin| {
-                    vec![
-                        Action::Deposit(coin.clone()),
-                        Action::Borrow(Coin {
-                            denom: coin.denom.clone(),
-                            amount: Uint128::from(1u128),
-                        }),
-                    ]
-                })
-                .collect::<Vec<Action>>(),
-        },
+    let token_id_b = mock.create_credit_account(&user_b).unwrap();
+    mock.update_credit_account(
+        &token_id_b,
+        &user_b,
+        user_b_coins
+            .iter()
+            .flat_map(|coin| {
+                vec![
+                    Action::Deposit(coin.clone()),
+                    Action::Borrow(Coin {
+                        denom: coin.denom.clone(),
+                        amount: Uint128::from(1u128),
+                    }),
+                ]
+            })
+            .collect::<Vec<Action>>(),
         &user_b_coins,
     )
     .unwrap();
 
-    let res = mock_create_credit_account(&mut app, &mock.credit_manager, &user_c).unwrap();
-    let token_id_c = get_token_id(res);
-    app.execute_contract(
-        user_c.clone(),
-        mock.credit_manager.clone(),
-        &ExecuteMsg::UpdateCreditAccount {
-            token_id: token_id_c.clone(),
-            actions: user_c_coins
-                .iter()
-                .flat_map(|coin| {
-                    vec![
-                        Action::Deposit(coin.clone()),
-                        Action::Borrow(Coin {
-                            denom: coin.denom.clone(),
-                            amount: Uint128::from(1u128),
-                        }),
-                    ]
-                })
-                .collect::<Vec<Action>>(),
-        },
+    let token_id_c = mock.create_credit_account(&user_c).unwrap();
+    mock.update_credit_account(
+        &token_id_c,
+        &user_c,
+        user_c_coins
+            .iter()
+            .flat_map(|coin| {
+                vec![
+                    Action::Deposit(coin.clone()),
+                    Action::Borrow(Coin {
+                        denom: coin.denom.clone(),
+                        amount: Uint128::from(1u128),
+                    }),
+                ]
+            })
+            .collect::<Vec<Action>>(),
         &user_c_coins,
     )
     .unwrap();
 
-    let all_debt_shares_res: Vec<SharesResponseItem> = app
-        .wrap()
-        .query_wasm_smart(
-            mock.credit_manager.clone(),
-            &QueryMsg::AllDebtShares {
-                start_after: None,
-                limit: Some(58u32),
-            },
-        )
-        .unwrap();
+    let all_debt_shares_res = mock.query_all_debt_shares(None, Some(58_u32));
 
     // Assert maximum is observed
     assert_eq!(all_debt_shares_res.len(), 30);
 
-    let all_debt_shares_res: Vec<SharesResponseItem> = app
-        .wrap()
-        .query_wasm_smart(
-            mock.credit_manager.clone(),
-            &QueryMsg::AllDebtShares {
-                start_after: None,
-                limit: Some(2u32),
-            },
-        )
-        .unwrap();
+    let all_debt_shares_res = mock.query_all_debt_shares(None, Some(2_u32));
 
     // Assert limit request is observed
     assert_eq!(all_debt_shares_res.len(), 2);
 
-    let all_debt_shares_res_a: Vec<SharesResponseItem> = app
-        .wrap()
-        .query_wasm_smart(
-            mock.credit_manager.clone(),
-            &QueryMsg::AllDebtShares {
-                start_after: None,
-                limit: None,
-            },
-        )
-        .unwrap();
+    let all_debt_shares_res_a = mock.query_all_debt_shares(None, None);
 
     let SharesResponseItem {
         token_id, denom, ..
     } = all_debt_shares_res_a.last().unwrap().clone();
-    let all_debt_shares_res_b: Vec<SharesResponseItem> = app
-        .wrap()
-        .query_wasm_smart(
-            mock.credit_manager.clone(),
-            &QueryMsg::AllDebtShares {
-                start_after: Some((token_id, denom)),
-                limit: None,
-            },
-        )
-        .unwrap();
+    let all_debt_shares_res_b = mock.query_all_debt_shares(Some((token_id, denom)), None);
 
     let SharesResponseItem {
         token_id, denom, ..
     } = all_debt_shares_res_b.last().unwrap().clone();
-    let all_debt_shares_res_c: Vec<SharesResponseItem> = app
-        .wrap()
-        .query_wasm_smart(
-            mock.credit_manager.clone(),
-            &QueryMsg::AllDebtShares {
-                start_after: Some((token_id, denom)),
-                limit: None,
-            },
-        )
-        .unwrap();
+    let all_debt_shares_res_c = mock.query_all_debt_shares(Some((token_id, denom)), None);
 
     let SharesResponseItem {
         token_id, denom, ..
     } = all_debt_shares_res_c.last().unwrap().clone();
-    let all_debt_shares_res_d: Vec<SharesResponseItem> = app
-        .wrap()
-        .query_wasm_smart(
-            mock.credit_manager.clone(),
-            &QueryMsg::AllDebtShares {
-                start_after: Some((token_id, denom)),
-                limit: None,
-            },
-        )
-        .unwrap();
+    let all_debt_shares_res_d = mock.query_all_debt_shares(Some((token_id, denom)), None);
 
     // Assert default is observed
     assert_eq!(all_debt_shares_res_a.len(), 10);

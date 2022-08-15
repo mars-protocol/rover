@@ -1,19 +1,9 @@
-use cosmwasm_std::Addr;
-use cw_multi_test::Executor;
-
-use rover::adapters::{OracleBase, RedBankBase};
-use rover::msg::{InstantiateMsg, QueryMsg};
-
-use crate::helpers::{mock_app, mock_contract};
+use crate::helpers::MockEnv;
 
 pub mod helpers;
 
 #[test]
 fn test_pagination_on_allowed_vaults_query_works() {
-    let mut app = mock_app();
-    let code_id = app.store_code(mock_contract());
-    let owner = Addr::unchecked("owner");
-
     let allowed_vaults = vec![
         "addr1".to_string(),
         "addr2".to_string(),
@@ -49,89 +39,25 @@ fn test_pagination_on_allowed_vaults_query_works() {
         "addr32".to_string(),
     ];
 
-    let msg = InstantiateMsg {
-        owner: owner.to_string(),
-        allowed_vaults: allowed_vaults.clone(),
-        allowed_coins: vec![],
-        red_bank: RedBankBase::new("red_bank_contract".to_string()),
-        oracle: OracleBase::new("oracle_contract".to_string()),
-    };
-
-    let contract_addr = app
-        .instantiate_contract(code_id, owner, &msg, &[], "mock-contract", None)
+    let mock = MockEnv::new()
+        .allowed_vaults(&allowed_vaults)
+        .build()
         .unwrap();
 
-    let vaults_res: Vec<String> = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr.clone(),
-            &QueryMsg::AllowedVaults {
-                start_after: None,
-                limit: Some(58u32),
-            },
-        )
-        .unwrap();
+    let vaults_res = mock.query_allowed_vaults(None, Some(58_u32));
 
     // Assert maximum is observed
     assert_eq!(vaults_res.len(), 30);
 
-    let vaults_res: Vec<String> = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr.clone(),
-            &QueryMsg::AllowedVaults {
-                start_after: None,
-                limit: Some(2u32),
-            },
-        )
-        .unwrap();
+    let vaults_res = mock.query_allowed_vaults(None, Some(2_u32));
 
     // Assert limit request is observed
     assert_eq!(vaults_res.len(), 2);
 
-    let vaults_res_a: Vec<String> = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr.clone(),
-            &QueryMsg::AllowedVaults {
-                start_after: None,
-                limit: None,
-            },
-        )
-        .unwrap();
-
-    let vaults_res_b: Vec<String> = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr.clone(),
-            &QueryMsg::AllowedVaults {
-                start_after: Some(vaults_res_a.last().unwrap().clone()),
-                limit: None,
-            },
-        )
-        .unwrap();
-
-    let vaults_res_c: Vec<String> = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr.clone(),
-            &QueryMsg::AllowedVaults {
-                start_after: Some(vaults_res_b.last().unwrap().clone()),
-                limit: None,
-            },
-        )
-        .unwrap();
-
-    let vaults_res_d: Vec<String> = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr,
-            &QueryMsg::AllowedVaults {
-                start_after: Some(vaults_res_c.last().unwrap().clone()),
-                limit: None,
-            },
-        )
-        .unwrap();
+    let vaults_res_a = mock.query_allowed_vaults(None, None);
+    let vaults_res_b = mock.query_allowed_vaults(Some(vaults_res_a.last().unwrap().clone()), None);
+    let vaults_res_c = mock.query_allowed_vaults(Some(vaults_res_b.last().unwrap().clone()), None);
+    let vaults_res_d = mock.query_allowed_vaults(Some(vaults_res_c.last().unwrap().clone()), None);
 
     // Assert default is observed
     assert_eq!(vaults_res_a.len(), 10);
