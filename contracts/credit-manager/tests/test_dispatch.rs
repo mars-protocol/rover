@@ -1,7 +1,9 @@
-use cosmwasm_std::Addr;
+use cosmwasm_std::{Addr, Coin, Uint128};
 
 use helpers::assert_err;
+use rover::error::ContractError;
 use rover::error::ContractError::NotTokenOwner;
+use rover::msg::execute::CallbackMsg;
 
 use crate::helpers::MockEnv;
 
@@ -39,4 +41,22 @@ fn test_nothing_happens_if_no_actions_are_passed() {
 
     let res = mock.query_position(&token_id);
     assert_eq!(res.coins.len(), 0);
+}
+
+#[test]
+fn test_only_rover_can_execute_callbacks() {
+    let mut mock = MockEnv::new().build().unwrap();
+    let external_user = Addr::unchecked("external_user");
+
+    let res = mock.execute_callback(
+        &external_user,
+        CallbackMsg::Borrow {
+            token_id: "1234".to_string(),
+            coin: Coin {
+                denom: "uatom".to_string(),
+                amount: Uint128::new(1000u128),
+            },
+        },
+    );
+    assert_err(res, ContractError::ExternalInvocation);
 }

@@ -16,7 +16,7 @@ use mock_red_bank::msg::{
 
 use rover::adapters::{OracleBase, RedBankBase};
 use rover::health::Health;
-use rover::msg::execute::Action;
+use rover::msg::execute::{Action, CallbackMsg};
 use rover::msg::instantiate::ConfigUpdates;
 use rover::msg::query::{
     CoinBalanceResponseItem, CoinShares, ConfigResponse, PositionResponse, SharesResponseItem,
@@ -109,9 +109,9 @@ impl MockEnv {
         Ok(nft_contract)
     }
 
-    pub fn create_credit_account(&mut self, user: &Addr) -> AnyResult<String> {
+    pub fn create_credit_account(&mut self, sender: &Addr) -> AnyResult<String> {
         let res = self.app.execute_contract(
-            user.clone(),
+            sender.clone(),
             self.rover.clone(),
             &ExecuteMsg::CreateCreditAccount {},
             &[],
@@ -142,6 +142,15 @@ impl MockEnv {
                 &[],
             )
             .unwrap();
+    }
+
+    pub fn execute_callback(&mut self, sender: &Addr, msg: CallbackMsg) -> AnyResult<AppResponse> {
+        self.app.execute_contract(
+            sender.clone(),
+            self.rover.clone(),
+            &ExecuteMsg::Callback(msg),
+            &[],
+        )
     }
 
     //--------------------------------------------------------------------------------------------------
@@ -343,16 +352,18 @@ impl MockEnvBuilder {
         let code_id = self.app.store_code(mock_rover_contract());
         let oracle = self.get_oracle().into();
         let red_bank = self.get_red_bank().into();
+        let allowed_coins = self
+            .get_allowed_coins()
+            .iter()
+            .map(|info| info.denom.clone())
+            .collect();
+
         self.app.instantiate_contract(
             code_id,
             self.get_owner(),
             &InstantiateMsg {
                 owner: self.get_owner().to_string(),
-                allowed_coins: self
-                    .get_allowed_coins()
-                    .iter()
-                    .map(|info| info.denom.clone())
-                    .collect(),
+                allowed_coins,
                 allowed_vaults: self.get_allowed_vaults(),
                 red_bank,
                 oracle,
