@@ -3,8 +3,7 @@ use cosmwasm_std::{Coin, Response, Storage, Uint128};
 use rover::coins::Coins;
 use rover::error::{ContractError, ContractResult};
 
-use crate::state::COIN_BALANCES;
-use crate::utils::assert_coin_is_whitelisted;
+use crate::utils::{assert_coin_is_whitelisted, increment_coin_balance};
 
 pub fn deposit(
     storage: &mut dyn Storage,
@@ -23,8 +22,7 @@ pub fn deposit(
 
     received_coins.deduct(coin)?;
 
-    // increase the token's asset amount
-    increment_position(storage, nft_token_id, coin)?;
+    increment_coin_balance(storage, nft_token_id, coin)?;
 
     Ok(response
         .add_attribute("action", "rover/credit_manager/callback/deposit")
@@ -44,23 +42,5 @@ fn assert_sent_fund(expected: &Coin, received_coins: &Coins) -> ContractResult<(
         });
     }
 
-    Ok(())
-}
-
-fn increment_position(
-    storage: &mut dyn Storage,
-    token_id: &str,
-    coin: &Coin,
-) -> ContractResult<()> {
-    COIN_BALANCES.update(
-        storage,
-        (token_id, &coin.denom),
-        |value_opt| -> ContractResult<_> {
-            value_opt
-                .unwrap_or_else(Uint128::zero)
-                .checked_add(coin.amount)
-                .map_err(ContractError::Overflow)
-        },
-    )?;
     Ok(())
 }

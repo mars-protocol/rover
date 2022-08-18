@@ -61,7 +61,7 @@ fn test_can_only_borrow_what_is_whitelisted() {
         &user,
         vec![Borrow(Coin {
             denom: "usomething".to_string(),
-            amount: Uint128::from(234u128),
+            amount: Uint128::new(234),
         })],
         &[],
     );
@@ -129,8 +129,8 @@ fn test_cannot_borrow_above_max_ltv() {
         &token_id,
         &user,
         vec![
-            Deposit(coin_info.to_coin(Uint128::from(300u128))),
-            Borrow(coin_info.to_coin(Uint128::from(700u128))),
+            Deposit(coin_info.to_coin(Uint128::new(300))),
+            Borrow(coin_info.to_coin(Uint128::new(700))),
         ],
         &[Coin::new(300u128, coin_info.denom)],
     );
@@ -166,11 +166,11 @@ fn test_success_when_new_debt_asset() {
         vec![
             Deposit(Coin {
                 denom: coin_info.denom.clone(),
-                amount: Uint128::from(300u128),
+                amount: Uint128::new(300),
             }),
             Borrow(Coin {
                 denom: coin_info.denom.clone(),
-                amount: Uint128::from(42u128),
+                amount: Uint128::new(42),
             }),
         ],
         &[Coin::new(300u128, coin_info.denom.clone())],
@@ -182,7 +182,7 @@ fn test_success_when_new_debt_asset() {
     let asset_res = position.coins.first().unwrap();
     assert_eq!(
         asset_res.amount,
-        Uint128::from(342u128) // Deposit + Borrow
+        Uint128::new(342) // Deposit + Borrow
     );
     assert_eq!(asset_res.denom, coin_info.denom);
     assert_eq!(asset_res.price, coin_info.price);
@@ -195,29 +195,29 @@ fn test_success_when_new_debt_asset() {
     assert_eq!(position.debt_shares.len(), 1);
     assert_eq!(
         debt_shares_res.shares,
-        Uint128::from(42u128).mul(DEFAULT_DEBT_SHARES_PER_COIN_BORROWED)
+        Uint128::new(42).mul(DEFAULT_DEBT_SHARES_PER_COIN_BORROWED)
     );
     assert_eq!(debt_shares_res.denom, coin_info.denom);
-    let debt_amount = Uint128::from(42u128) + Uint128::new(1u128); // simulated yield
+    let debt_amount = Uint128::new(42u128) + Uint128::new(1); // simulated yield
     assert_eq!(
         debt_shares_res.total_value,
         coin_info.price * Decimal::from_atomics(debt_amount, 0).unwrap()
     );
 
     let coin = mock.query_balance(&mock.rover, &coin_info.denom);
-    assert_eq!(coin.amount, Uint128::from(342u128));
+    assert_eq!(coin.amount, Uint128::new(342));
 
     let config = mock.query_config();
     let coin = mock.query_balance(&Addr::unchecked(config.red_bank), &coin_info.denom);
     assert_eq!(
         coin.amount,
-        DEFAULT_RED_BANK_COIN_BALANCE.sub(Uint128::from(42u128))
+        DEFAULT_RED_BANK_COIN_BALANCE.sub(Uint128::new(42))
     );
 
     let res = mock.query_total_debt_shares(&coin_info.denom);
     assert_eq!(
         res.shares,
-        Uint128::from(42u128).mul(DEFAULT_DEBT_SHARES_PER_COIN_BORROWED)
+        Uint128::new(42).mul(DEFAULT_DEBT_SHARES_PER_COIN_BORROWED)
     );
 }
 
@@ -250,8 +250,8 @@ fn test_debt_shares_with_debt_amount() {
         &token_id_a,
         &user_a,
         vec![
-            Deposit(coin_info.to_coin(Uint128::from(300u128))),
-            Borrow(coin_info.to_coin(Uint128::from(50u128))),
+            Deposit(coin_info.to_coin(Uint128::new(300))),
+            Borrow(coin_info.to_coin(Uint128::new(50))),
         ],
         &[Coin::new(300u128, coin_info.denom.clone())],
     )
@@ -263,22 +263,22 @@ fn test_debt_shares_with_debt_amount() {
         &token_id_b,
         &user_b,
         vec![
-            Deposit(coin_info.to_coin(Uint128::from(450u128))),
-            Borrow(coin_info.to_coin(Uint128::from(50u128))),
+            Deposit(coin_info.to_coin(Uint128::new(450))),
+            Borrow(coin_info.to_coin(Uint128::new(50))),
         ],
         &[Coin::new(450u128, coin_info.denom.clone())],
     )
     .unwrap();
 
-    let token_a_shares = Uint128::from(50u128).mul(DEFAULT_DEBT_SHARES_PER_COIN_BORROWED);
+    let token_a_shares = Uint128::new(50).mul(DEFAULT_DEBT_SHARES_PER_COIN_BORROWED);
     let position = mock.query_position(&token_id_a);
     let debt_position_a = position.debt_shares.first().unwrap();
     assert_eq!(debt_position_a.shares, token_a_shares.clone());
     assert_eq!(debt_position_a.denom, coin_info.denom);
 
-    let token_b_shares = Uint128::from(50u128)
+    let token_b_shares = Uint128::new(50)
         .mul(DEFAULT_DEBT_SHARES_PER_COIN_BORROWED)
-        .multiply_ratio(Uint128::from(50u128), interim_red_bank_debt.amount);
+        .multiply_ratio(Uint128::new(50), interim_red_bank_debt.amount);
     let position = mock.query_position(&token_id_b);
     let debt_position_b = position.debt_shares.first().unwrap();
     assert_eq!(debt_position_b.shares, token_b_shares.clone());
@@ -310,7 +310,7 @@ fn test_debt_shares_with_debt_amount() {
     );
 
     // NOTE: There is an expected rounding error. This will not pass.
-    // let total_borrowed_plus_interest = Decimal::from_atomics(Uint128::from(102u128), 0).unwrap();
+    // let total_borrowed_plus_interest = Decimal::from_atomics(Uint128::new(102), 0).unwrap();
     // assert_eq!(
     //     total_borrowed_plus_interest * coin_info.price,
     //     debt_position_a.total_value + debt_position_b.total_value

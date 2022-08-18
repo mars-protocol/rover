@@ -1,9 +1,8 @@
-use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, DepsMut, Response, Uint128};
+use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, DepsMut, Response};
 
-use crate::state::COIN_BALANCES;
 use rover::error::ContractResult;
 
-use crate::utils::assert_coin_is_whitelisted;
+use crate::utils::{assert_coin_is_whitelisted, decrement_coin_balance};
 
 pub fn withdraw(
     deps: DepsMut,
@@ -17,17 +16,7 @@ pub fn withdraw(
         return Ok(Response::new());
     }
 
-    // decrement the token's asset amount
-    let path = COIN_BALANCES.key((token_id, &coin.denom));
-    let value_opt = path.may_load(deps.storage)?;
-    let new_value = value_opt
-        .unwrap_or_else(Uint128::zero)
-        .checked_sub(coin.amount)?;
-    if new_value.is_zero() {
-        path.remove(deps.storage);
-    } else {
-        path.save(deps.storage, &new_value)?;
-    }
+    decrement_coin_balance(deps.storage, token_id, &coin)?;
 
     // send coin to recipient
     let transfer_msg = CosmosMsg::Bank(BankMsg::Send {

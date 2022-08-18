@@ -84,7 +84,7 @@ fn test_deposit_but_no_funds() {
     let user = Addr::unchecked("user");
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    let deposit_amount = Uint128::from(234u128);
+    let deposit_amount = Uint128::new(234);
     let res = mock.update_credit_account(
         &token_id,
         &user,
@@ -127,15 +127,15 @@ fn test_deposit_but_not_enough_funds() {
     let res = mock.update_credit_account(
         &token_id,
         &user,
-        vec![Action::Deposit(coin_info.to_coin(Uint128::from(350u128)))],
+        vec![Action::Deposit(coin_info.to_coin(Uint128::new(350)))],
         &[Coin::new(250u128, coin_info.denom)],
     );
 
     assert_err(
         res,
         FundsMismatch {
-            expected: Uint128::from(350u128),
-            received: Uint128::from(250u128),
+            expected: Uint128::new(350),
+            received: Uint128::new(250),
         },
     );
 }
@@ -161,7 +161,7 @@ fn test_can_only_deposit_allowed_assets() {
 
     let not_allowed_coin = Coin {
         denom: "ujakecoin".to_string(),
-        amount: Uint128::from(234u128),
+        amount: Uint128::new(234),
     };
 
     let res = mock.update_credit_account(
@@ -210,7 +210,7 @@ fn test_extra_funds_received() {
     let res = mock.update_credit_account(
         &token_id,
         &user,
-        vec![Action::Deposit(uosmo_info.to_coin(Uint128::from(234u128)))],
+        vec![Action::Deposit(uosmo_info.to_coin(Uint128::new(234)))],
         &[Coin::new(234u128, uosmo_info.denom), extra_funds.clone()],
     );
 
@@ -240,7 +240,7 @@ fn test_deposit_success() {
         .unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    let deposit_amount = Uint128::from(234u128);
+    let deposit_amount = Uint128::new(234);
     mock.update_credit_account(
         &token_id,
         &user,
@@ -293,8 +293,8 @@ fn test_multiple_deposit_actions() {
         .unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    let uosmo_amount = Uint128::from(234u128);
-    let uatom_amount = Uint128::from(25u128);
+    let uosmo_amount = Uint128::new(234);
+    let uatom_amount = Uint128::new(25);
 
     mock.update_credit_account(
         &token_id,
