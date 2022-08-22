@@ -7,7 +7,9 @@ use rover::error::ContractError::{
 use rover::msg::execute::Action;
 use rover::msg::query::PositionResponse;
 
-use crate::helpers::{assert_err, AccountToFund, CoinInfo, MockEnv};
+use crate::helpers::{
+    assert_err, uatom_info, ujake_info, uosmo_info, AccountToFund, CoinInfo, MockEnv,
+};
 
 pub mod helpers;
 
@@ -39,12 +41,7 @@ fn test_only_owner_of_token_can_deposit() {
 
 #[test]
 fn test_deposit_nothing() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
 
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
@@ -70,12 +67,7 @@ fn test_deposit_nothing() {
 
 #[test]
 fn test_deposit_but_no_funds() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
 
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
@@ -106,12 +98,7 @@ fn test_deposit_but_no_funds() {
 
 #[test]
 fn test_deposit_but_not_enough_funds() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
 
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
@@ -142,12 +129,7 @@ fn test_deposit_but_not_enough_funds() {
 
 #[test]
 fn test_can_only_deposit_allowed_assets() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
@@ -159,10 +141,7 @@ fn test_can_only_deposit_allowed_assets() {
         .unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    let not_allowed_coin = Coin {
-        denom: "ujakecoin".to_string(),
-        amount: Uint128::new(234),
-    };
+    let not_allowed_coin = ujake_info().to_coin(Uint128::new(234));
 
     let res = mock.update_credit_account(
         &token_id,
@@ -179,18 +158,8 @@ fn test_can_only_deposit_allowed_assets() {
 
 #[test]
 fn test_extra_funds_received() {
-    let uosmo_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
-    let uatom_info = CoinInfo {
-        denom: "uatom".to_string(),
-        price: Decimal::from_atomics(10u128, 1).unwrap(),
-        max_ltv: Decimal::from_atomics(82u128, 2).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(9u128, 1).unwrap(),
-    };
+    let uosmo_info = uosmo_info();
+    let uatom_info = uatom_info();
 
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
@@ -222,12 +191,7 @@ fn test_extra_funds_received() {
 
 #[test]
 fn test_deposit_success() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
 
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
@@ -266,18 +230,8 @@ fn test_deposit_success() {
 
 #[test]
 fn test_multiple_deposit_actions() {
-    let uosmo_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
-    let uatom_info = CoinInfo {
-        denom: "uatom".to_string(),
-        price: Decimal::from_atomics(10u128, 1).unwrap(),
-        max_ltv: Decimal::from_atomics(82u128, 2).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(9u128, 1).unwrap(),
-    };
+    let uosmo_info = uosmo_info();
+    let uatom_info = uatom_info();
 
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()

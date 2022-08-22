@@ -8,7 +8,7 @@ use rover::error::ContractError;
 use rover::msg::execute::Action::{Borrow, Deposit};
 use rover::msg::query::DebtSharesValue;
 
-use crate::helpers::{assert_err, AccountToFund, CoinInfo, MockEnv};
+use crate::helpers::{assert_err, ujake_info, uosmo_info, AccountToFund, CoinInfo, MockEnv};
 
 pub mod helpers;
 
@@ -19,12 +19,7 @@ pub mod helpers;
 ///         above_max_ltv: false
 #[test]
 fn test_only_assets_with_no_debts() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
 
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
@@ -152,12 +147,7 @@ fn test_terra_ragnarok() {
 ///         above_max_ltv: true
 #[test]
 fn test_debts_no_assets() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::one(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
@@ -207,12 +197,7 @@ fn test_debts_no_assets() {
 ///         AboveMaxLtv error thrown
 #[test]
 fn test_cannot_borrow_more_than_healthy() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(23654u128, 4).unwrap(),
-        max_ltv: Decimal::from_atomics(5u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(55u128, 2).unwrap(),
-    };
+    let coin_info = ujake_info();
 
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()

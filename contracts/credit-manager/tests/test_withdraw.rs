@@ -1,22 +1,17 @@
 use cosmwasm_std::OverflowOperation::Sub;
-use cosmwasm_std::{Addr, Coin, Decimal, OverflowError, Uint128};
+use cosmwasm_std::{Addr, Coin, OverflowError, Uint128};
 
 use rover::error::ContractError;
 use rover::error::ContractError::{NotTokenOwner, NotWhitelisted};
 use rover::msg::execute::Action;
 
-use crate::helpers::{assert_err, AccountToFund, CoinInfo, MockEnv};
+use crate::helpers::{assert_err, uatom_info, ujake_info, uosmo_info, AccountToFund, MockEnv};
 
 pub mod helpers;
 
 #[test]
 fn test_only_owner_of_token_can_withdraw() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let owner = Addr::unchecked("owner");
     let mut mock = MockEnv::new().build().unwrap();
     let token_id = mock.create_credit_account(&owner).unwrap();
@@ -46,12 +41,7 @@ fn test_only_owner_of_token_can_withdraw() {
 
 #[test]
 fn test_withdraw_nothing() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
@@ -59,7 +49,7 @@ fn test_withdraw_nothing() {
         .unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    mock.update_credit_account(
+    let res = mock.update_credit_account(
         &token_id,
         &user,
         vec![Action::Withdraw(Coin {
@@ -67,8 +57,9 @@ fn test_withdraw_nothing() {
             amount: Uint128::new(0),
         })],
         &[],
-    )
-    .unwrap();
+    );
+
+    assert_err(res, ContractError::NoAmount);
 
     let res = mock.query_position(&token_id);
     assert_eq!(res.coins.len(), 0);
@@ -76,12 +67,7 @@ fn test_withdraw_nothing() {
 
 #[test]
 fn test_withdraw_but_no_funds() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
@@ -112,12 +98,7 @@ fn test_withdraw_but_no_funds() {
 
 #[test]
 fn test_withdraw_but_not_enough_funds() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
@@ -154,12 +135,7 @@ fn test_withdraw_but_not_enough_funds() {
 
 #[test]
 fn test_can_only_withdraw_allowed_assets() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
@@ -171,10 +147,7 @@ fn test_can_only_withdraw_allowed_assets() {
         .unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    let not_allowed_coin = Coin {
-        denom: "ujakecoin".to_string(),
-        amount: Uint128::new(234),
-    };
+    let not_allowed_coin = ujake_info().to_coin(Uint128::new(234));
     let res = mock.update_credit_account(
         &token_id,
         &user,
@@ -193,12 +166,7 @@ fn test_can_only_withdraw_allowed_assets() {
 
 #[test]
 fn test_cannot_withdraw_more_than_healthy() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
@@ -230,12 +198,7 @@ fn test_cannot_withdraw_more_than_healthy() {
 
 #[test]
 fn test_withdraw_success() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
@@ -268,18 +231,8 @@ fn test_withdraw_success() {
 
 #[test]
 fn test_multiple_withdraw_actions() {
-    let uosmo_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
-    let uatom_info = CoinInfo {
-        denom: "uatom".to_string(),
-        price: Decimal::from_atomics(10u128, 1).unwrap(),
-        max_ltv: Decimal::from_atomics(82u128, 2).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(9u128, 1).unwrap(),
-    };
+    let uosmo_info = uosmo_info();
+    let uatom_info = uatom_info();
 
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()

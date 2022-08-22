@@ -1,6 +1,6 @@
 use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, DepsMut, Response};
 
-use rover::error::ContractResult;
+use rover::error::{ContractError, ContractResult};
 
 use crate::utils::{assert_coin_is_whitelisted, decrement_coin_balance};
 
@@ -13,7 +13,7 @@ pub fn withdraw(
     assert_coin_is_whitelisted(deps.storage, &coin)?;
 
     if coin.amount.is_zero() {
-        return Ok(Response::new());
+        return Err(ContractError::NoAmount);
     }
 
     decrement_coin_balance(deps.storage, token_id, &coin)?;

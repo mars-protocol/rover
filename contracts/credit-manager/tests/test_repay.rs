@@ -6,18 +6,15 @@ use credit_manager::borrow::DEFAULT_DEBT_SHARES_PER_COIN_BORROWED;
 use rover::error::ContractError;
 use rover::msg::execute::Action::{Borrow, Deposit, Repay, Withdraw};
 
-use crate::helpers::{assert_err, AccountToFund, CoinInfo, MockEnv, DEFAULT_RED_BANK_COIN_BALANCE};
+use crate::helpers::{
+    assert_err, uosmo_info, AccountToFund, CoinInfo, MockEnv, DEFAULT_RED_BANK_COIN_BALANCE,
+};
 
 pub mod helpers;
 
 #[test]
 fn test_only_token_owner_can_repay() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let owner = Addr::unchecked("owner");
     let mut mock = MockEnv::new().build().unwrap();
     let token_id = mock.create_credit_account(&owner).unwrap();
@@ -41,12 +38,7 @@ fn test_only_token_owner_can_repay() {
 
 #[test]
 fn test_can_only_repay_what_is_whitelisted() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new().allowed_coins(&[coin_info]).build().unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
@@ -69,12 +61,7 @@ fn test_can_only_repay_what_is_whitelisted() {
 
 #[test]
 fn test_repaying_zero_raises() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
@@ -94,12 +81,7 @@ fn test_repaying_zero_raises() {
 
 #[test]
 fn test_raises_when_repaying_what_is_not_owed() {
-    let uosmo_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let uosmo_info = uosmo_info();
 
     let uatom_info = CoinInfo {
         denom: "atom".to_string(),
@@ -155,12 +137,7 @@ fn test_raises_when_repaying_what_is_not_owed() {
 
 #[test]
 fn test_raises_when_not_enough_assets_to_repay() {
-    let uosmo_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let uosmo_info = uosmo_info();
 
     let uatom_info = CoinInfo {
         denom: "atom".to_string(),
@@ -206,12 +183,7 @@ fn test_raises_when_not_enough_assets_to_repay() {
 
 #[test]
 fn test_successful_repay() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
 
     let user = Addr::unchecked("user");
 
@@ -312,12 +284,7 @@ fn test_successful_repay() {
 
 #[test]
 fn test_pays_max_debt_when_attempting_to_repay_more_than_owed() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
 
     let user = Addr::unchecked("user");
 

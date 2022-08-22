@@ -6,18 +6,15 @@ use credit_manager::borrow::DEFAULT_DEBT_SHARES_PER_COIN_BORROWED;
 use rover::error::ContractError;
 use rover::msg::execute::Action::{Borrow, Deposit};
 
-use crate::helpers::{assert_err, AccountToFund, CoinInfo, MockEnv, DEFAULT_RED_BANK_COIN_BALANCE};
+use crate::helpers::{
+    assert_err, uosmo_info, AccountToFund, MockEnv, DEFAULT_RED_BANK_COIN_BALANCE,
+};
 
 pub mod helpers;
 
 #[test]
 fn test_only_token_owner_can_borrow() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
 
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
@@ -45,12 +42,7 @@ fn test_only_token_owner_can_borrow() {
 
 #[test]
 fn test_can_only_borrow_what_is_whitelisted() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
 
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new().allowed_coins(&[coin_info]).build().unwrap();
@@ -74,12 +66,7 @@ fn test_can_only_borrow_what_is_whitelisted() {
 
 #[test]
 fn test_borrowing_zero_does_nothing() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
 
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
@@ -104,12 +91,7 @@ fn test_borrowing_zero_does_nothing() {
 
 #[test]
 fn test_cannot_borrow_above_max_ltv() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
@@ -140,12 +122,7 @@ fn test_cannot_borrow_above_max_ltv() {
 
 #[test]
 fn test_success_when_new_debt_asset() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
@@ -223,12 +200,7 @@ fn test_success_when_new_debt_asset() {
 
 #[test]
 fn test_debt_shares_with_debt_amount() {
-    let coin_info = CoinInfo {
-        denom: "uosmo".to_string(),
-        price: Decimal::from_atomics(25u128, 2).unwrap(),
-        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-        liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-    };
+    let coin_info = uosmo_info();
     let user_a = Addr::unchecked("user_a");
     let user_b = Addr::unchecked("user_b");
     let mut mock = MockEnv::new()
