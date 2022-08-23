@@ -1,17 +1,21 @@
-use cosmwasm_std::{entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response};
+use cosmwasm_std::{
+    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response,
+};
 use cw2::set_contract_version;
-
-use rover::error::ContractResult;
-use rover::msg::query::HealthResponse;
-use rover::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use rover::error::{ContractError, ContractResult};
 
 use crate::execute::{create_credit_account, dispatch_actions, execute_callback, update_config};
 use crate::health::compute_health;
 use crate::instantiate::store_config;
 use crate::query::{
-    query_all_assets, query_all_debt_shares, query_all_total_debt_shares, query_allowed_coins,
-    query_allowed_vaults, query_config, query_position_with_value, query_total_debt_shares,
+    query_all_coin_balances, query_all_debt_shares, query_all_total_debt_shares,
+    query_all_total_vault_coin_balances, query_all_vault_positions, query_allowed_coins,
+    query_allowed_vaults, query_config, query_position, query_total_debt_shares,
+    query_total_vault_coin_balance,
 };
+use crate::vault::handle_vault_deposit_reply;
+use rover::adapters::VAULT_DEPOSIT_REPLY_ID;
+use rover::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
 const CONTRACT_NAME: &str = "crates.io:rover-credit-manager";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -46,6 +50,14 @@ pub fn execute(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
+pub fn reply(deps: DepsMut, env: Env, reply: Reply) -> ContractResult<Response> {
+    match reply.id {
+        VAULT_DEPOSIT_REPLY_ID => handle_vault_deposit_reply(deps, env, reply),
+        id => Err(ContractError::ReplyIdError(id)),
+    }
+}
+
+#[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
     let res = match msg {
         QueryMsg::Config {} => to_binary(&query_config(deps)?),
@@ -62,7 +74,7 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
             to_binary::<HealthResponse>(&Into::into(compute_health(deps, &env, &token_id)?))
         }
         QueryMsg::AllCoinBalances { start_after, limit } => {
-            to_binary(&query_all_assets(deps, start_after, limit)?)
+            to_binary(&query_all_coin_balances(deps, start_after, limit)?)
         }
         QueryMsg::AllDebtShares { start_after, limit } => {
             to_binary(&query_all_debt_shares(deps, start_after, limit)?)
@@ -70,6 +82,15 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
         QueryMsg::TotalDebtShares(denom) => to_binary(&query_total_debt_shares(deps, &denom)?),
         QueryMsg::AllTotalDebtShares { start_after, limit } => {
             to_binary(&query_all_total_debt_shares(deps, start_after, limit)?)
+        }
+        QueryMsg::TotalVaultCoinBalance { vault } => {
+            to_binary(&query_total_vault_coin_balance(deps, &vault)?)
+        }
+        QueryMsg::AllTotalVaultCoinBalances { start_after, limit } => to_binary(
+            &query_all_total_vault_coin_balances(deps, start_after, limit)?,
+        ),
+        QueryMsg::AllVaultPositions { start_after, limit } => {
+            to_binary(&query_all_vault_positions(deps, start_after, limit)?)
         }
     };
     res.map_err(Into::into)

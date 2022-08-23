@@ -49,6 +49,12 @@ pub enum ContractError {
     #[error("{0}")]
     Overflow(#[from] OverflowError),
 
+    #[error("Reply id: {0} not valid")]
+    ReplyIdError(u64),
+
+    #[error("{0}")]
+    RequirementsNotMet(String),
+
     #[error("{0}")]
     Std(#[from] StdError),
 

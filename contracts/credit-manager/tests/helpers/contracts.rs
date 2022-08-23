@@ -4,12 +4,15 @@ use cw_multi_test::{App, Contract, ContractWrapper};
 use account_nft::contract::{
     execute as cw721Execute, instantiate as cw721Instantiate, query as cw721Query,
 };
-use credit_manager::contract::{execute, instantiate, query};
+use credit_manager::contract::{execute, instantiate, query, reply};
 use mock_oracle::contract::{
     execute as oracleExecute, instantiate as oracleInstantiate, query as oracleQuery,
 };
 use mock_red_bank::contract::{
     execute as redBankExecute, instantiate as redBankInstantiate, query as redBankQuery,
+};
+use mock_vault::contract::{
+    execute as vaultExecute, instantiate as vaultInstantiate, query as vaultQuery,
 };
 
 pub fn mock_app() -> App {
@@ -17,7 +20,7 @@ pub fn mock_app() -> App {
 }
 
 pub fn mock_rover_contract() -> Box<dyn Contract<Empty>> {
-    let contract = ContractWrapper::new(execute, instantiate, query);
+    let contract = ContractWrapper::new(execute, instantiate, query).with_reply(reply);
     Box::new(contract)
 }
 
@@ -33,5 +36,10 @@ pub fn mock_red_bank_contract() -> Box<dyn Contract<Empty>> {
 
 pub fn mock_oracle_contract() -> Box<dyn Contract<Empty>> {
     let contract = ContractWrapper::new(oracleExecute, oracleInstantiate, oracleQuery);
+    Box::new(contract)
+}
+
+pub fn mock_vault_contract() -> Box<dyn Contract<Empty>> {
+    let contract = ContractWrapper::new(vaultExecute, vaultInstantiate, vaultQuery);
     Box::new(contract)
 }

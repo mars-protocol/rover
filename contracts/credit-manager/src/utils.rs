@@ -13,6 +13,14 @@ pub fn assert_coin_is_whitelisted(storage: &mut dyn Storage, coin: &Coin) -> Con
     Ok(())
 }
 
+pub fn assert_vault_is_whitelisted(storage: &mut dyn Storage, vault: &Vault) -> ContractResult<()> {
+    let is_whitelisted = ALLOWED_VAULTS.has(storage, vault.address());
+    if !is_whitelisted {
+        return Err(ContractError::NotWhitelisted(vault.address().to_string()));
+    }
+    Ok(())
+}
+
 pub fn increment_coin_balance(
     storage: &mut dyn Storage,
     token_id: &str,

@@ -1,7 +1,7 @@
 use cosmwasm_std::{Addr, Empty, Uint128};
 use cw_storage_plus::{Item, Map};
 
-use rover::adapters::{Oracle, RedBank};
+use rover::adapters::{Oracle, RedBank, Vault, VaultPosition};
 use rover::{Denom, NftTokenId, Shares};
 
 // Contract config
@@ -16,3 +16,9 @@ pub const ORACLE: Item<Oracle> = Item::new("oracle");
 pub const COIN_BALANCES: Map<(NftTokenId, Denom), Uint128> = Map::new("coin_balance");
 pub const DEBT_SHARES: Map<(NftTokenId, Denom), Shares> = Map::new("debt_shares");
 pub const TOTAL_DEBT_SHARES: Map<Denom, Shares> = Map::new("total_debt_shares");
+pub const VAULT_POSITIONS: Map<(NftTokenId, Addr), VaultPosition> = Map::new("vault_positions");
+pub const TOTAL_VAULT_COIN_BALANCE: Map<Addr, Uint128> = Map::new("total_vault_coin_balance");
+
+// Temporary state to save variables to be used on reply handling
+pub const TEMP_VAULT_DEPOSIT_TOKEN_ID: Item<String> = Item::new("temp_vault_deposit_token_id");
+pub const TEMP_VAULT_DEPOSIT_VAULT: Item<Vault> = Item::new("temp_vault_deposit_vault");
