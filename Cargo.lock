@@ -143,6 +143,7 @@ dependencies = [
  "cw2 0.14.0",
  "cw721",
  "cw721-base",
+ "mars-health",
  "mock-oracle",
  "mock-red-bank",
  "rover",
@@ -280,6 +281,34 @@ dependencies = [
  "cw-storage-plus 0.14.0",
  "schemars",
  "serde",
+]
+
+[[package]]
+name = "cw20"
+version = "0.13.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4cb782b8f110819a4eb5dbbcfed25ffba49ec16bbe32b4ad8da50a5ce68fec05"
+dependencies = [
+ "cosmwasm-std",
+ "cw-utils 0.13.4",
+ "schemars",
+ "serde",
+]
+
+[[package]]
+name = "cw20-base"
+version = "0.13.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0306e606581f4fb45e82bcbb7f0333179ed53dd949c6523f01a99b4bfc1475a0"
+dependencies = [
+ "cosmwasm-std",
+ "cw-storage-plus 0.13.4",
+ "cw-utils 0.13.4",
+ "cw2 0.13.4",
+ "cw20",
+ "schemars",
+ "serde",
+ "thiserror",
 ]
 
 [[package]]
@@ -506,11 +535,50 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "505e71a4706fa491e9b1b55f51b95d4037d0821ee40131190475f692b35b009b"
 
 [[package]]
+name = "mars-health"
+version = "0.1.0"
+dependencies = [
+ "cosmwasm-std",
+ "mars-outpost",
+ "mars-testing",
+ "thiserror",
+]
+
+[[package]]
+name = "mars-outpost"
+version = "0.1.0"
+dependencies = [
+ "cosmwasm-std",
+ "cw2 0.13.4",
+ "cw20",
+ "cw20-base",
+ "schemars",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "mars-testing"
+version = "0.1.0"
+dependencies = [
+ "cosmwasm-std",
+ "cw2 0.13.4",
+ "cw20",
+ "cw20-base",
+ "mars-outpost",
+ "osmo-bindings",
+ "schemars",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "mock-oracle"
 version = "1.0.0"
 dependencies = [
  "cosmwasm-std",
  "cw-storage-plus 0.14.0",
+ "mars-outpost",
  "schemars",
  "serde",
 ]
@@ -521,6 +589,7 @@ version = "1.0.0"
 dependencies = [
  "cosmwasm-std",
  "cw-storage-plus 0.14.0",
+ "mars-outpost",
  "schemars",
  "serde",
 ]
@@ -530,6 +599,16 @@ name = "opaque-debug"
 version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "624a8340c38c1b80fd549087862da4ba43e08858af025b236e509b6649fc13d5"
+
+[[package]]
+name = "osmo-bindings"
+version = "0.6.0"
+source = "git+https://github.com/osmosis-labs/bindings#d667599c59caa0fb2e5c6fc0b2c32de365d4f109"
+dependencies = [
+ "cosmwasm-std",
+ "schemars",
+ "serde",
+]
 
 [[package]]
 name = "pkcs8"
@@ -618,6 +697,8 @@ version = "0.1.0"
 dependencies = [
  "cosmwasm-std",
  "cw-storage-plus 0.14.0",
+ "mars-health",
+ "mars-outpost",
  "mock-oracle",
  "mock-red-bank",
  "schemars",

@@ -11,7 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      # Should delete after Mars create published publicly
+      - name: Clone outposts repo
+        run: cd .. && git clone https://${{ secrets.GITHUB_TOKEN }}@github.com/mars-protocol/outposts.git
+      - name: Fix cargo.toml name bug
+        run: cd ../outposts/packages/mars-health/ && mv cargo.toml Cargo.toml
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
@@ -38,7 +44,6 @@ jobs:
         env:
           RUSTFLAGS: "-C link-arg=-s"
 
-
       - name: Run Rust-Optimizer
         uses: actions-rs/cargo@v1
         with:
@@ -50,7 +55,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      # Should delete after Mars create published publicly
+      - name: Clone outposts repo
+        run: cd .. && git clone https://${{ secrets.GITHUB_TOKEN }}@github.com/mars-protocol/outposts.git
+      - name: Fix cargo.toml name bug
+        run: cd ../outposts/packages/mars-health/ && mv cargo.toml Cargo.toml
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
@@ -75,7 +86,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout sources
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+
+      # Should delete after Mars create published publicly
+      - name: Clone outposts repo
+        run: cd .. && git clone https://${{ secrets.GITHUB_TOKEN }}@github.com/mars-protocol/outposts.git
+      - name: Fix cargo.toml name bug
+        run: cd ../outposts/packages/mars-health/ && mv cargo.toml Cargo.toml
 
       - name: Install stable toolchain
         uses: actions-rs/toolchain@v1
