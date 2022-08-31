@@ -143,9 +143,11 @@ dependencies = [
  "cw2 0.14.0",
  "cw721",
  "cw721-base",
+ "itertools",
  "mars-health",
  "mock-oracle",
  "mock-red-bank",
+ "mock-vault",
  "rover",
  "schemars",
  "serde",
@@ -576,6 +578,18 @@ dependencies = [
  "mars-outpost",
  "schemars",
  "serde",
+]
+
+[[package]]
+name = "mock-vault"
+version = "1.0.0"
+dependencies = [
+ "cosmwasm-std",
+ "cw-storage-plus 0.14.0",
+ "rover",
+ "schemars",
+ "serde",
+ "thiserror",
 ]
 
 [[package]]

@@ -1,4 +1,4 @@
-use cosmwasm_std::{to_binary, Addr, Coin, CosmosMsg, StdResult, WasmMsg};
+use cosmwasm_std::{to_binary, Addr, Coin, CosmosMsg, StdResult, Uint128, WasmMsg};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -72,6 +72,14 @@ pub enum CallbackMsg {
         token_id: String,
         vault: Vault,
         coins: Vec<Coin>,
+    },
+    /// Used to update the account balance of vault coins after a deposit
+    UpdateVaultCoinBalance {
+        vault: Vault,
+        /// Account that needs vault coin balance adjustment
+        token_id: String,
+        /// Total vault coin balance in Rover
+        previous_total_balance: Uint128,
     },
 }
 

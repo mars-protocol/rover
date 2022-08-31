@@ -1,17 +1,18 @@
-use cosmwasm_std::{Addr, Decimal, Deps, Env, Order, StdResult, Uint128};
+use cosmwasm_std::{Addr, Coin, Deps, Env, Order, StdResult, Uint128};
 use cw_storage_plus::Bound;
 
 use rover::adapters::{Vault, VaultBase, VaultPosition, VaultUnchecked};
 use rover::error::ContractResult;
 use rover::msg::query::{
     CoinBalanceResponseItem, ConfigResponse, DebtShares, DebtSharesValue, Positions,
-    PositionsWithValueResponse, SharesResponseItem,
+    PositionsWithValueResponse, SharesResponseItem, VaultPositionResponseItem,
+    VaultPositionWithAddr, VaultWithBalance,
 };
 use rover::{Denom, NftTokenId};
 
 use crate::state::{
     ACCOUNT_NFT, ALLOWED_COINS, ALLOWED_VAULTS, COIN_BALANCES, DEBT_SHARES, ORACLE, OWNER,
-    RED_BANK, TOTAL_DEBT_SHARES, TOTAL_VAULT_COIN_BALANCE, VAULT_POSITIONS,
+    RED_BANK, TOTAL_DEBT_SHARES, VAULT_POSITIONS,
 };
 use crate::utils::{coin_value, debt_shares_to_amount};
 
@@ -30,11 +31,11 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
 }
 
 pub fn query_position(deps: Deps, token_id: NftTokenId) -> ContractResult<Positions> {
-    let vault_positions = get_vault_positions(deps, token_id)?;
     Ok(Positions {
         token_id: token_id.to_string(),
         coins: query_coin_balances(deps, token_id)?,
         debt: query_debt_shares(deps, token_id)?,
+        vault_positions: get_vault_positions(deps, token_id)?,
     })
 }
 
@@ -47,6 +48,7 @@ pub fn query_position_with_value(
         token_id,
         coins,
         debt,
+        vault_positions,
     } = query_position(deps, token_id)?;
 
     let coin_balances_value = coins
@@ -74,6 +76,7 @@ pub fn query_position_with_value(
         token_id,
         coins: coin_balances_value,
         debt: debt_with_values,
+        vault_positions, // TODO: add vault values here
     })
 }
 
@@ -274,17 +277,18 @@ pub fn query_all_total_debt_shares(
         .collect())
 }
 
-pub fn query_total_vault_coin_balance(deps: Deps, unchecked: &VaultUnchecked) -> StdResult<Coin> {
+pub fn query_total_vault_coin_balance(
+    deps: Deps,
+    unchecked: &VaultUnchecked,
+    rover_addr: &Addr,
+) -> StdResult<Uint128> {
     let vault = unchecked.check(deps.api)?;
-    let shares = TOTAL_VAULT_COIN_BALANCE.may_load(deps.storage, vault.address().clone())?;
-    Ok(Coin {
-        denom: vault.address().to_string(),
-        amount: shares.unwrap_or(Uint128::zero()),
-    })
+    vault.query_balance(&deps.querier, rover_addr)
 }
 
 pub fn query_all_total_vault_coin_balances(
     deps: Deps,
+    rover_addr: &Addr,
     start_after: Option<VaultUnchecked>,
     limit: Option<u32>,
 ) -> StdResult<Vec<VaultWithBalance>> {
@@ -292,21 +296,25 @@ pub fn query_all_total_vault_coin_balances(
     let start = match &start_after {
         Some(unchecked) => {
             vault = unchecked.check(deps.api)?;
-            Some(Bound::exclusive(vault.address().clone()))
+            Some(Bound::exclusive(vault.address()))
         }
         None => None,
     };
 
     let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
 
-    Ok(TOTAL_VAULT_COIN_BALANCE
-        .range(deps.storage, start, None, Order::Ascending)
+    ALLOWED_VAULTS
+        .keys(deps.storage, start, None, Order::Ascending)
         .take(limit)
-        .collect::<StdResult<Vec<_>>>()?
-        .iter()
-        .map(|(addr, amount)| VaultWithBalance {
-            vault: VaultBase::new(addr.to_string()),
-            balance: *amount,
+        .map(|res| {
+            let addr = res?;
+            let unchecked = VaultBase::new(addr.to_string());
+            let vault = unchecked.check(deps.api)?;
+            let balance = vault.query_balance(&deps.querier, rover_addr)?;
+            Ok(VaultWithBalance {
+                vault: vault.into(),
+                balance,
+            })
         })
-        .collect())
+        .collect()
 }

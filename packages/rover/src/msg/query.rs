@@ -50,7 +50,7 @@ pub enum QueryMsg {
         start_after: Option<(String, String)>,
         limit: Option<u32>,
     },
-    /// Get total vault coin balance in Rover for vault `Coin`
+    /// Get total vault coin balance in Rover for vault `Uint128`
     TotalVaultCoinBalance { vault: VaultUnchecked },
     /// Enumerate all total vault coin balances. Response type: `Vec<VaultWithBalance>`
     /// start_after accepts vault addr
@@ -112,6 +112,7 @@ pub struct Positions {
     pub token_id: String,
     pub coins: Vec<Coin>,
     pub debt: Vec<DebtShares>,
+    pub vault_positions: Vec<VaultPositionWithAddr>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -145,6 +146,7 @@ pub struct PositionsWithValueResponse {
     pub coins: Vec<CoinValue>,
     /// All debt positions with value
     pub debt: Vec<DebtSharesValue>,
+    // TODO: After pricing method is complete, add to response
     /// All vault positions
     pub vault_positions: Vec<VaultPositionWithAddr>,
 }

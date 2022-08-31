@@ -212,7 +212,7 @@ fn test_successful_deposit_into_locked_vault() {
     let vault = mock.get_vault(&leverage_vault);
     let token_id = mock.create_credit_account(&user).unwrap();
     let balance = mock.query_total_vault_coin_balance(&vault);
-    assert_eq!(balance.amount, Uint128::zero());
+    assert_eq!(balance, Uint128::zero());
 
     mock.update_credit_account(
         &token_id,
@@ -258,7 +258,7 @@ fn test_successful_deposit_into_locked_vault() {
     assert_eq!(atom_withdraw.amount, Uint128::new(23));
 
     let balance = mock.query_total_vault_coin_balance(&vault);
-    assert_eq!(balance.amount, STARTING_VAULT_SHARES);
+    assert_eq!(balance, STARTING_VAULT_SHARES);
 
     let vault_token_balance = mock.query_balance(&mock.rover, &leverage_vault.lp_token_denom);
     assert_eq!(vault_token_balance.amount, STARTING_VAULT_SHARES)
@@ -335,7 +335,7 @@ fn test_successful_deposit_into_unlocked_vault() {
     assert_eq!(atom_withdraw.amount, Uint128::new(23));
 
     let balance = mock.query_total_vault_coin_balance(&vault);
-    assert_eq!(balance.amount, STARTING_VAULT_SHARES);
+    assert_eq!(balance, STARTING_VAULT_SHARES);
 
     let vault_token_balance = mock.query_balance(&mock.rover, &leverage_vault.lp_token_denom);
     assert_eq!(vault_token_balance.amount, STARTING_VAULT_SHARES)

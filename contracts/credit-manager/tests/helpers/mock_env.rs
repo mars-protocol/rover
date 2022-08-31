@@ -14,12 +14,14 @@ use mock_red_bank::msg::QueryMsg::UserAssetDebt;
 use mock_red_bank::msg::{
     CoinMarketInfo, InstantiateMsg as RedBankInstantiateMsg, UserAssetDebtResponse,
 };
-use rover::adapters::{OracleBase, RedBankBase};
+use mock_vault::contract::DEFAULT_VAULT_TOKEN_PREFUND;
+use mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
+use rover::adapters::{OracleBase, RedBankBase, Vault, VaultBase, VaultUnchecked};
 use rover::msg::execute::{Action, CallbackMsg};
 use rover::msg::instantiate::ConfigUpdates;
 use rover::msg::query::{
     CoinBalanceResponseItem, ConfigResponse, DebtShares, HealthResponse,
-    PositionsWithValueResponse, SharesResponseItem,
+    PositionsWithValueResponse, SharesResponseItem, VaultPositionResponseItem, VaultWithBalance,
 };
 use rover::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
@@ -311,7 +313,7 @@ impl MockEnv {
             .unwrap()
     }
 
-    pub fn query_total_vault_coin_balance(&self, vault: &VaultUnchecked) -> Coin {
+    pub fn query_total_vault_coin_balance(&self, vault: &VaultUnchecked) -> Uint128 {
         self.app
             .wrap()
             .query_wasm_smart(

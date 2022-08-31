@@ -9,7 +9,7 @@ use crate::deposit::deposit;
 use crate::health::assert_below_max_ltv;
 use crate::repay::repay;
 use crate::state::{ACCOUNT_NFT, ALLOWED_COINS, ALLOWED_VAULTS, ORACLE, OWNER, RED_BANK};
-use crate::vault::deposit_into_vault;
+use crate::vault::{deposit_into_vault, update_vault_coin_balance};
 use crate::withdraw::withdraw;
 use account_nft::msg::ExecuteMsg as NftExecuteMsg;
 use rover::coins::Coins;
@@ -199,7 +199,18 @@ pub fn execute_callback(
             token_id,
             vault,
             coins,
-        } => deposit_into_vault(deps, &token_id, vault, &coins),
+        } => deposit_into_vault(deps, &env.contract.address, &token_id, vault, &coins),
+        CallbackMsg::UpdateVaultCoinBalance {
+            vault,
+            token_id,
+            previous_total_balance,
+        } => update_vault_coin_balance(
+            deps,
+            vault,
+            &token_id,
+            previous_total_balance,
+            &env.contract.address,
+        ),
     }
 }
 

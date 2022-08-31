@@ -1,17 +1,15 @@
-use crate::adapters::Oracle;
-use crate::error::ContractResult;
-use crate::msg::vault::{ExecuteMsg, QueryMsg, VaultInfo};
 use cosmwasm_std::{
     to_binary, Addr, Api, BalanceResponse, BankQuery, Coin, CosmosMsg, Decimal, QuerierWrapper,
-    QueryRequest, StdResult, SubMsg, Uint128, WasmMsg, WasmQuery,
+    QueryRequest, StdResult, Uint128, WasmMsg, WasmQuery,
 };
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
+use crate::adapters::Oracle;
+use crate::error::ContractResult;
 use crate::extensions::Stringify;
+use crate::msg::vault::{ExecuteMsg, QueryMsg, VaultInfo};
 use crate::Shares;
-
-pub const VAULT_DEPOSIT_REPLY_ID: u64 = 1;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
 #[serde(rename_all = "snake_case")]
@@ -64,15 +62,12 @@ impl Stringify for Vec<VaultUnchecked> {
 }
 
 impl Vault {
-    pub fn deposit_msg(&self, funds: &[Coin]) -> StdResult<SubMsg> {
-        let deposit_msg = SubMsg::reply_on_success(
-            CosmosMsg::Wasm(WasmMsg::Execute {
-                contract_addr: self.address().to_string(),
-                funds: funds.to_vec(),
-                msg: to_binary(&ExecuteMsg::Deposit {})?,
-            }),
-            VAULT_DEPOSIT_REPLY_ID,
-        );
+    pub fn deposit_msg(&self, funds: &[Coin]) -> StdResult<CosmosMsg> {
+        let deposit_msg = CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: self.address().to_string(),
+            funds: funds.to_vec(),
+            msg: to_binary(&ExecuteMsg::Deposit {})?,
+        });
         Ok(deposit_msg)
     }
 
@@ -83,19 +78,23 @@ impl Vault {
         }))
     }
 
+    pub fn query_balance(&self, querier: &QuerierWrapper, addr: &Addr) -> StdResult<Uint128> {
+        let vault_info = self.query_vault_info(querier)?;
+        let res: BalanceResponse = querier.query(&QueryRequest::Bank(BankQuery::Balance {
+            address: addr.to_string(),
+            denom: vault_info.token_denom,
+        }))?;
+        Ok(res.amount.amount)
+    }
+
     pub fn query_total_value(
         &self,
         querier: &QuerierWrapper,
         oracle: &Oracle,
         addr: &Addr,
     ) -> ContractResult<Decimal> {
-        let vault_info = self.query_vault_info(querier)?;
-        let response: BalanceResponse = querier.query(&QueryRequest::Bank(BankQuery::Balance {
-            address: addr.to_string(),
-            denom: vault_info.token_denom,
-        }))?;
-
-        let assets = self.query_redeem_preview(querier, response.amount.amount)?;
+        let balance = self.query_balance(querier, addr)?;
+        let assets = self.query_redeem_preview(querier, balance)?;
         oracle.query_total_value(querier, &assets)
     }
 

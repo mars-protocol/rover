@@ -46,11 +46,11 @@ pub enum ContractError {
     #[error("{0} is not whitelisted")]
     NotWhitelisted(String),
 
+    #[error("Expected vault coins in exchange for deposit, but none were sent")]
+    NoVaultCoinsReceived,
+
     #[error("{0}")]
     Overflow(#[from] OverflowError),
-
-    #[error("Reply id: {0} not valid")]
-    ReplyIdError(u64),
 
     #[error("{0}")]
     RequirementsNotMet(String),

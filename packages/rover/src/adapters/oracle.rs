@@ -1,5 +1,4 @@
 use cosmwasm_std::{Addr, Api, Coin, Decimal, QuerierWrapper, StdResult};
-use cosmwasm_std::{Addr, Api, QuerierWrapper, StdResult};
 use mars_outpost::oracle::PriceResponse;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -54,9 +53,9 @@ impl Oracle {
         Ok(coins
             .iter()
             .map(|coin| {
-                let token_price = self.query_price(querier, &coin.denom)?;
+                let res = self.query_price(querier, &coin.denom)?;
                 let asset_amount_dec = Decimal::from_atomics(coin.amount, 0)?;
-                Ok(token_price.checked_mul(asset_amount_dec)?)
+                Ok(res.price.checked_mul(asset_amount_dec)?)
             })
             .collect::<ContractResult<Vec<_>>>()?
             .iter()
