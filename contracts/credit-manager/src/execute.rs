@@ -7,7 +7,7 @@ use cw721_base::QueryMsg;
 use crate::borrow::borrow;
 use crate::deposit::deposit;
 use crate::health::assert_below_max_ltv;
-use crate::liquidate::liquidate_coin;
+use crate::liquidate::{assert_health_factor_improved, liquidate_coin};
 use crate::repay::repay;
 use crate::state::{
     ACCOUNT_NFT, ALLOWED_COINS, ALLOWED_VAULTS, MAX_CLOSE_FACTOR, MAX_LIQUIDATION_BONUS, ORACLE,
@@ -172,13 +172,13 @@ pub fn dispatch_actions(
             }),
             Action::LiquidateCoin {
                 liquidatee_token_id,
-                debt,
-                request_coin,
+                debt_coin,
+                request_coin_denom,
             } => callbacks.push(CallbackMsg::LiquidateCoin {
                 liquidator_token_id: token_id.to_string(),
                 liquidatee_token_id: liquidatee_token_id.to_string(),
-                debt: debt.clone(),
-                request_coin: request_coin.clone(),
+                debt_coin: debt_coin.clone(),
+                request_coin_denom: request_coin_denom.clone(),
             }),
         }
     }
@@ -243,16 +243,20 @@ pub fn execute_callback(
         CallbackMsg::LiquidateCoin {
             liquidator_token_id,
             liquidatee_token_id,
-            debt,
-            request_coin,
+            debt_coin,
+            request_coin_denom,
         } => liquidate_coin(
             deps,
             env,
             &liquidator_token_id,
             &liquidatee_token_id,
-            debt,
-            request_coin,
+            debt_coin,
+            &request_coin_denom,
         ),
+        CallbackMsg::AssertHealthFactorImproved {
+            token_id,
+            previous_health_factor,
+        } => assert_health_factor_improved(deps.as_ref(), env, &token_id, previous_health_factor),
     }
 }
 

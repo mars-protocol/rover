@@ -79,21 +79,4 @@ pub enum ContractError {
 
     #[error("{user:?} is not authorized to {action:?}")]
     Unauthorized { user: String, action: String },
-
-    #[error(
-        "The variance between what was requested and what needed adjusting was too great:
-            denom: {denom:?}
-            sent: {sent:?}
-            adjusted: {adjusted:?}
-            diff: {diff:?}
-            max_diff_allowed: {max_diff_allowed:?}
-    "
-    )]
-    VarianceTooHigh {
-        denom: String,
-        sent: Uint128,
-        adjusted: Uint128,
-        diff: String,
-        max_diff_allowed: String,
-    },
 }

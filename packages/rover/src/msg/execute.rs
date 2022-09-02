@@ -1,4 +1,4 @@
-use cosmwasm_std::{to_binary, Addr, Coin, CosmosMsg, StdResult, Uint128, WasmMsg};
+use cosmwasm_std::{to_binary, Addr, Coin, CosmosMsg, Decimal, StdResult, Uint128, WasmMsg};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -45,18 +45,22 @@ pub enum Action {
         vault: VaultUnchecked,
         coins: Vec<Coin>,
     },
-    /// Pay back debts of a liquidatable rover account for a bonus
-    /// NOTE: Though liquidatee may have many debts, you must liquidate them in separate actions.
-    /// The value of request coin / value of debt is expected to be within range of liquidation bonus
-    /// and close factors set in config. If not, there will be an attempt to adjust it, but not more
-    /// than the variance % of the liquidation bonus.
+    /// Pay back debt of a liquidatable rover account for a bonus. Requires specifying 1) the debt
+    /// denom/amount of what the liquidator wants to payoff and 2) the request coin denom which the
+    /// liquidatee should have a balance of. The amount returned to liquidator will be the request coin
+    /// of the amount that precisely matches the value of the debt + a liquidation bonus.
+    /// The debt amount will be adjusted down if:
+    /// - Exceeds liquidatee's total debt for denom
+    /// - Not enough liquidatee request coin balance to match
+    /// - The value of the debt repaid exceeds the maximum close factor %
     LiquidateCoin {
-        /// The rover account of the one with a liquidation threshold health factor 1 or below
+        /// The credit account id of the one with a liquidation threshold health factor 1 or below
         liquidatee_token_id: String,
         /// The coin debt that the liquidator wishes to pay back on behalf of the liquidatee.
         /// The liquidator must already have these assets in their credit account.
-        debt: Coin,
-        request_coin: Coin,
+        debt_coin: Coin,
+        /// The coin they wish to acquire from the liquidatee (amount returned will include the bonus)
+        request_coin_denom: String,
     },
 }
 
@@ -98,8 +102,13 @@ pub enum CallbackMsg {
     LiquidateCoin {
         liquidator_token_id: String,
         liquidatee_token_id: String,
-        debt: Coin,
-        request_coin: Coin,
+        debt_coin: Coin,
+        request_coin_denom: String,
+    },
+    /// Determine health factor improved as a consequence of liquidation event
+    AssertHealthFactorImproved {
+        token_id: String,
+        previous_health_factor: Decimal,
     },
 }
 

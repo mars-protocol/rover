@@ -5,7 +5,6 @@ pub mod coins;
 pub mod error;
 pub mod extensions;
 pub mod msg;
-pub mod repay;
 
 pub type Denom<'a> = &'a str;
 pub type NftTokenId<'a> = &'a str;
