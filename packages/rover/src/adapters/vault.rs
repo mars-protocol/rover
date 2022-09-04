@@ -11,7 +11,7 @@ use crate::extensions::Stringify;
 use crate::msg::vault::{ExecuteMsg, QueryMsg, VaultInfo};
 use crate::Shares;
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
 #[serde(rename_all = "snake_case")]
 pub struct VaultPosition {
     pub unlocked: Uint128,

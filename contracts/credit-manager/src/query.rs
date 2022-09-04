@@ -201,10 +201,9 @@ pub fn query_all_vault_positions(
     start_after: Option<(String, String)>,
     limit: Option<u32>,
 ) -> StdResult<Vec<VaultPositionResponseItem>> {
-    let addr: Addr;
     let start = match &start_after {
         Some((token_id, unchecked)) => {
-            addr = deps.api.addr_validate(unchecked)?;
+            let addr = deps.api.addr_validate(unchecked)?;
             Some(Bound::exclusive((token_id.as_str(), addr)))
         }
         None => None,

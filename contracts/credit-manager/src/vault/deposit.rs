@@ -57,34 +57,31 @@ pub fn update_vault_coin_balance(
 ) -> ContractResult<Response> {
     let current_balance = vault.query_balance(&deps.querier, rover_addr)?;
 
-    if previous_total_balance < current_balance {
-        let diff = current_balance.checked_sub(previous_total_balance)?;
-        let vault_info = vault.query_vault_info(&deps.querier)?;
-
-        // Increment token's vault position
-        VAULT_POSITIONS.update(
-            deps.storage,
-            (token_id, vault.address().clone()),
-            |position_opt| -> ContractResult<_> {
-                let p = position_opt.unwrap_or(VaultPosition {
-                    unlocked: Uint128::zero(),
-                    locked: Uint128::zero(),
-                });
-                match vault_info.lockup {
-                    None => Ok(VaultPosition {
-                        unlocked: p.unlocked.checked_add(diff)?,
-                        locked: p.locked,
-                    }),
-                    Some(_) => Ok(VaultPosition {
-                        unlocked: p.unlocked,
-                        locked: p.locked.checked_add(diff)?,
-                    }),
-                }
-            },
-        )?;
-    } else {
+    if previous_total_balance >= current_balance {
         return Err(ContractError::NoVaultCoinsReceived);
     }
+
+    let diff = current_balance.checked_sub(previous_total_balance)?;
+    let vault_info = vault.query_vault_info(&deps.querier)?;
+
+    // Increment token's vault position
+    VAULT_POSITIONS.update(
+        deps.storage,
+        (token_id, vault.address().clone()),
+        |position_opt| -> ContractResult<_> {
+            let p = position_opt.unwrap_or_default();
+            match vault_info.lockup {
+                None => Ok(VaultPosition {
+                    unlocked: p.unlocked.checked_add(diff)?,
+                    locked: p.locked,
+                }),
+                Some(_) => Ok(VaultPosition {
+                    unlocked: p.unlocked,
+                    locked: p.locked.checked_add(diff)?,
+                }),
+            }
+        },
+    )?;
 
     Ok(Response::new()
         .add_attribute("action", "rover/credit_manager/vault/update_balance")
