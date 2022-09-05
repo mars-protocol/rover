@@ -199,6 +199,18 @@ pub fn dispatch_actions(
                 denom_out: denom_out.to_string(),
                 slippage: *slippage,
             }),
+            Action::VaultWithdraw { vault, amount } => callbacks.push(CallbackMsg::VaultWithdraw {
+                token_id: token_id.to_string(),
+                vault: vault.check(deps.api)?,
+                amount: *amount,
+            }),
+            Action::VaultForceWithdraw { vault, amount } => {
+                callbacks.push(CallbackMsg::VaultForceWithdraw {
+                    token_id: token_id.to_string(),
+                    vault: vault.check(deps.api)?,
+                    amount: *amount,
+                })
+            }
         }
     }
 
@@ -286,6 +298,16 @@ pub fn execute_callback(
             token_id,
             previous_balances,
         } => update_coin_balances(deps, env, &token_id, &previous_balances),
+        CallbackMsg::VaultWithdraw {
+            token_id,
+            vault,
+            amount,
+        } => withdraw_from_vault(deps, env, &token_id, vault, amount, false),
+        CallbackMsg::VaultForceWithdraw {
+            token_id,
+            vault,
+            amount,
+        } => withdraw_from_vault(deps, env, &token_id, vault, amount, true),
     }
 }
 
