@@ -13,7 +13,7 @@ use crate::state::{
     ACCOUNT_NFT, ALLOWED_COINS, ALLOWED_VAULTS, MAX_CLOSE_FACTOR, MAX_LIQUIDATION_BONUS, ORACLE,
     OWNER, RED_BANK, SWAPPER,
 };
-use crate::vault::{deposit_into_vault, update_vault_coin_balance};
+use crate::vault::{deposit_into_vault, update_vault_coin_balance, withdraw_from_vault};
 
 use crate::swap::swap_exact_in;
 use crate::update_coin_balances::update_coin_balances;
@@ -204,13 +204,6 @@ pub fn dispatch_actions(
                 vault: vault.check(deps.api)?,
                 amount: *amount,
             }),
-            Action::VaultForceWithdraw { vault, amount } => {
-                callbacks.push(CallbackMsg::VaultForceWithdraw {
-                    token_id: token_id.to_string(),
-                    vault: vault.check(deps.api)?,
-                    amount: *amount,
-                })
-            }
         }
     }
 

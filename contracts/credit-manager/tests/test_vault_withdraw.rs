@@ -5,7 +5,8 @@ use mock_vault::contract::STARTING_VAULT_SHARES;
 use rover::adapters::VaultBase;
 use rover::error::ContractError;
 use rover::error::ContractError::{NotTokenOwner, NotWhitelisted};
-use rover::msg::execute::Action::{Deposit, VaultDeposit, VaultForceWithdraw, VaultWithdraw};
+use rover::msg::execute::Action::{Deposit, VaultDeposit, VaultWithdraw};
+use rover::msg::execute::CallbackMsg;
 use rover::msg::query::CoinValue;
 
 use crate::helpers::{assert_err, uatom_info, uosmo_info, AccountToFund, MockEnv, VaultTestInfo};
@@ -119,6 +120,34 @@ fn test_no_unlocked_vault_coins_to_withdraw() {
 }
 
 #[test]
+fn test_force_withdraw_can_only_be_called_by_rover() {
+    let leverage_vault = VaultTestInfo {
+        lp_token_denom: "uleverage".to_string(),
+        lockup: Some(213231),
+        asset_denoms: vec!["uatom".to_string(), "uosmo".to_string()],
+    };
+
+    let user = Addr::unchecked("user");
+    let mut mock = MockEnv::new()
+        .allowed_vaults(&[leverage_vault.clone()])
+        .build()
+        .unwrap();
+
+    let vault = mock.get_vault(&leverage_vault);
+    let token_id = mock.create_credit_account(&user).unwrap();
+
+    let res = mock.invoke_callback(
+        &user.clone(),
+        CallbackMsg::VaultForceWithdraw {
+            token_id,
+            vault: VaultBase::new(Addr::unchecked(vault.address().clone())),
+            amount: STARTING_VAULT_SHARES,
+        },
+    );
+    assert_err(res, ContractError::ExternalInvocation)
+}
+
+#[test]
 fn test_force_withdraw_breaks_lock() {
     let uatom = uatom_info();
     let uosmo = uosmo_info();
@@ -170,14 +199,13 @@ fn test_force_withdraw_breaks_lock() {
     let v = res.vault_positions.first().unwrap();
     assert_eq!(v.position.locked, STARTING_VAULT_SHARES);
 
-    mock.update_credit_account(
-        &token_id,
-        &user,
-        vec![VaultForceWithdraw {
-            vault,
+    mock.invoke_callback(
+        &mock.rover.clone(),
+        CallbackMsg::VaultForceWithdraw {
+            token_id: token_id.clone(),
+            vault: VaultBase::new(Addr::unchecked(vault.address().clone())),
             amount: STARTING_VAULT_SHARES,
-        }],
-        &[],
+        },
     )
     .unwrap();
 
