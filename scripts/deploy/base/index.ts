@@ -36,11 +36,12 @@ export const taskRunner = async ({ config, swapperContractName }: TaskRunnerProp
     await rover.deposit()
     await rover.borrow()
     await rover.repay()
-    // await rover.swap() Osmosis-bindings need updating
+    // TODO: Osmosis-bindings need updating
+    // await rover.swap()
     await rover.withdraw()
 
-    // Use after token factory is launched and integrated into mock_vault
-    // or Apollo vaults are on testnet
+    // TODO: Use after token factory is launched and integrated into mock_vault
+    //       or Apollo vaults are on testnet
     // await rover.vaultDeposit()
 
     printYellow('COMPLETE')
