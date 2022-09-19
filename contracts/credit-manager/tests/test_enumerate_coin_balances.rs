@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Coin, Uint128};
+use cosmwasm_std::{coin, Addr, Uint128};
 
 use rover::msg::execute::Action;
 use rover::msg::query::CoinBalanceResponseItem;
@@ -14,44 +14,44 @@ fn test_pagination_on_all_coin_balances_query_works() {
     let user_c = Addr::unchecked("user_c");
 
     let user_a_coins = vec![
-        Coin::new(1u128, "coin_1"),
-        Coin::new(1u128, "coin_2"),
-        Coin::new(1u128, "coin_3"),
-        Coin::new(1u128, "coin_4"),
-        Coin::new(1u128, "coin_5"),
-        Coin::new(1u128, "coin_6"),
-        Coin::new(1u128, "coin_7"),
-        Coin::new(1u128, "coin_8"),
-        Coin::new(1u128, "coin_9"),
-        Coin::new(1u128, "coin_10"),
-        Coin::new(1u128, "coin_11"),
-        Coin::new(1u128, "coin_12"),
-        Coin::new(1u128, "coin_13"),
-        Coin::new(1u128, "coin_14"),
+        coin(1, "coin_1"),
+        coin(1, "coin_2"),
+        coin(1, "coin_3"),
+        coin(1, "coin_4"),
+        coin(1, "coin_5"),
+        coin(1, "coin_6"),
+        coin(1, "coin_7"),
+        coin(1, "coin_8"),
+        coin(1, "coin_9"),
+        coin(1, "coin_10"),
+        coin(1, "coin_11"),
+        coin(1, "coin_12"),
+        coin(1, "coin_13"),
+        coin(1, "coin_14"),
     ];
 
     let user_b_coins = vec![
-        Coin::new(1u128, "coin_1"),
-        Coin::new(1u128, "coin_2"),
-        Coin::new(1u128, "coin_3"),
-        Coin::new(1u128, "coin_4"),
-        Coin::new(1u128, "coin_5"),
-        Coin::new(1u128, "coin_6"),
-        Coin::new(1u128, "coin_7"),
-        Coin::new(1u128, "coin_8"),
-        Coin::new(1u128, "coin_9"),
-        Coin::new(1u128, "coin_10"),
+        coin(1, "coin_1"),
+        coin(1, "coin_2"),
+        coin(1, "coin_3"),
+        coin(1, "coin_4"),
+        coin(1, "coin_5"),
+        coin(1, "coin_6"),
+        coin(1, "coin_7"),
+        coin(1, "coin_8"),
+        coin(1, "coin_9"),
+        coin(1, "coin_10"),
     ];
 
     let user_c_coins = vec![
-        Coin::new(1u128, "coin_1"),
-        Coin::new(1u128, "coin_2"),
-        Coin::new(1u128, "coin_3"),
-        Coin::new(1u128, "coin_4"),
-        Coin::new(1u128, "coin_5"),
-        Coin::new(1u128, "coin_6"),
-        Coin::new(1u128, "coin_7"),
-        Coin::new(1u128, "coin_8"),
+        coin(1, "coin_1"),
+        coin(1, "coin_2"),
+        coin(1, "coin_3"),
+        coin(1, "coin_4"),
+        coin(1, "coin_5"),
+        coin(1, "coin_6"),
+        coin(1, "coin_7"),
+        coin(1, "coin_8"),
     ];
 
     let mut mock = MockEnv::new()

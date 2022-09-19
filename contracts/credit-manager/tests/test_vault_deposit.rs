@@ -1,5 +1,5 @@
 use cosmwasm_std::OverflowOperation::Sub;
-use cosmwasm_std::{Addr, Coin, OverflowError, Uint128};
+use cosmwasm_std::{coin, coins, Addr, OverflowError, Uint128};
 
 use mock_vault::contract::STARTING_VAULT_SHARES;
 use rover::adapters::VaultBase;
@@ -61,7 +61,7 @@ fn test_all_deposit_coins_are_whitelisted() {
         &user,
         vec![VaultDeposit {
             vault,
-            coins: vec![Coin::new(200u128, "uatom"), Coin::new(400u128, "uosmo")],
+            coins: vec![coin(200, "uatom"), coin(400, "uosmo")],
         }],
         &[],
     );
@@ -94,7 +94,7 @@ fn test_vault_is_whitelisted() {
         &user,
         vec![VaultDeposit {
             vault: VaultBase::new("unknown_vault".to_string()),
-            coins: vec![Coin::new(200u128, "uatom")],
+            coins: coins(200, "uatom"),
         }],
         &[],
     );
@@ -130,7 +130,7 @@ fn test_deposited_coins_match_vault_requirements() {
         &user,
         vec![VaultDeposit {
             vault: mock.get_vault(&leverage_vault),
-            coins: vec![Coin::new(200u128, "uatom"), Coin::new(200u128, "uosmo")],
+            coins: vec![coin(200, "uatom"), coin(200, "uosmo")],
         }],
         &[],
     );
@@ -160,7 +160,7 @@ fn test_fails_if_not_enough_funds_for_deposit() {
         .allowed_vaults(&[leverage_vault.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, "uatom"), Coin::new(500u128, "uosmo")],
+            funds: vec![coin(300, "uatom"), coin(500, "uosmo")],
         })
         .build()
         .unwrap();
@@ -172,7 +172,7 @@ fn test_fails_if_not_enough_funds_for_deposit() {
         &user,
         vec![VaultDeposit {
             vault: mock.get_vault(&leverage_vault),
-            coins: vec![Coin::new(200u128, "uatom"), Coin::new(200u128, "uosmo")],
+            coins: vec![coin(200, "uatom"), coin(200, "uosmo")],
         }],
         &[],
     );
@@ -204,7 +204,7 @@ fn test_successful_deposit_into_locked_vault() {
         .allowed_vaults(&[leverage_vault.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, "uatom"), Coin::new(500u128, "uosmo")],
+            funds: vec![coin(300, "uatom"), coin(500, "uosmo")],
         })
         .build()
         .unwrap();
@@ -218,20 +218,14 @@ fn test_successful_deposit_into_locked_vault() {
         &token_id,
         &user,
         vec![
-            Deposit(Coin {
-                denom: uatom.denom,
-                amount: Uint128::new(200),
-            }),
-            Deposit(Coin {
-                denom: uosmo.denom,
-                amount: Uint128::new(400),
-            }),
+            Deposit(coin(200, uatom.denom)),
+            Deposit(coin(400, uosmo.denom)),
             VaultDeposit {
                 vault: vault.clone(),
-                coins: vec![Coin::new(23u128, "uatom"), Coin::new(120u128, "uosmo")],
+                coins: vec![coin(23, "uatom"), coin(120, "uosmo")],
             },
         ],
-        &[Coin::new(200u128, "uatom"), Coin::new(400u128, "uosmo")],
+        &[coin(200, "uatom"), coin(400, "uosmo")],
     )
     .unwrap();
 
@@ -281,7 +275,7 @@ fn test_successful_deposit_into_unlocked_vault() {
         .allowed_vaults(&[leverage_vault.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, "uatom"), Coin::new(500u128, "uosmo")],
+            funds: vec![coin(300, "uatom"), coin(500, "uosmo")],
         })
         .build()
         .unwrap();
@@ -293,20 +287,14 @@ fn test_successful_deposit_into_unlocked_vault() {
         &token_id,
         &user,
         vec![
-            Deposit(Coin {
-                denom: uatom.denom,
-                amount: Uint128::new(200),
-            }),
-            Deposit(Coin {
-                denom: uosmo.denom,
-                amount: Uint128::new(400),
-            }),
+            Deposit(coin(200, uatom.denom)),
+            Deposit(coin(400, uosmo.denom)),
             VaultDeposit {
                 vault: vault.clone(),
-                coins: vec![Coin::new(23u128, "uatom"), Coin::new(120u128, "uosmo")],
+                coins: vec![coin(23, "uatom"), coin(120, "uosmo")],
             },
         ],
-        &[Coin::new(200u128, "uatom"), Coin::new(400u128, "uosmo")],
+        &[coin(200, "uatom"), coin(400, "uosmo")],
     )
     .unwrap();
 

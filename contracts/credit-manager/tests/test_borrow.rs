@@ -1,6 +1,6 @@
 use std::ops::{Mul, Sub};
 
-use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
+use cosmwasm_std::{coin, coins, Addr, Decimal, Uint128};
 
 use credit_manager::borrow::DEFAULT_DEBT_SHARES_PER_COIN_BORROWED;
 use rover::error::ContractError;
@@ -27,7 +27,7 @@ fn test_only_token_owner_can_borrow() {
     let res = mock.update_credit_account(
         &token_id,
         &another_user,
-        vec![Borrow(coin_info.to_coin(Uint128::new(12312u128)))],
+        vec![Borrow(coin_info.to_coin(12312))],
         &[],
     );
 
@@ -48,15 +48,8 @@ fn test_can_only_borrow_what_is_whitelisted() {
     let mut mock = MockEnv::new().allowed_coins(&[coin_info]).build().unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    let res = mock.update_credit_account(
-        &token_id,
-        &user,
-        vec![Borrow(Coin {
-            denom: "usomething".to_string(),
-            amount: Uint128::new(234),
-        })],
-        &[],
-    );
+    let res =
+        mock.update_credit_account(&token_id, &user, vec![Borrow(coin(234, "usomething"))], &[]);
 
     assert_err(
         res,
@@ -75,12 +68,7 @@ fn test_borrowing_zero_does_nothing() {
         .unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    let res = mock.update_credit_account(
-        &token_id,
-        &user,
-        vec![Borrow(coin_info.to_coin(Uint128::zero()))],
-        &[],
-    );
+    let res = mock.update_credit_account(&token_id, &user, vec![Borrow(coin_info.to_coin(0))], &[]);
 
     assert_err(res, ContractError::NoAmount);
 
@@ -97,7 +85,7 @@ fn test_cannot_borrow_above_max_ltv() {
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+            funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -111,10 +99,10 @@ fn test_cannot_borrow_above_max_ltv() {
         &token_id,
         &user,
         vec![
-            Deposit(coin_info.to_coin(Uint128::new(300))),
-            Borrow(coin_info.to_coin(Uint128::new(700))),
+            Deposit(coin_info.to_coin(300)),
+            Borrow(coin_info.to_coin(700)),
         ],
-        &[Coin::new(300u128, coin_info.denom)],
+        &[coin(300, coin_info.denom)],
     );
 
     assert_err(
@@ -134,7 +122,7 @@ fn test_success_when_new_debt_asset() {
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+            funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -147,16 +135,10 @@ fn test_success_when_new_debt_asset() {
         &token_id,
         &user,
         vec![
-            Deposit(Coin {
-                denom: coin_info.denom.clone(),
-                amount: Uint128::new(300),
-            }),
-            Borrow(Coin {
-                denom: coin_info.denom.clone(),
-                amount: Uint128::new(42),
-            }),
+            Deposit(coin(300, coin_info.denom.clone())),
+            Borrow(coin(42, coin_info.denom.clone())),
         ],
-        &[Coin::new(300u128, coin_info.denom.clone())],
+        &[coin(300, coin_info.denom.clone())],
     )
     .unwrap();
 
@@ -214,11 +196,11 @@ fn test_debt_shares_with_debt_amount() {
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
             addr: user_a.clone(),
-            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+            funds: coins(300, coin_info.denom.clone()),
         })
         .fund_account(AccountToFund {
             addr: user_b.clone(),
-            funds: vec![Coin::new(450u128, coin_info.denom.clone())],
+            funds: coins(450, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -229,10 +211,10 @@ fn test_debt_shares_with_debt_amount() {
         &token_id_a,
         &user_a,
         vec![
-            Deposit(coin_info.to_coin(Uint128::new(300))),
-            Borrow(coin_info.to_coin(Uint128::new(50))),
+            Deposit(coin_info.to_coin(300)),
+            Borrow(coin_info.to_coin(50)),
         ],
-        &[Coin::new(300u128, coin_info.denom.clone())],
+        &[coin(300, coin_info.denom.clone())],
     )
     .unwrap();
 
@@ -242,10 +224,10 @@ fn test_debt_shares_with_debt_amount() {
         &token_id_b,
         &user_b,
         vec![
-            Deposit(coin_info.to_coin(Uint128::new(450))),
-            Borrow(coin_info.to_coin(Uint128::new(50))),
+            Deposit(coin_info.to_coin(450)),
+            Borrow(coin_info.to_coin(50)),
         ],
-        &[Coin::new(450u128, coin_info.denom.clone())],
+        &[coin(450, coin_info.denom.clone())],
     )
     .unwrap();
 

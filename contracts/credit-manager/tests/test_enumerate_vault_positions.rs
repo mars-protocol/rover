@@ -1,5 +1,5 @@
 use cosmwasm_std::testing::MockApi;
-use cosmwasm_std::{Addr, Api, Coin, Uint128};
+use cosmwasm_std::{coin, Addr, Api};
 use itertools::Itertools;
 
 use rover::adapters::VaultBase;
@@ -25,22 +25,22 @@ fn test_pagination_on_all_vault_positions_query_works() {
         .fund_account(AccountToFund {
             addr: user_a.clone(),
             funds: vec![
-                Coin::new(1000u128, uosmo.denom.clone()),
-                Coin::new(1000u128, uatom.denom.clone()),
+                coin(1000, uosmo.denom.clone()),
+                coin(1000, uatom.denom.clone()),
             ],
         })
         .fund_account(AccountToFund {
             addr: user_b.clone(),
             funds: vec![
-                Coin::new(1000u128, uosmo.denom.clone()),
-                Coin::new(1000u128, uatom.denom.clone()),
+                coin(1000, uosmo.denom.clone()),
+                coin(1000, uatom.denom.clone()),
             ],
         })
         .fund_account(AccountToFund {
             addr: user_c.clone(),
             funds: vec![
-                Coin::new(1000u128, uosmo.denom.clone()),
-                Coin::new(1000u128, uatom.denom.clone()),
+                coin(1000, uosmo.denom.clone()),
+                coin(1000, uatom.denom.clone()),
             ],
         })
         .allowed_coins(&[uosmo.clone(), uatom.clone()])
@@ -49,17 +49,14 @@ fn test_pagination_on_all_vault_positions_query_works() {
         .unwrap();
 
     let mut actions = vec![
-        Action::Deposit(uatom.to_coin(Uint128::new(220))),
-        Action::Deposit(uosmo.to_coin(Uint128::new(220))),
+        Action::Deposit(uatom.to_coin(220)),
+        Action::Deposit(uosmo.to_coin(220)),
     ];
 
     all_vaults.iter().for_each(|v| {
         actions.extend([Action::VaultDeposit {
             vault: mock.get_vault(v),
-            coins: vec![
-                uatom.to_coin(Uint128::new(10)),
-                uosmo.to_coin(Uint128::new(10)),
-            ],
+            coins: vec![uatom.to_coin(10), uosmo.to_coin(10)],
         }]);
     });
 
@@ -68,10 +65,7 @@ fn test_pagination_on_all_vault_positions_query_works() {
         &token_id_a,
         &user_a,
         actions.clone(),
-        &[
-            uatom.to_coin(Uint128::new(220)),
-            uosmo.to_coin(Uint128::new(220)),
-        ],
+        &[uatom.to_coin(220), uosmo.to_coin(220)],
     )
     .unwrap();
 
@@ -80,10 +74,7 @@ fn test_pagination_on_all_vault_positions_query_works() {
         &token_id_b,
         &user_b,
         actions.clone(),
-        &[
-            uatom.to_coin(Uint128::new(220)),
-            uosmo.to_coin(Uint128::new(220)),
-        ],
+        &[uatom.to_coin(220), uosmo.to_coin(220)],
     )
     .unwrap();
 
@@ -92,10 +83,7 @@ fn test_pagination_on_all_vault_positions_query_works() {
         &token_id_c,
         &user_c,
         actions,
-        &[
-            uatom.to_coin(Uint128::new(220)),
-            uosmo.to_coin(Uint128::new(220)),
-        ],
+        &[uatom.to_coin(220), uosmo.to_coin(220)],
     )
     .unwrap();
 

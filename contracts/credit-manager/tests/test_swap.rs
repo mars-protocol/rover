@@ -1,5 +1,5 @@
 use cosmwasm_std::OverflowOperation::Sub;
-use cosmwasm_std::{coin, Addr, Coin, Decimal, OverflowError, Uint128};
+use cosmwasm_std::{coin, coins, Addr, Coin, Decimal, OverflowError, Uint128};
 
 use rover::error::ContractError;
 use rover::msg::execute::Action::{Deposit, SwapExactIn};
@@ -71,7 +71,7 @@ fn test_denom_out_must_be_whitelisted() {
         &token_id,
         &user,
         vec![SwapExactIn {
-            coin_in: osmo_info.to_coin(Uint128::new(10_000)),
+            coin_in: osmo_info.to_coin(10_000),
             denom_out: "ujake".to_string(),
             slippage: Decimal::from_atomics(6u128, 1).unwrap(),
         }],
@@ -97,7 +97,7 @@ fn test_no_amount_sent() {
         &token_id,
         &user,
         vec![SwapExactIn {
-            coin_in: osmo_info.to_coin(Uint128::zero()),
+            coin_in: osmo_info.to_coin(0),
             denom_out: atom_info.denom,
             slippage: Decimal::from_atomics(6u128, 1).unwrap(),
         }],
@@ -123,7 +123,7 @@ fn test_user_has_zero_balance_for_swap_req() {
         &token_id,
         &user,
         vec![SwapExactIn {
-            coin_in: osmo_info.to_coin(Uint128::new(10_000)),
+            coin_in: osmo_info.to_coin(10_000),
             denom_out: atom_info.denom,
             slippage: Decimal::from_atomics(6u128, 1).unwrap(),
         }],
@@ -150,7 +150,7 @@ fn test_user_does_not_have_enough_balance_for_swap_req() {
         .allowed_coins(&[osmo_info.clone(), atom_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, osmo_info.denom.clone())],
+            funds: coins(300, osmo_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -160,14 +160,14 @@ fn test_user_does_not_have_enough_balance_for_swap_req() {
         &token_id,
         &user,
         vec![
-            Deposit(osmo_info.to_coin(Uint128::new(100))),
+            Deposit(osmo_info.to_coin(100)),
             SwapExactIn {
-                coin_in: osmo_info.to_coin(Uint128::new(10_000)),
+                coin_in: osmo_info.to_coin(10_000),
                 denom_out: atom_info.denom,
                 slippage: Decimal::from_atomics(6u128, 1).unwrap(),
             },
         ],
-        &[osmo_info.to_coin(Uint128::new(100))],
+        &[osmo_info.to_coin(100)],
     );
 
     assert_err(
@@ -195,7 +195,7 @@ fn test_swap_successful() {
         .build()
         .unwrap();
 
-    let res = mock.query_swap_estimate(&atom_info.to_coin(Uint128::new(10_000)), &osmo_info.denom);
+    let res = mock.query_swap_estimate(&atom_info.to_coin(10_000), &osmo_info.denom);
     assert_eq!(res.amount, MOCK_SWAP_RESULT);
 
     let token_id = mock.create_credit_account(&user).unwrap();
@@ -203,14 +203,14 @@ fn test_swap_successful() {
         &token_id,
         &user,
         vec![
-            Deposit(atom_info.to_coin(Uint128::new(10_000))),
+            Deposit(atom_info.to_coin(10_000)),
             SwapExactIn {
-                coin_in: atom_info.to_coin(Uint128::new(10_000)),
+                coin_in: atom_info.to_coin(10_000),
                 denom_out: osmo_info.denom.clone(),
                 slippage: Decimal::from_atomics(6u128, 1).unwrap(),
             },
         ],
-        &[atom_info.to_coin(Uint128::new(10_000))],
+        &[atom_info.to_coin(10_000)],
     )
     .unwrap();
 

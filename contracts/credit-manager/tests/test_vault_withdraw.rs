@@ -1,5 +1,5 @@
 use cosmwasm_std::OverflowOperation::Sub;
-use cosmwasm_std::{Addr, Coin, OverflowError, Uint128};
+use cosmwasm_std::{coin, Addr, OverflowError, Uint128};
 
 use mock_vault::contract::STARTING_VAULT_SHARES;
 use rover::adapters::VaultBase;
@@ -77,7 +77,7 @@ fn test_no_unlocked_vault_coins_to_withdraw() {
         .allowed_vaults(&[leverage_vault.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, "uatom"), Coin::new(500u128, "uosmo")],
+            funds: vec![coin(300, "uatom"), coin(500, "uosmo")],
         })
         .build()
         .unwrap();
@@ -89,24 +89,18 @@ fn test_no_unlocked_vault_coins_to_withdraw() {
         &token_id,
         &user,
         vec![
-            Deposit(Coin {
-                denom: uatom.denom,
-                amount: Uint128::from(200u128),
-            }),
-            Deposit(Coin {
-                denom: uosmo.denom,
-                amount: Uint128::from(200u128),
-            }),
+            Deposit(coin(200, uatom.denom)),
+            Deposit(coin(200, uosmo.denom)),
             VaultDeposit {
                 vault: vault.clone(),
-                coins: vec![Coin::new(100u128, "uatom"), Coin::new(100u128, "uosmo")],
+                coins: vec![coin(100, "uatom"), coin(100, "uosmo")],
             },
             VaultWithdraw {
                 vault,
                 amount: STARTING_VAULT_SHARES,
             },
         ],
-        &[Coin::new(200u128, "uatom"), Coin::new(200u128, "uosmo")],
+        &[coin(200, "uatom"), coin(200, "uosmo")],
     );
 
     assert_err(
@@ -164,7 +158,7 @@ fn test_force_withdraw_breaks_lock() {
         .allowed_vaults(&[leverage_vault.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, "uatom"), Coin::new(500u128, "uosmo")],
+            funds: vec![coin(300, "uatom"), coin(500, "uosmo")],
         })
         .build()
         .unwrap();
@@ -176,20 +170,14 @@ fn test_force_withdraw_breaks_lock() {
         &token_id,
         &user,
         vec![
-            Deposit(Coin {
-                denom: uatom.denom,
-                amount: Uint128::from(200u128),
-            }),
-            Deposit(Coin {
-                denom: uosmo.denom,
-                amount: Uint128::from(200u128),
-            }),
+            Deposit(coin(200, uatom.denom)),
+            Deposit(coin(200, uosmo.denom)),
             VaultDeposit {
                 vault: vault.clone(),
-                coins: vec![Coin::new(100u128, "uatom"), Coin::new(100u128, "uosmo")],
+                coins: vec![coin(100, "uatom"), coin(100, "uosmo")],
             },
         ],
-        &[Coin::new(200u128, "uatom"), Coin::new(200u128, "uosmo")],
+        &[coin(200, "uatom"), coin(200, "uosmo")],
     )
     .unwrap();
 
@@ -245,7 +233,7 @@ fn test_withdraw_with_unlocked_vault_coins() {
         .allowed_vaults(&[leverage_vault.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, "uatom"), Coin::new(500u128, "uosmo")],
+            funds: vec![coin(300, "uatom"), coin(500, "uosmo")],
         })
         .build()
         .unwrap();
@@ -257,20 +245,14 @@ fn test_withdraw_with_unlocked_vault_coins() {
         &token_id,
         &user,
         vec![
-            Deposit(Coin {
-                denom: uatom.denom,
-                amount: Uint128::from(200u128),
-            }),
-            Deposit(Coin {
-                denom: uosmo.denom,
-                amount: Uint128::from(200u128),
-            }),
+            Deposit(coin(200, uatom.denom)),
+            Deposit(coin(200, uosmo.denom)),
             VaultDeposit {
                 vault: vault.clone(),
-                coins: vec![Coin::new(100u128, "uatom"), Coin::new(100u128, "uosmo")],
+                coins: vec![coin(100, "uatom"), coin(100, "uosmo")],
             },
         ],
-        &[Coin::new(200u128, "uatom"), Coin::new(200u128, "uosmo")],
+        &[coin(200, "uatom"), coin(200, "uosmo")],
     )
     .unwrap();
 

@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Coin, Decimal, OverflowError, OverflowOperation, Uint128};
+use cosmwasm_std::{coins, Addr, Coin, Decimal, OverflowError, OverflowOperation, Uint128};
 
 use mock_oracle::msg::CoinPrice;
 use rover::error::ContractError;
@@ -23,7 +23,7 @@ fn test_can_only_liquidate_unhealthy_accounts() {
         .allowed_coins(&[uosmo_info.clone(), uatom_info.clone()])
         .fund_account(AccountToFund {
             addr: liquidatee.clone(),
-            funds: vec![Coin::new(300u128, uosmo_info.denom.clone())],
+            funds: coins(300, uosmo_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -33,8 +33,8 @@ fn test_can_only_liquidate_unhealthy_accounts() {
         &liquidatee_token_id,
         &liquidatee,
         vec![
-            Deposit(uosmo_info.to_coin(Uint128::from(300u128))),
-            Borrow(uatom_info.to_coin(Uint128::from(50u128))),
+            Deposit(uosmo_info.to_coin(300)),
+            Borrow(uatom_info.to_coin(50)),
         ],
         &[Coin::new(300, uosmo_info.clone().denom)],
     )
@@ -51,7 +51,7 @@ fn test_can_only_liquidate_unhealthy_accounts() {
         &liquidator,
         vec![LiquidateCoin {
             liquidatee_token_id: liquidatee_token_id.clone(),
-            debt_coin: uatom_info.to_coin(Uint128::from(10u128)),
+            debt_coin: uatom_info.to_coin(10),
             request_coin_denom: uosmo_info.denom,
         }],
         &[],
@@ -77,7 +77,7 @@ fn test_liquidatee_does_not_have_requested_asset() {
         .allowed_coins(&[uosmo_info.clone(), uatom_info.clone(), ujake_info.clone()])
         .fund_account(AccountToFund {
             addr: liquidatee.clone(),
-            funds: vec![Coin::new(300u128, uosmo_info.denom.clone())],
+            funds: coins(300, uosmo_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -87,8 +87,8 @@ fn test_liquidatee_does_not_have_requested_asset() {
         &liquidatee_token_id,
         &liquidatee,
         vec![
-            Deposit(uosmo_info.to_coin(Uint128::from(300u128))),
-            Borrow(uatom_info.to_coin(Uint128::from(105u128))),
+            Deposit(uosmo_info.to_coin(300)),
+            Borrow(uatom_info.to_coin(105)),
         ],
         &[Coin::new(300, uosmo_info.denom)],
     )
@@ -109,10 +109,10 @@ fn test_liquidatee_does_not_have_requested_asset() {
         &liquidator_token_id,
         &liquidator,
         vec![
-            Borrow(uatom_info.to_coin(Uint128::from(50u128))),
+            Borrow(uatom_info.to_coin(50)),
             LiquidateCoin {
                 liquidatee_token_id: liquidatee_token_id.clone(),
-                debt_coin: uatom_info.to_coin(Uint128::from(10u128)),
+                debt_coin: uatom_info.to_coin(10),
                 request_coin_denom: ujake_info.denom.clone(),
             },
         ],
@@ -134,11 +134,11 @@ fn test_liquidatee_does_not_have_debt_coin() {
         .allowed_coins(&[uosmo_info.clone(), uatom_info.clone(), ujake_info.clone()])
         .fund_account(AccountToFund {
             addr: liquidatee.clone(),
-            funds: vec![Coin::new(300u128, uosmo_info.denom.clone())],
+            funds: coins(300, uosmo_info.denom.clone()),
         })
         .fund_account(AccountToFund {
             addr: random_user.clone(),
-            funds: vec![Coin::new(300u128, uosmo_info.denom.clone())],
+            funds: coins(300, uosmo_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -148,8 +148,8 @@ fn test_liquidatee_does_not_have_debt_coin() {
         &liquidatee_token_id,
         &liquidatee,
         vec![
-            Deposit(uosmo_info.to_coin(Uint128::from(300u128))),
-            Borrow(uatom_info.to_coin(Uint128::from(105u128))),
+            Deposit(uosmo_info.to_coin(300)),
+            Borrow(uatom_info.to_coin(105)),
         ],
         &[Coin::new(300, uosmo_info.denom.clone())],
     )
@@ -164,8 +164,8 @@ fn test_liquidatee_does_not_have_debt_coin() {
         &random_user_token,
         &random_user,
         vec![
-            Deposit(uosmo_info.to_coin(Uint128::from(300u128))),
-            Borrow(ujake_info.to_coin(Uint128::from(10u128))),
+            Deposit(uosmo_info.to_coin(300)),
+            Borrow(ujake_info.to_coin(10)),
         ],
         &[Coin::new(300, uosmo_info.denom)],
     )
@@ -183,10 +183,10 @@ fn test_liquidatee_does_not_have_debt_coin() {
         &liquidator_token_id,
         &liquidator,
         vec![
-            Borrow(uatom_info.to_coin(Uint128::from(50u128))),
+            Borrow(uatom_info.to_coin(50)),
             LiquidateCoin {
                 liquidatee_token_id: liquidatee_token_id.clone(),
-                debt_coin: ujake_info.to_coin(Uint128::from(10u128)),
+                debt_coin: ujake_info.to_coin(10),
                 request_coin_denom: uatom_info.denom,
             },
         ],
@@ -206,7 +206,7 @@ fn test_liquidator_does_not_have_enough_to_pay_debt() {
         .allowed_coins(&[uosmo_info.clone(), uatom_info.clone()])
         .fund_account(AccountToFund {
             addr: liquidatee.clone(),
-            funds: vec![Coin::new(300u128, uosmo_info.denom.clone())],
+            funds: coins(300, uosmo_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -216,8 +216,8 @@ fn test_liquidator_does_not_have_enough_to_pay_debt() {
         &liquidatee_token_id,
         &liquidatee,
         vec![
-            Deposit(uosmo_info.to_coin(Uint128::from(300u128))),
-            Borrow(uatom_info.to_coin(Uint128::from(100u128))),
+            Deposit(uosmo_info.to_coin(300)),
+            Borrow(uatom_info.to_coin(100)),
         ],
         &[Coin::new(300, uosmo_info.clone().denom)],
     )
@@ -239,7 +239,7 @@ fn test_liquidator_does_not_have_enough_to_pay_debt() {
         &liquidator,
         vec![LiquidateCoin {
             liquidatee_token_id: liquidatee_token_id.clone(),
-            debt_coin: uatom_info.to_coin(Uint128::from(10u128)),
+            debt_coin: uatom_info.to_coin(10),
             request_coin_denom: uosmo_info.denom,
         }],
         &[],
@@ -265,7 +265,7 @@ fn test_liquidator_left_in_unhealthy_state() {
         .allowed_coins(&[uosmo_info.clone(), uatom_info.clone()])
         .fund_account(AccountToFund {
             addr: liquidatee.clone(),
-            funds: vec![Coin::new(300u128, uosmo_info.denom.clone())],
+            funds: coins(300, uosmo_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -275,8 +275,8 @@ fn test_liquidator_left_in_unhealthy_state() {
         &liquidatee_token_id,
         &liquidatee,
         vec![
-            Deposit(uosmo_info.to_coin(Uint128::from(300u128))),
-            Borrow(uatom_info.to_coin(Uint128::from(100u128))),
+            Deposit(uosmo_info.to_coin(300)),
+            Borrow(uatom_info.to_coin(100)),
         ],
         &[Coin::new(300, uosmo_info.clone().denom)],
     )
@@ -297,10 +297,10 @@ fn test_liquidator_left_in_unhealthy_state() {
         &liquidator_token_id,
         &liquidator,
         vec![
-            Borrow(uatom_info.to_coin(Uint128::from(10u128))),
+            Borrow(uatom_info.to_coin(10)),
             LiquidateCoin {
                 liquidatee_token_id: liquidatee_token_id.clone(),
-                debt_coin: uatom_info.to_coin(Uint128::from(10u128)),
+                debt_coin: uatom_info.to_coin(10),
                 request_coin_denom: uosmo_info.denom,
             },
         ],
@@ -328,11 +328,11 @@ fn test_liquidatee_not_healthier_after_liquidation() {
         .allowed_coins(&[uosmo_info.clone(), uatom_info.clone()])
         .fund_account(AccountToFund {
             addr: liquidatee.clone(),
-            funds: vec![Coin::new(300u128, uosmo_info.denom.clone())],
+            funds: coins(300, uosmo_info.denom.clone()),
         })
         .fund_account(AccountToFund {
             addr: liquidator.clone(),
-            funds: vec![Coin::new(300u128, uatom_info.denom.clone())],
+            funds: coins(300, uatom_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -342,8 +342,8 @@ fn test_liquidatee_not_healthier_after_liquidation() {
         &liquidatee_token_id,
         &liquidatee,
         vec![
-            Deposit(uosmo_info.to_coin(Uint128::from(300u128))),
-            Borrow(uatom_info.to_coin(Uint128::from(100u128))),
+            Deposit(uosmo_info.to_coin(300)),
+            Borrow(uatom_info.to_coin(100)),
         ],
         &[Coin::new(300, uosmo_info.denom.clone())],
     )
@@ -360,14 +360,14 @@ fn test_liquidatee_not_healthier_after_liquidation() {
         &liquidator_token_id,
         &liquidator,
         vec![
-            Deposit(uatom_info.to_coin(Uint128::from(50u128))),
+            Deposit(uatom_info.to_coin(50)),
             LiquidateCoin {
                 liquidatee_token_id: liquidatee_token_id.clone(),
-                debt_coin: uatom_info.to_coin(Uint128::from(50u128)),
+                debt_coin: uatom_info.to_coin(50),
                 request_coin_denom: uosmo_info.denom,
             },
         ],
-        &[uatom_info.to_coin(Uint128::from(50u128))],
+        &[uatom_info.to_coin(50)],
     );
 
     assert_err(
@@ -390,11 +390,11 @@ fn test_debt_amount_adjusted_to_close_factor_max() {
         .allowed_coins(&[uosmo_info.clone(), uatom_info.clone()])
         .fund_account(AccountToFund {
             addr: liquidatee.clone(),
-            funds: vec![Coin::new(300u128, uosmo_info.denom.clone())],
+            funds: coins(300, uosmo_info.denom.clone()),
         })
         .fund_account(AccountToFund {
             addr: liquidator.clone(),
-            funds: vec![Coin::new(300u128, uatom_info.denom.clone())],
+            funds: coins(300, uatom_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -404,8 +404,8 @@ fn test_debt_amount_adjusted_to_close_factor_max() {
         &liquidatee_token_id,
         &liquidatee,
         vec![
-            Deposit(uosmo_info.to_coin(Uint128::from(300u128))),
-            Borrow(uatom_info.to_coin(Uint128::from(100u128))),
+            Deposit(uosmo_info.to_coin(300)),
+            Borrow(uatom_info.to_coin(100)),
         ],
         &[Coin::new(300, uosmo_info.denom.clone())],
     )
@@ -422,14 +422,14 @@ fn test_debt_amount_adjusted_to_close_factor_max() {
         &liquidator_token_id,
         &liquidator,
         vec![
-            Deposit(uatom_info.to_coin(Uint128::from(50u128))),
+            Deposit(uatom_info.to_coin(50)),
             LiquidateCoin {
                 liquidatee_token_id: liquidatee_token_id.clone(),
-                debt_coin: uatom_info.to_coin(Uint128::from(50u128)),
+                debt_coin: uatom_info.to_coin(50),
                 request_coin_denom: uosmo_info.denom,
             },
         ],
-        &[uatom_info.to_coin(Uint128::from(50u128))],
+        &[uatom_info.to_coin(50)],
     )
     .unwrap();
 
@@ -467,11 +467,11 @@ fn test_debt_amount_adjusted_to_total_debt_for_denom() {
         .allowed_coins(&[uosmo_info.clone(), uatom_info.clone(), ujake_info.clone()])
         .fund_account(AccountToFund {
             addr: liquidatee.clone(),
-            funds: vec![Coin::new(300u128, uosmo_info.denom.clone())],
+            funds: coins(300, uosmo_info.denom.clone()),
         })
         .fund_account(AccountToFund {
             addr: liquidator.clone(),
-            funds: vec![Coin::new(300u128, ujake_info.denom.clone())],
+            funds: coins(300, ujake_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -481,9 +481,9 @@ fn test_debt_amount_adjusted_to_total_debt_for_denom() {
         &liquidatee_token_id,
         &liquidatee,
         vec![
-            Deposit(uosmo_info.to_coin(Uint128::from(300u128))),
-            Borrow(uatom_info.to_coin(Uint128::from(100u128))),
-            Borrow(ujake_info.to_coin(Uint128::from(10u128))),
+            Deposit(uosmo_info.to_coin(300)),
+            Borrow(uatom_info.to_coin(100)),
+            Borrow(ujake_info.to_coin(10)),
         ],
         &[Coin::new(300, uosmo_info.denom.clone())],
     )
@@ -500,14 +500,14 @@ fn test_debt_amount_adjusted_to_total_debt_for_denom() {
         &liquidator_token_id,
         &liquidator,
         vec![
-            Deposit(ujake_info.to_coin(Uint128::from(50u128))),
+            Deposit(ujake_info.to_coin(50)),
             LiquidateCoin {
                 liquidatee_token_id: liquidatee_token_id.clone(),
-                debt_coin: ujake_info.to_coin(Uint128::from(50u128)),
+                debt_coin: ujake_info.to_coin(50),
                 request_coin_denom: uosmo_info.denom,
             },
         ],
-        &[ujake_info.to_coin(Uint128::from(50u128))],
+        &[ujake_info.to_coin(50)],
     )
     .unwrap();
 
@@ -546,11 +546,11 @@ fn test_debt_amount_adjusted_to_max_allowed_by_request_coin() {
         .allowed_coins(&[uosmo_info.clone(), uatom_info.clone()])
         .fund_account(AccountToFund {
             addr: liquidatee.clone(),
-            funds: vec![Coin::new(300u128, uosmo_info.denom.clone())],
+            funds: coins(300, uosmo_info.denom.clone()),
         })
         .fund_account(AccountToFund {
             addr: liquidator.clone(),
-            funds: vec![Coin::new(300u128, uatom_info.denom.clone())],
+            funds: coins(300, uatom_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -560,8 +560,8 @@ fn test_debt_amount_adjusted_to_max_allowed_by_request_coin() {
         &liquidatee_token_id,
         &liquidatee,
         vec![
-            Deposit(uosmo_info.to_coin(Uint128::from(300u128))),
-            Borrow(uatom_info.to_coin(Uint128::from(100u128))),
+            Deposit(uosmo_info.to_coin(300)),
+            Borrow(uatom_info.to_coin(100)),
         ],
         &[Coin::new(300, uosmo_info.denom.clone())],
     )
@@ -578,14 +578,14 @@ fn test_debt_amount_adjusted_to_max_allowed_by_request_coin() {
         &liquidator_token_id,
         &liquidator,
         vec![
-            Deposit(uatom_info.to_coin(Uint128::from(50u128))),
+            Deposit(uatom_info.to_coin(50)),
             LiquidateCoin {
                 liquidatee_token_id: liquidatee_token_id.clone(),
-                debt_coin: uatom_info.to_coin(Uint128::from(50u128)),
+                debt_coin: uatom_info.to_coin(50),
                 request_coin_denom: uosmo_info.denom,
             },
         ],
-        &[uatom_info.to_coin(Uint128::from(50u128))],
+        &[uatom_info.to_coin(50)],
     )
     .unwrap();
 
@@ -622,11 +622,11 @@ fn test_debt_amount_no_adjustment() {
         .allowed_coins(&[uosmo_info.clone(), uatom_info.clone()])
         .fund_account(AccountToFund {
             addr: liquidatee.clone(),
-            funds: vec![Coin::new(300u128, uosmo_info.denom.clone())],
+            funds: coins(300, uosmo_info.denom.clone()),
         })
         .fund_account(AccountToFund {
             addr: liquidator.clone(),
-            funds: vec![Coin::new(300u128, uatom_info.denom.clone())],
+            funds: coins(300, uatom_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -636,8 +636,8 @@ fn test_debt_amount_no_adjustment() {
         &liquidatee_token_id,
         &liquidatee,
         vec![
-            Deposit(uosmo_info.to_coin(Uint128::from(300u128))),
-            Borrow(uatom_info.to_coin(Uint128::from(100u128))),
+            Deposit(uosmo_info.to_coin(300)),
+            Borrow(uatom_info.to_coin(100)),
         ],
         &[Coin::new(300, uosmo_info.denom.clone())],
     )
@@ -654,14 +654,14 @@ fn test_debt_amount_no_adjustment() {
         &liquidator_token_id,
         &liquidator,
         vec![
-            Deposit(uatom_info.to_coin(Uint128::from(10u128))),
+            Deposit(uatom_info.to_coin(10)),
             LiquidateCoin {
                 liquidatee_token_id: liquidatee_token_id.clone(),
-                debt_coin: uatom_info.to_coin(Uint128::from(10u128)),
+                debt_coin: uatom_info.to_coin(10),
                 request_coin_denom: uosmo_info.denom,
             },
         ],
-        &[uatom_info.to_coin(Uint128::from(10u128))],
+        &[uatom_info.to_coin(10)],
     )
     .unwrap();
 

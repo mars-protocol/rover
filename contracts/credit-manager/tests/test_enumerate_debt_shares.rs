@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Coin, Uint128};
+use cosmwasm_std::{coin, Addr};
 
 use credit_manager::borrow::DEFAULT_DEBT_SHARES_PER_COIN_BORROWED;
 use rover::msg::execute::Action;
@@ -15,44 +15,44 @@ fn test_pagination_on_all_debt_shares_query_works() {
     let user_c = Addr::unchecked("user_c");
 
     let user_a_coins = vec![
-        Coin::new(10u128, "coin_1"),
-        Coin::new(10u128, "coin_2"),
-        Coin::new(10u128, "coin_3"),
-        Coin::new(10u128, "coin_4"),
-        Coin::new(10u128, "coin_5"),
-        Coin::new(10u128, "coin_6"),
-        Coin::new(10u128, "coin_7"),
-        Coin::new(10u128, "coin_8"),
-        Coin::new(10u128, "coin_9"),
-        Coin::new(10u128, "coin_10"),
-        Coin::new(10u128, "coin_11"),
-        Coin::new(10u128, "coin_12"),
-        Coin::new(10u128, "coin_13"),
-        Coin::new(10u128, "coin_14"),
+        coin(10, "coin_1"),
+        coin(10, "coin_2"),
+        coin(10, "coin_3"),
+        coin(10, "coin_4"),
+        coin(10, "coin_5"),
+        coin(10, "coin_6"),
+        coin(10, "coin_7"),
+        coin(10, "coin_8"),
+        coin(10, "coin_9"),
+        coin(10, "coin_10"),
+        coin(10, "coin_11"),
+        coin(10, "coin_12"),
+        coin(10, "coin_13"),
+        coin(10, "coin_14"),
     ];
 
     let user_b_coins = vec![
-        Coin::new(10u128, "coin_15"),
-        Coin::new(10u128, "coin_16"),
-        Coin::new(10u128, "coin_17"),
-        Coin::new(10u128, "coin_18"),
-        Coin::new(10u128, "coin_19"),
-        Coin::new(10u128, "coin_20"),
-        Coin::new(10u128, "coin_21"),
-        Coin::new(10u128, "coin_22"),
-        Coin::new(10u128, "coin_23"),
-        Coin::new(10u128, "coin_24"),
+        coin(10, "coin_15"),
+        coin(10, "coin_16"),
+        coin(10, "coin_17"),
+        coin(10, "coin_18"),
+        coin(10, "coin_19"),
+        coin(10, "coin_20"),
+        coin(10, "coin_21"),
+        coin(10, "coin_22"),
+        coin(10, "coin_23"),
+        coin(10, "coin_24"),
     ];
 
     let user_c_coins = vec![
-        Coin::new(10u128, "coin_25"),
-        Coin::new(10u128, "coin_26"),
-        Coin::new(10u128, "coin_27"),
-        Coin::new(10u128, "coin_28"),
-        Coin::new(10u128, "coin_29"),
-        Coin::new(10u128, "coin_30"),
-        Coin::new(10u128, "coin_31"),
-        Coin::new(10u128, "coin_32"),
+        coin(10, "coin_25"),
+        coin(10, "coin_26"),
+        coin(10, "coin_27"),
+        coin(10, "coin_28"),
+        coin(10, "coin_29"),
+        coin(10, "coin_30"),
+        coin(10, "coin_31"),
+        coin(10, "coin_32"),
     ];
 
     let mut mock = MockEnv::new()
@@ -78,13 +78,10 @@ fn test_pagination_on_all_debt_shares_query_works() {
         &user_a,
         user_a_coins
             .iter()
-            .flat_map(|coin| {
+            .flat_map(|c| {
                 vec![
-                    Action::Deposit(coin.clone()),
-                    Action::Borrow(Coin {
-                        denom: coin.denom.clone(),
-                        amount: Uint128::new(1),
-                    }),
+                    Action::Deposit(c.clone()),
+                    Action::Borrow(coin(1, c.denom.clone())),
                 ]
             })
             .collect::<Vec<Action>>(),
@@ -98,13 +95,10 @@ fn test_pagination_on_all_debt_shares_query_works() {
         &user_b,
         user_b_coins
             .iter()
-            .flat_map(|coin| {
+            .flat_map(|c| {
                 vec![
-                    Action::Deposit(coin.clone()),
-                    Action::Borrow(Coin {
-                        denom: coin.denom.clone(),
-                        amount: Uint128::new(1),
-                    }),
+                    Action::Deposit(c.clone()),
+                    Action::Borrow(coin(1, c.denom.clone())),
                 ]
             })
             .collect::<Vec<Action>>(),
@@ -118,13 +112,10 @@ fn test_pagination_on_all_debt_shares_query_works() {
         &user_c,
         user_c_coins
             .iter()
-            .flat_map(|coin| {
+            .flat_map(|c| {
                 vec![
-                    Action::Deposit(coin.clone()),
-                    Action::Borrow(Coin {
-                        denom: coin.denom.clone(),
-                        amount: Uint128::new(1),
-                    }),
+                    Action::Deposit(c.clone()),
+                    Action::Borrow(coin(1, c.denom.clone())),
                 ]
             })
             .collect::<Vec<Action>>(),

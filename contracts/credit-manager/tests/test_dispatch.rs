@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Coin, Uint128};
+use cosmwasm_std::{coin, Addr};
 
 use helpers::assert_err;
 use rover::error::ContractError;
@@ -52,10 +52,7 @@ fn test_only_rover_can_execute_callbacks() {
         &external_user,
         CallbackMsg::Borrow {
             token_id: "1234".to_string(),
-            coin: Coin {
-                denom: "uatom".to_string(),
-                amount: Uint128::new(1000u128),
-            },
+            coin: coin(1000, "uatom"),
         },
     );
     assert_err(res, ContractError::ExternalInvocation);

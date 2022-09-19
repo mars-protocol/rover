@@ -1,6 +1,6 @@
 use std::ops::{Add, Div, Mul};
 
-use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
+use cosmwasm_std::{coins, Addr, Coin, Decimal, Uint128};
 
 use credit_manager::borrow::DEFAULT_DEBT_SHARES_PER_COIN_BORROWED;
 use mock_oracle::msg::CoinPrice;
@@ -26,7 +26,7 @@ fn test_only_assets_with_no_debts() {
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+            funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -36,7 +36,7 @@ fn test_only_assets_with_no_debts() {
     mock.update_credit_account(
         &token_id,
         &user,
-        vec![Deposit(coin_info.to_coin(deposit_amount))],
+        vec![Deposit(coin_info.to_coin(deposit_amount.u128()))],
         &[Coin::new(deposit_amount.into(), coin_info.denom.clone())],
     )
     .unwrap();
@@ -79,7 +79,7 @@ fn test_terra_ragnarok() {
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+            funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -92,8 +92,8 @@ fn test_terra_ragnarok() {
         &token_id,
         &user,
         vec![
-            Deposit(coin_info.to_coin(deposit_amount)),
-            Borrow(coin_info.to_coin(borrow_amount)),
+            Deposit(coin_info.to_coin(deposit_amount.u128())),
+            Borrow(coin_info.to_coin(borrow_amount.u128())),
         ],
         &[Coin::new(deposit_amount.into(), coin_info.denom.clone())],
     )
@@ -153,19 +153,14 @@ fn test_debts_no_assets() {
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+            funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    let borrowed_amount = Uint128::new(100);
-    let res = mock.update_credit_account(
-        &token_id,
-        &user,
-        vec![Borrow(coin_info.to_coin(borrowed_amount))],
-        &[],
-    );
+    let res =
+        mock.update_credit_account(&token_id, &user, vec![Borrow(coin_info.to_coin(100))], &[]);
 
     assert_err(
         res,
@@ -210,7 +205,7 @@ fn test_cannot_borrow_more_than_healthy() {
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+            funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -220,8 +215,8 @@ fn test_cannot_borrow_more_than_healthy() {
         &token_id,
         &user,
         vec![
-            Deposit(coin_info.to_coin(Uint128::new(300))),
-            Borrow(coin_info.to_coin(Uint128::new(50))),
+            Deposit(coin_info.to_coin(300)),
+            Borrow(coin_info.to_coin(50)),
         ],
         &[Coin::new(Uint128::new(300).into(), coin_info.denom.clone())],
     )
@@ -248,20 +243,11 @@ fn test_cannot_borrow_more_than_healthy() {
     assert!(!health.liquidatable);
     assert!(!health.above_max_ltv);
 
-    mock.update_credit_account(
-        &token_id,
-        &user,
-        vec![Borrow(coin_info.to_coin(Uint128::new(100)))],
-        &[],
-    )
-    .unwrap();
+    mock.update_credit_account(&token_id, &user, vec![Borrow(coin_info.to_coin(100))], &[])
+        .unwrap();
 
-    let res = mock.update_credit_account(
-        &token_id,
-        &user,
-        vec![Borrow(coin_info.to_coin(Uint128::new(150)))],
-        &[],
-    );
+    let res =
+        mock.update_credit_account(&token_id, &user, vec![Borrow(coin_info.to_coin(150))], &[]);
 
     assert_err(
         res,
@@ -320,7 +306,7 @@ fn test_cannot_borrow_more_but_not_liquidatable() {
         .allowed_coins(&[uosmo_info.clone(), uatom_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, uosmo_info.denom.clone())],
+            funds: coins(300, uosmo_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -330,8 +316,8 @@ fn test_cannot_borrow_more_but_not_liquidatable() {
         &token_id,
         &user,
         vec![
-            Deposit(uosmo_info.to_coin(Uint128::new(300))),
-            Borrow(uatom_info.to_coin(Uint128::new(50))),
+            Deposit(uosmo_info.to_coin(300)),
+            Borrow(uatom_info.to_coin(50)),
         ],
         &[Coin::new(300, uosmo_info.denom)],
     )
@@ -350,12 +336,8 @@ fn test_cannot_borrow_more_but_not_liquidatable() {
     assert!(!health.liquidatable);
     assert!(health.above_max_ltv);
 
-    let res = mock.update_credit_account(
-        &token_id,
-        &user,
-        vec![Borrow(uatom_info.to_coin(Uint128::new(2)))],
-        &[],
-    );
+    let res =
+        mock.update_credit_account(&token_id, &user, vec![Borrow(uatom_info.to_coin(2))], &[]);
 
     assert_err(
         res,
@@ -401,7 +383,7 @@ fn test_assets_and_ltv_lqdt_adjusted_value() {
         .allowed_coins(&[uosmo_info.clone(), uatom_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, uosmo_info.denom.clone())],
+            funds: coins(300, uosmo_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -413,8 +395,8 @@ fn test_assets_and_ltv_lqdt_adjusted_value() {
         &token_id,
         &user,
         vec![
-            Deposit(uosmo_info.to_coin(deposit_amount)),
-            Borrow(uatom_info.to_coin(borrowed_amount)),
+            Deposit(uosmo_info.to_coin(deposit_amount.u128())),
+            Borrow(uatom_info.to_coin(borrowed_amount.u128())),
         ],
         &[Coin::new(deposit_amount.into(), uosmo_info.denom.clone())],
     )
@@ -487,11 +469,11 @@ fn test_debt_value() {
         .allowed_coins(&[uosmo_info.clone(), uatom_info.clone()])
         .fund_account(AccountToFund {
             addr: user_a.clone(),
-            funds: vec![Coin::new(300u128, uosmo_info.denom.clone())],
+            funds: coins(300, uosmo_info.denom.clone()),
         })
         .fund_account(AccountToFund {
             addr: user_b.clone(),
-            funds: vec![Coin::new(140u128, uosmo_info.denom.clone())],
+            funds: coins(140, uosmo_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -506,9 +488,9 @@ fn test_debt_value() {
         &token_id_a,
         &user_a,
         vec![
-            Borrow(uatom_info.to_coin(user_a_borrowed_amount_atom)),
-            Borrow(uosmo_info.to_coin(user_a_borrowed_amount_osmo)),
-            Deposit(uosmo_info.to_coin(user_a_deposit_amount_osmo)),
+            Borrow(uatom_info.to_coin(user_a_borrowed_amount_atom.u128())),
+            Borrow(uosmo_info.to_coin(user_a_borrowed_amount_osmo.u128())),
+            Deposit(uosmo_info.to_coin(user_a_deposit_amount_osmo.u128())),
         ],
         &[Coin::new(
             user_a_deposit_amount_osmo.into(),
@@ -526,8 +508,8 @@ fn test_debt_value() {
         &token_id_b,
         &user_b,
         vec![
-            Borrow(uatom_info.to_coin(user_b_borrowed_amount_atom)),
-            Deposit(uosmo_info.to_coin(user_b_deposit_amount)),
+            Borrow(uatom_info.to_coin(user_b_borrowed_amount_atom.u128())),
+            Deposit(uosmo_info.to_coin(user_b_deposit_amount.u128())),
         ],
         &[Coin::new(
             user_b_deposit_amount.into(),

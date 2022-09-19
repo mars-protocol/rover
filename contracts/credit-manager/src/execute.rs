@@ -308,7 +308,7 @@ pub fn assert_is_token_owner(deps: &DepsMut, user: &Addr, token_id: &str) -> Con
     let contract_addr = ACCOUNT_NFT.load(deps.storage)?;
     let owner_res: OwnerOfResponse = deps.querier.query_wasm_smart(
         contract_addr,
-        &QueryMsg::OwnerOf {
+        &QueryMsg::<Empty>::OwnerOf {
             token_id: token_id.to_string(),
             include_expired: None,
         },

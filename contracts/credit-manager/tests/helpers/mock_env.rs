@@ -573,7 +573,7 @@ impl MockEnvBuilder {
                     amount: self
                         .get_allowed_coins()
                         .iter()
-                        .map(|info| info.to_coin(DEFAULT_RED_BANK_COIN_BALANCE))
+                        .map(|info| info.to_coin(DEFAULT_RED_BANK_COIN_BALANCE.u128()))
                         .collect(),
                 }))
                 .unwrap();

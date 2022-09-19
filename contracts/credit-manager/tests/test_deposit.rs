@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
+use cosmwasm_std::{coin, coins, Addr, Coin, Decimal, Uint128};
 
 use rover::coins::Coins;
 use rover::error::ContractError::{
@@ -23,10 +23,7 @@ fn test_only_owner_of_token_can_deposit() {
     let res = mock.update_credit_account(
         &token_id,
         &another_user,
-        vec![Action::Deposit(Coin {
-            denom: "uosmo".to_string(),
-            amount: Uint128::zero(),
-        })],
+        vec![Action::Deposit(coin(0, "uosmo"))],
         &[],
     );
 
@@ -56,7 +53,7 @@ fn test_deposit_nothing() {
     mock.update_credit_account(
         &token_id,
         &user,
-        vec![Action::Deposit(coin_info.to_coin(Uint128::zero()))],
+        vec![Action::Deposit(coin_info.to_coin(0))],
         &[],
     )
     .unwrap();
@@ -80,7 +77,7 @@ fn test_deposit_but_no_funds() {
     let res = mock.update_credit_account(
         &token_id,
         &user,
-        vec![Action::Deposit(coin_info.to_coin(deposit_amount))],
+        vec![Action::Deposit(coin_info.to_coin(deposit_amount.u128()))],
         &[],
     );
 
@@ -105,7 +102,7 @@ fn test_deposit_but_not_enough_funds() {
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+            funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -114,8 +111,8 @@ fn test_deposit_but_not_enough_funds() {
     let res = mock.update_credit_account(
         &token_id,
         &user,
-        vec![Action::Deposit(coin_info.to_coin(Uint128::new(350)))],
-        &[Coin::new(250u128, coin_info.denom)],
+        vec![Action::Deposit(coin_info.to_coin(350))],
+        &[coin(250, coin_info.denom)],
     );
 
     assert_err(
@@ -135,19 +132,19 @@ fn test_can_only_deposit_allowed_assets() {
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+            funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    let not_allowed_coin = ujake_info().to_coin(Uint128::new(234));
+    let not_allowed_coin = ujake_info().to_coin(234);
 
     let res = mock.update_credit_account(
         &token_id,
         &user,
         vec![Action::Deposit(not_allowed_coin.clone())],
-        &[Coin::new(250u128, coin_info.denom)],
+        &[coin(250, coin_info.denom)],
     );
 
     assert_err(res, NotWhitelisted(not_allowed_coin.denom));
@@ -167,20 +164,20 @@ fn test_extra_funds_received() {
         .fund_account(AccountToFund {
             addr: user.clone(),
             funds: vec![
-                Coin::new(300u128, uosmo_info.denom.clone()),
-                Coin::new(250u128, uatom_info.denom.clone()),
+                coin(300, uosmo_info.denom.clone()),
+                coin(250, uatom_info.denom.clone()),
             ],
         })
         .build()
         .unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    let extra_funds = Coin::new(25u128, uatom_info.denom);
+    let extra_funds = coin(25, uatom_info.denom);
     let res = mock.update_credit_account(
         &token_id,
         &user,
-        vec![Action::Deposit(uosmo_info.to_coin(Uint128::new(234)))],
-        &[Coin::new(234u128, uosmo_info.denom), extra_funds.clone()],
+        vec![Action::Deposit(uosmo_info.to_coin(234))],
+        &[coin(234, uosmo_info.denom), extra_funds.clone()],
     );
 
     assert_err(res, ExtraFundsReceived(Coins::from(vec![extra_funds])));
@@ -198,7 +195,7 @@ fn test_deposit_success() {
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+            funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -208,7 +205,7 @@ fn test_deposit_success() {
     mock.update_credit_account(
         &token_id,
         &user,
-        vec![Action::Deposit(coin_info.to_coin(deposit_amount))],
+        vec![Action::Deposit(coin_info.to_coin(deposit_amount.u128()))],
         &[Coin::new(deposit_amount.into(), coin_info.denom.clone())],
     )
     .unwrap();
@@ -239,8 +236,8 @@ fn test_multiple_deposit_actions() {
         .fund_account(AccountToFund {
             addr: user.clone(),
             funds: vec![
-                Coin::new(300u128, uosmo_info.denom.clone()),
-                Coin::new(50u128, uatom_info.denom.clone()),
+                coin(300, uosmo_info.denom.clone()),
+                coin(50, uatom_info.denom.clone()),
             ],
         })
         .build()
@@ -254,12 +251,12 @@ fn test_multiple_deposit_actions() {
         &token_id,
         &user,
         vec![
-            Action::Deposit(uosmo_info.to_coin(uosmo_amount)),
-            Action::Deposit(uatom_info.to_coin(uatom_amount)),
+            Action::Deposit(uosmo_info.to_coin(uosmo_amount.u128())),
+            Action::Deposit(uatom_info.to_coin(uatom_amount.u128())),
         ],
         &[
-            Coin::new(234u128, uosmo_info.denom.clone()),
-            Coin::new(25u128, uatom_info.denom.clone()),
+            coin(234, uosmo_info.denom.clone()),
+            coin(25, uatom_info.denom.clone()),
         ],
     )
     .unwrap();

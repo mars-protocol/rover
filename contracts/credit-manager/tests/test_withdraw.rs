@@ -1,5 +1,5 @@
 use cosmwasm_std::OverflowOperation::Sub;
-use cosmwasm_std::{Addr, Coin, OverflowError, Uint128};
+use cosmwasm_std::{coin, coins, Addr, Coin, OverflowError, Uint128};
 
 use rover::error::ContractError;
 use rover::error::ContractError::{NotTokenOwner, NotWhitelisted};
@@ -20,10 +20,7 @@ fn test_only_owner_of_token_can_withdraw() {
     let res = mock.update_credit_account(
         &token_id,
         &another_user,
-        vec![Action::Withdraw(Coin {
-            denom: coin_info.denom,
-            amount: Uint128::new(382),
-        })],
+        vec![Action::Withdraw(coin(382, coin_info.denom))],
         &[],
     );
 
@@ -52,10 +49,7 @@ fn test_withdraw_nothing() {
     let res = mock.update_credit_account(
         &token_id,
         &user,
-        vec![Action::Withdraw(Coin {
-            denom: coin_info.denom,
-            amount: Uint128::new(0),
-        })],
+        vec![Action::Withdraw(coin(0, coin_info.denom))],
         &[],
     );
 
@@ -75,11 +69,10 @@ fn test_withdraw_but_no_funds() {
         .unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    let withdraw_amount = Uint128::new(234);
     let res = mock.update_credit_account(
         &token_id,
         &user,
-        vec![Action::Withdraw(coin_info.to_coin(withdraw_amount))],
+        vec![Action::Withdraw(coin_info.to_coin(234))],
         &[],
     );
 
@@ -104,7 +97,7 @@ fn test_withdraw_but_not_enough_funds() {
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+            funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -114,10 +107,10 @@ fn test_withdraw_but_not_enough_funds() {
         &token_id,
         &user,
         vec![
-            Action::Deposit(coin_info.to_coin(Uint128::new(300))),
-            Action::Withdraw(coin_info.to_coin(Uint128::new(400))),
+            Action::Deposit(coin_info.to_coin(300)),
+            Action::Withdraw(coin_info.to_coin(400)),
         ],
-        &[Coin::new(300u128, coin_info.denom)],
+        &[coin(300, coin_info.denom)],
     );
 
     assert_err(
@@ -141,21 +134,21 @@ fn test_can_only_withdraw_allowed_assets() {
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+            funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    let not_allowed_coin = ujake_info().to_coin(Uint128::new(234));
+    let not_allowed_coin = ujake_info().to_coin(234);
     let res = mock.update_credit_account(
         &token_id,
         &user,
         vec![
-            Action::Deposit(coin_info.to_coin(Uint128::new(234))),
+            Action::Deposit(coin_info.to_coin(234)),
             Action::Withdraw(not_allowed_coin.clone()),
         ],
-        &[Coin::new(234u128, coin_info.denom)],
+        &[coin(234, coin_info.denom)],
     );
 
     assert_err(res, NotWhitelisted(not_allowed_coin.denom));
@@ -172,22 +165,21 @@ fn test_cannot_withdraw_more_than_healthy() {
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+            funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    let deposit_amount = Uint128::new(200);
     let res = mock.update_credit_account(
         &token_id,
         &user,
         vec![
-            Action::Deposit(coin_info.to_coin(deposit_amount)),
-            Action::Borrow(coin_info.to_coin(Uint128::new(400))),
-            Action::Withdraw(coin_info.to_coin(Uint128::new(50))),
+            Action::Deposit(coin_info.to_coin(200)),
+            Action::Borrow(coin_info.to_coin(400)),
+            Action::Withdraw(coin_info.to_coin(50)),
         ],
-        &[Coin::new(200u128, coin_info.denom)],
+        &[coin(200, coin_info.denom)],
     );
 
     assert_err(
@@ -210,13 +202,13 @@ fn test_withdraw_success() {
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, coin_info.denom.clone())],
+            funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
     let token_id = mock.create_credit_account(&user).unwrap();
 
-    let deposit_amount = Uint128::new(234);
+    let deposit_amount = 234;
     mock.update_credit_account(
         &token_id,
         &user,
@@ -224,7 +216,7 @@ fn test_withdraw_success() {
             Action::Deposit(coin_info.to_coin(deposit_amount)),
             Action::Withdraw(coin_info.to_coin(deposit_amount)),
         ],
-        &[Coin::new(deposit_amount.into(), coin_info.denom.clone())],
+        &[Coin::new(deposit_amount, coin_info.denom.clone())],
     )
     .unwrap();
 
@@ -246,8 +238,8 @@ fn test_multiple_withdraw_actions() {
         .fund_account(AccountToFund {
             addr: user.clone(),
             funds: vec![
-                Coin::new(234u128, uosmo_info.denom.clone()),
-                Coin::new(25u128, uatom_info.denom.clone()),
+                coin(234, uosmo_info.denom.clone()),
+                coin(25, uatom_info.denom.clone()),
             ],
         })
         .build()
@@ -261,12 +253,12 @@ fn test_multiple_withdraw_actions() {
         &token_id,
         &user,
         vec![
-            Action::Deposit(uosmo_info.to_coin(uosmo_amount)),
-            Action::Deposit(uatom_info.to_coin(uatom_amount)),
+            Action::Deposit(uosmo_info.to_coin(uosmo_amount.u128())),
+            Action::Deposit(uatom_info.to_coin(uatom_amount.u128())),
         ],
         &[
-            Coin::new(234u128, uosmo_info.denom.clone()),
-            Coin::new(25u128, uatom_info.denom.clone()),
+            coin(234, uosmo_info.denom.clone()),
+            coin(25, uatom_info.denom.clone()),
         ],
     )
     .unwrap();
@@ -283,7 +275,7 @@ fn test_multiple_withdraw_actions() {
     mock.update_credit_account(
         &token_id,
         &user,
-        vec![Action::Withdraw(uosmo_info.to_coin(uosmo_amount))],
+        vec![Action::Withdraw(uosmo_info.to_coin(uosmo_amount.u128()))],
         &[],
     )
     .unwrap();
@@ -300,7 +292,7 @@ fn test_multiple_withdraw_actions() {
     mock.update_credit_account(
         &token_id,
         &user,
-        vec![Action::Withdraw(uatom_info.to_coin(Uint128::new(20)))],
+        vec![Action::Withdraw(uatom_info.to_coin(20))],
         &[],
     )
     .unwrap();
@@ -317,7 +309,7 @@ fn test_multiple_withdraw_actions() {
     mock.update_credit_account(
         &token_id,
         &user,
-        vec![Action::Withdraw(uatom_info.to_coin(Uint128::new(5)))],
+        vec![Action::Withdraw(uatom_info.to_coin(5))],
         &[],
     )
     .unwrap();

@@ -1,5 +1,5 @@
 use cosmwasm_std::OverflowOperation::Sub;
-use cosmwasm_std::{coin, coins, Addr, Coin, OverflowError, Uint128};
+use cosmwasm_std::{coin, coins, Addr, OverflowError};
 use cw_multi_test::{BankSudo, SudoMsg};
 
 use rover::error::ContractError;
@@ -35,7 +35,7 @@ fn test_user_does_not_have_enough_to_pay_diff() {
         .allowed_coins(&[osmo_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, osmo_info.denom.clone())],
+            funds: coins(300, osmo_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -44,8 +44,8 @@ fn test_user_does_not_have_enough_to_pay_diff() {
     mock.update_credit_account(
         &token_id,
         &user,
-        vec![Deposit(osmo_info.to_coin(Uint128::new(300)))],
-        &[osmo_info.to_coin(Uint128::new(300))],
+        vec![Deposit(osmo_info.to_coin(300))],
+        &[osmo_info.to_coin(300)],
     )
     .unwrap();
 
@@ -76,7 +76,7 @@ fn test_user_gets_rebalanced_down() {
         .allowed_coins(&[osmo_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, osmo_info.denom.clone())],
+            funds: coins(300, osmo_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -85,8 +85,8 @@ fn test_user_gets_rebalanced_down() {
     mock.update_credit_account(
         &token_id,
         &user,
-        vec![Deposit(osmo_info.to_coin(Uint128::new(300)))],
-        &[osmo_info.to_coin(Uint128::new(300))],
+        vec![Deposit(osmo_info.to_coin(300))],
+        &[osmo_info.to_coin(300)],
     )
     .unwrap();
 
@@ -114,7 +114,7 @@ fn test_user_gets_rebalanced_up() {
         .allowed_coins(&[osmo_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: vec![Coin::new(300u128, osmo_info.denom.clone())],
+            funds: coins(300, osmo_info.denom.clone()),
         })
         .build()
         .unwrap();
@@ -123,15 +123,15 @@ fn test_user_gets_rebalanced_up() {
     mock.update_credit_account(
         &token_id,
         &user,
-        vec![Deposit(osmo_info.to_coin(Uint128::new(300)))],
-        &[osmo_info.to_coin(Uint128::new(300))],
+        vec![Deposit(osmo_info.to_coin(300))],
+        &[osmo_info.to_coin(300)],
     )
     .unwrap();
 
     mock.app
         .sudo(SudoMsg::Bank(BankSudo::Mint {
             to_address: mock.rover.clone().to_string(),
-            amount: vec![Coin::new(200u128, osmo_info.denom.clone())],
+            amount: coins(200, osmo_info.denom.clone()),
         }))
         .unwrap();
 
@@ -166,8 +166,8 @@ fn test_works_on_multiple() {
         .sudo(SudoMsg::Bank(BankSudo::Mint {
             to_address: mock.rover.clone().to_string(),
             amount: vec![
-                Coin::new(143u128, osmo_info.denom.clone()),
-                Coin::new(57u128, atom_info.denom.clone()),
+                coin(143, osmo_info.denom.clone()),
+                coin(57, atom_info.denom.clone()),
             ],
         }))
         .unwrap();
