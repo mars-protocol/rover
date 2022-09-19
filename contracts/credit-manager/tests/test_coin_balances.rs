@@ -14,12 +14,12 @@ pub mod helpers;
 fn test_only_rover_can_call_update_coin_balances() {
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new().build().unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.invoke_callback(
         &user,
         CallbackMsg::UpdateCoinBalances {
-            token_id,
+            account_id,
             previous_balances: vec![],
         },
     );
@@ -39,10 +39,10 @@ fn test_user_does_not_have_enough_to_pay_diff() {
         })
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![Deposit(osmo_info.to_coin(300))],
         &[osmo_info.to_coin(300)],
@@ -52,7 +52,7 @@ fn test_user_does_not_have_enough_to_pay_diff() {
     let res = mock.invoke_callback(
         &mock.rover.clone(),
         CallbackMsg::UpdateCoinBalances {
-            token_id,
+            account_id,
             previous_balances: coins(601, osmo_info.denom),
         },
     );
@@ -80,10 +80,10 @@ fn test_user_gets_rebalanced_down() {
         })
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![Deposit(osmo_info.to_coin(300))],
         &[osmo_info.to_coin(300)],
@@ -93,13 +93,13 @@ fn test_user_gets_rebalanced_down() {
     mock.invoke_callback(
         &mock.rover.clone(),
         CallbackMsg::UpdateCoinBalances {
-            token_id: token_id.clone(),
+            account_id: account_id.clone(),
             previous_balances: coins(500, osmo_info.denom.clone()),
         },
     )
     .unwrap();
 
-    let position = mock.query_position(&token_id);
+    let position = mock.query_position(&account_id);
     assert_eq!(position.coins.len(), 1);
     assert_eq!(position.coins.first().unwrap().denom, osmo_info.denom);
     assert_eq!(position.coins.first().unwrap().amount.u128(), 100);
@@ -118,10 +118,10 @@ fn test_user_gets_rebalanced_up() {
         })
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![Deposit(osmo_info.to_coin(300))],
         &[osmo_info.to_coin(300)],
@@ -138,13 +138,13 @@ fn test_user_gets_rebalanced_up() {
     mock.invoke_callback(
         &mock.rover.clone(),
         CallbackMsg::UpdateCoinBalances {
-            token_id: token_id.clone(),
+            account_id: account_id.clone(),
             previous_balances: coins(300, osmo_info.denom.clone()),
         },
     )
     .unwrap();
 
-    let position = mock.query_position(&token_id);
+    let position = mock.query_position(&account_id);
     assert_eq!(position.coins.len(), 1);
     assert_eq!(position.coins.first().unwrap().denom, osmo_info.denom);
     assert_eq!(position.coins.first().unwrap().amount.u128(), 500);
@@ -160,7 +160,7 @@ fn test_works_on_multiple() {
         .allowed_coins(&[osmo_info.clone(), atom_info.clone()])
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     mock.app
         .sudo(SudoMsg::Bank(BankSudo::Mint {
@@ -175,13 +175,13 @@ fn test_works_on_multiple() {
     mock.invoke_callback(
         &mock.rover.clone(),
         CallbackMsg::UpdateCoinBalances {
-            token_id: token_id.clone(),
+            account_id: account_id.clone(),
             previous_balances: vec![coin(0, osmo_info.denom), coin(0, atom_info.denom)],
         },
     )
     .unwrap();
 
-    let position = mock.query_position(&token_id);
+    let position = mock.query_position(&account_id);
     assert_eq!(position.coins.len(), 2);
     let osmo = get_coin("uosmo", &position.coins);
     assert_eq!(osmo.amount.u128(), 143);

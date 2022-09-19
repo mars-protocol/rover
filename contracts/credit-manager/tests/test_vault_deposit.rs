@@ -15,11 +15,11 @@ fn test_only_account_owner_can_take_action() {
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new().build().unwrap();
 
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let bad_guy = Addr::unchecked("bad_guy");
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &bad_guy,
         vec![VaultDeposit {
             vault: VaultBase::new("xyz".to_string()),
@@ -32,7 +32,7 @@ fn test_only_account_owner_can_take_action() {
         res,
         ContractError::NotTokenOwner {
             user: bad_guy.to_string(),
-            token_id,
+            account_id,
         },
     );
 }
@@ -54,10 +54,10 @@ fn test_all_deposit_coins_are_whitelisted() {
         .unwrap();
 
     let vault = mock.get_vault(&leverage_vault);
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![VaultDeposit {
             vault,
@@ -87,10 +87,10 @@ fn test_vault_is_whitelisted() {
         .build()
         .unwrap();
 
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![VaultDeposit {
             vault: VaultBase::new("unknown_vault".to_string()),
@@ -123,10 +123,10 @@ fn test_deposited_coins_match_vault_requirements() {
         .build()
         .unwrap();
 
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![VaultDeposit {
             vault: mock.get_vault(&leverage_vault),
@@ -165,10 +165,10 @@ fn test_fails_if_not_enough_funds_for_deposit() {
         .build()
         .unwrap();
 
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![VaultDeposit {
             vault: mock.get_vault(&leverage_vault),
@@ -210,12 +210,12 @@ fn test_successful_deposit_into_locked_vault() {
         .unwrap();
 
     let vault = mock.get_vault(&leverage_vault);
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
     let balance = mock.query_total_vault_coin_balance(&vault);
     assert_eq!(balance, Uint128::zero());
 
     mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![
             Deposit(coin(200, uatom.denom)),
@@ -232,7 +232,7 @@ fn test_successful_deposit_into_locked_vault() {
     let lp_balance = mock.query_balance(&mock.rover, &leverage_vault.lp_token_denom);
     assert_eq!(STARTING_VAULT_SHARES, lp_balance.amount);
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.vault_positions.len(), 1);
     assert_eq!(
         STARTING_VAULT_SHARES,
@@ -281,10 +281,10 @@ fn test_successful_deposit_into_unlocked_vault() {
         .unwrap();
 
     let vault = mock.get_vault(&leverage_vault);
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![
             Deposit(coin(200, uatom.denom)),
@@ -301,7 +301,7 @@ fn test_successful_deposit_into_unlocked_vault() {
     let lp_balance = mock.query_balance(&mock.rover, &leverage_vault.lp_token_denom);
     assert_eq!(STARTING_VAULT_SHARES, lp_balance.amount);
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.vault_positions.len(), 1);
     assert_eq!(
         STARTING_VAULT_SHARES,

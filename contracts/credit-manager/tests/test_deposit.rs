@@ -17,11 +17,11 @@ pub mod helpers;
 fn test_only_owner_of_token_can_deposit() {
     let mut mock = MockEnv::new().build().unwrap();
     let user = Addr::unchecked("user");
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let another_user = Addr::unchecked("another_user");
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &another_user,
         vec![Action::Deposit(coin(0, "uosmo"))],
         &[],
@@ -31,7 +31,7 @@ fn test_only_owner_of_token_can_deposit() {
         res,
         NotTokenOwner {
             user: another_user.into(),
-            token_id,
+            account_id,
         },
     )
 }
@@ -45,20 +45,20 @@ fn test_deposit_nothing() {
         .build()
         .unwrap();
     let user = Addr::unchecked("user");
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 0);
 
     mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![Action::Deposit(coin_info.to_coin(0))],
         &[],
     )
     .unwrap();
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 0);
 }
 
@@ -71,11 +71,11 @@ fn test_deposit_but_no_funds() {
         .build()
         .unwrap();
     let user = Addr::unchecked("user");
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let deposit_amount = Uint128::new(234);
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![Action::Deposit(coin_info.to_coin(deposit_amount.u128()))],
         &[],
@@ -89,7 +89,7 @@ fn test_deposit_but_no_funds() {
         },
     );
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 0);
 }
 
@@ -106,10 +106,10 @@ fn test_deposit_but_not_enough_funds() {
         })
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![Action::Deposit(coin_info.to_coin(350))],
         &[coin(250, coin_info.denom)],
@@ -136,12 +136,12 @@ fn test_can_only_deposit_allowed_assets() {
         })
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let not_allowed_coin = ujake_info().to_coin(234);
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![Action::Deposit(not_allowed_coin.clone())],
         &[coin(250, coin_info.denom)],
@@ -149,7 +149,7 @@ fn test_can_only_deposit_allowed_assets() {
 
     assert_err(res, NotWhitelisted(not_allowed_coin.denom));
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 0);
 }
 
@@ -170,11 +170,11 @@ fn test_extra_funds_received() {
         })
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let extra_funds = coin(25, uatom_info.denom);
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![Action::Deposit(uosmo_info.to_coin(234))],
         &[coin(234, uosmo_info.denom), extra_funds.clone()],
@@ -182,7 +182,7 @@ fn test_extra_funds_received() {
 
     assert_err(res, ExtraFundsReceived(Coins::from(vec![extra_funds])));
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 0);
 }
 
@@ -199,18 +199,18 @@ fn test_deposit_success() {
         })
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let deposit_amount = Uint128::new(234);
     mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![Action::Deposit(coin_info.to_coin(deposit_amount.u128()))],
         &[Coin::new(deposit_amount.into(), coin_info.denom.clone())],
     )
     .unwrap();
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     let assets_res = res.coins.first().unwrap();
     assert_eq!(res.coins.len(), 1);
     assert_eq!(assets_res.amount, deposit_amount);
@@ -242,13 +242,13 @@ fn test_multiple_deposit_actions() {
         })
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let uosmo_amount = Uint128::new(234);
     let uatom_amount = Uint128::new(25);
 
     mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![
             Action::Deposit(uosmo_info.to_coin(uosmo_amount.u128())),
@@ -261,7 +261,7 @@ fn test_multiple_deposit_actions() {
     )
     .unwrap();
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 2);
     let uosmo_value = Decimal::from_atomics(uosmo_amount, 0).unwrap() * uosmo_info.price;
     assert_present(&res, &uosmo_info, uosmo_amount, uosmo_value);

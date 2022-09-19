@@ -13,11 +13,11 @@ pub mod helpers;
 fn test_only_token_owner_can_swap_for_account() {
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new().build().unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let another_user = Addr::unchecked("another_user");
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &another_user,
         vec![SwapExactIn {
             coin_in: coin(12, "mars"),
@@ -31,7 +31,7 @@ fn test_only_token_owner_can_swap_for_account() {
         res,
         ContractError::NotTokenOwner {
             user: another_user.into(),
-            token_id,
+            account_id,
         },
     )
 }
@@ -40,10 +40,10 @@ fn test_only_token_owner_can_swap_for_account() {
 fn test_coin_in_must_be_whitelisted() {
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new().build().unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![SwapExactIn {
             coin_in: coin(12, "mars"),
@@ -65,10 +65,10 @@ fn test_denom_out_must_be_whitelisted() {
         .allowed_coins(&[osmo_info.clone()])
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![SwapExactIn {
             coin_in: osmo_info.to_coin(10_000),
@@ -91,10 +91,10 @@ fn test_no_amount_sent() {
         .allowed_coins(&[osmo_info.clone(), atom_info.clone()])
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![SwapExactIn {
             coin_in: osmo_info.to_coin(0),
@@ -117,10 +117,10 @@ fn test_user_has_zero_balance_for_swap_req() {
         .allowed_coins(&[osmo_info.clone(), atom_info.clone()])
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![SwapExactIn {
             coin_in: osmo_info.to_coin(10_000),
@@ -154,10 +154,10 @@ fn test_user_does_not_have_enough_balance_for_swap_req() {
         })
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![
             Deposit(osmo_info.to_coin(100)),
@@ -198,9 +198,9 @@ fn test_swap_successful() {
     let res = mock.query_swap_estimate(&atom_info.to_coin(10_000), &osmo_info.denom);
     assert_eq!(res.amount, MOCK_SWAP_RESULT);
 
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
     mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![
             Deposit(atom_info.to_coin(10_000)),
@@ -221,7 +221,7 @@ fn test_swap_successful() {
     assert_eq!(osmo_balance, MOCK_SWAP_RESULT);
 
     // assert account position
-    let position = mock.query_position(&token_id);
+    let position = mock.query_position(&account_id);
     assert_eq!(position.coins.len(), 1);
     assert_eq!(position.coins.first().unwrap().denom, osmo_info.denom);
     assert_eq!(position.coins.first().unwrap().amount, MOCK_SWAP_RESULT);

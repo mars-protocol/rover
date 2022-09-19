@@ -72,9 +72,9 @@ fn test_pagination_on_all_debt_shares_query_works() {
         .build()
         .unwrap();
 
-    let token_id_a = mock.create_credit_account(&user_a).unwrap();
+    let account_id_a = mock.create_credit_account(&user_a).unwrap();
     mock.update_credit_account(
-        &token_id_a,
+        &account_id_a,
         &user_a,
         user_a_coins
             .iter()
@@ -89,9 +89,9 @@ fn test_pagination_on_all_debt_shares_query_works() {
     )
     .unwrap();
 
-    let token_id_b = mock.create_credit_account(&user_b).unwrap();
+    let account_id_b = mock.create_credit_account(&user_b).unwrap();
     mock.update_credit_account(
-        &token_id_b,
+        &account_id_b,
         &user_b,
         user_b_coins
             .iter()
@@ -106,9 +106,9 @@ fn test_pagination_on_all_debt_shares_query_works() {
     )
     .unwrap();
 
-    let token_id_c = mock.create_credit_account(&user_c).unwrap();
+    let account_id_c = mock.create_credit_account(&user_c).unwrap();
     mock.update_credit_account(
-        &token_id_c,
+        &account_id_c,
         &user_c,
         user_c_coins
             .iter()
@@ -136,19 +136,19 @@ fn test_pagination_on_all_debt_shares_query_works() {
     let all_debt_shares_res_a = mock.query_all_debt_shares(None, None);
 
     let SharesResponseItem {
-        token_id, denom, ..
+        account_id, denom, ..
     } = all_debt_shares_res_a.last().unwrap().clone();
-    let all_debt_shares_res_b = mock.query_all_debt_shares(Some((token_id, denom)), None);
+    let all_debt_shares_res_b = mock.query_all_debt_shares(Some((account_id, denom)), None);
 
     let SharesResponseItem {
-        token_id, denom, ..
+        account_id, denom, ..
     } = all_debt_shares_res_b.last().unwrap().clone();
-    let all_debt_shares_res_c = mock.query_all_debt_shares(Some((token_id, denom)), None);
+    let all_debt_shares_res_c = mock.query_all_debt_shares(Some((account_id, denom)), None);
 
     let SharesResponseItem {
-        token_id, denom, ..
+        account_id, denom, ..
     } = all_debt_shares_res_c.last().unwrap().clone();
-    let all_debt_shares_res_d = mock.query_all_debt_shares(Some((token_id, denom)), None);
+    let all_debt_shares_res_d = mock.query_all_debt_shares(Some((account_id, denom)), None);
 
     // Assert default is observed
     assert_eq!(all_debt_shares_res_a.len(), 10);
@@ -168,7 +168,7 @@ fn test_pagination_on_all_debt_shares_query_works() {
     let user_a_response_items = user_a_coins
         .iter()
         .map(|coin| SharesResponseItem {
-            token_id: token_id_a.clone(),
+            account_id: account_id_a.clone(),
             denom: coin.denom.clone(),
             shares: DEFAULT_DEBT_SHARES_PER_COIN_BORROWED,
         })
@@ -177,7 +177,7 @@ fn test_pagination_on_all_debt_shares_query_works() {
     let user_b_response_items = user_b_coins
         .iter()
         .map(|coin| SharesResponseItem {
-            token_id: token_id_b.clone(),
+            account_id: account_id_b.clone(),
             denom: coin.denom.clone(),
             shares: DEFAULT_DEBT_SHARES_PER_COIN_BORROWED,
         })
@@ -186,7 +186,7 @@ fn test_pagination_on_all_debt_shares_query_works() {
     let user_c_response_items = user_c_coins
         .iter()
         .map(|coin| SharesResponseItem {
-            token_id: token_id_c.clone(),
+            account_id: account_id_c.clone(),
             denom: coin.denom.clone(),
             shares: DEFAULT_DEBT_SHARES_PER_COIN_BORROWED,
         })

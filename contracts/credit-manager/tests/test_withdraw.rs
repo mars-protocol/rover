@@ -14,11 +14,11 @@ fn test_only_owner_of_token_can_withdraw() {
     let coin_info = uosmo_info();
     let owner = Addr::unchecked("owner");
     let mut mock = MockEnv::new().build().unwrap();
-    let token_id = mock.create_credit_account(&owner).unwrap();
+    let account_id = mock.create_credit_account(&owner).unwrap();
 
     let another_user = Addr::unchecked("another_user");
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &another_user,
         vec![Action::Withdraw(coin(382, coin_info.denom))],
         &[],
@@ -28,11 +28,11 @@ fn test_only_owner_of_token_can_withdraw() {
         res,
         NotTokenOwner {
             user: another_user.into(),
-            token_id: token_id.clone(),
+            account_id: account_id.clone(),
         },
     );
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 0);
 }
 
@@ -44,10 +44,10 @@ fn test_withdraw_nothing() {
         .allowed_coins(&[coin_info.clone()])
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![Action::Withdraw(coin(0, coin_info.denom))],
         &[],
@@ -55,7 +55,7 @@ fn test_withdraw_nothing() {
 
     assert_err(res, ContractError::NoAmount);
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 0);
 }
 
@@ -67,10 +67,10 @@ fn test_withdraw_but_no_funds() {
         .allowed_coins(&[coin_info.clone()])
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![Action::Withdraw(coin_info.to_coin(234))],
         &[],
@@ -85,7 +85,7 @@ fn test_withdraw_but_no_funds() {
         }),
     );
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 0);
 }
 
@@ -101,10 +101,10 @@ fn test_withdraw_but_not_enough_funds() {
         })
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![
             Action::Deposit(coin_info.to_coin(300)),
@@ -122,7 +122,7 @@ fn test_withdraw_but_not_enough_funds() {
         }),
     );
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 0);
 }
 
@@ -138,11 +138,11 @@ fn test_can_only_withdraw_allowed_assets() {
         })
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let not_allowed_coin = ujake_info().to_coin(234);
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![
             Action::Deposit(coin_info.to_coin(234)),
@@ -153,7 +153,7 @@ fn test_can_only_withdraw_allowed_assets() {
 
     assert_err(res, NotWhitelisted(not_allowed_coin.denom));
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 0);
 }
 
@@ -169,10 +169,10 @@ fn test_cannot_withdraw_more_than_healthy() {
         })
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let res = mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![
             Action::Deposit(coin_info.to_coin(200)),
@@ -185,12 +185,12 @@ fn test_cannot_withdraw_more_than_healthy() {
     assert_err(
         res,
         ContractError::AboveMaxLTV {
-            token_id: token_id.clone(),
+            account_id: account_id.clone(),
             max_ltv_health_factor: "0.960099750623441396".to_string(),
         },
     );
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 0);
 }
 
@@ -206,11 +206,11 @@ fn test_withdraw_success() {
         })
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let deposit_amount = 234;
     mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![
             Action::Deposit(coin_info.to_coin(deposit_amount)),
@@ -220,7 +220,7 @@ fn test_withdraw_success() {
     )
     .unwrap();
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 0);
 
     let coin = mock.query_balance(&mock.rover, &coin_info.denom);
@@ -244,13 +244,13 @@ fn test_multiple_withdraw_actions() {
         })
         .build()
         .unwrap();
-    let token_id = mock.create_credit_account(&user).unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
 
     let uosmo_amount = Uint128::new(234);
     let uatom_amount = Uint128::new(25);
 
     mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![
             Action::Deposit(uosmo_info.to_coin(uosmo_amount.u128())),
@@ -263,7 +263,7 @@ fn test_multiple_withdraw_actions() {
     )
     .unwrap();
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 2);
 
     let coin = mock.query_balance(&user, &uosmo_info.denom);
@@ -273,14 +273,14 @@ fn test_multiple_withdraw_actions() {
     assert_eq!(coin.amount, Uint128::zero());
 
     mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![Action::Withdraw(uosmo_info.to_coin(uosmo_amount.u128()))],
         &[],
     )
     .unwrap();
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 1);
 
     let coin = mock.query_balance(&mock.rover, &uosmo_info.denom);
@@ -290,14 +290,14 @@ fn test_multiple_withdraw_actions() {
     assert_eq!(coin.amount, uosmo_amount);
 
     mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![Action::Withdraw(uatom_info.to_coin(20))],
         &[],
     )
     .unwrap();
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 1);
 
     let coin = mock.query_balance(&mock.rover, &uatom_info.denom);
@@ -307,14 +307,14 @@ fn test_multiple_withdraw_actions() {
     assert_eq!(coin.amount, Uint128::new(20));
 
     mock.update_credit_account(
-        &token_id,
+        &account_id,
         &user,
         vec![Action::Withdraw(uatom_info.to_coin(5))],
         &[],
     )
     .unwrap();
 
-    let res = mock.query_position(&token_id);
+    let res = mock.query_position(&account_id);
     assert_eq!(res.coins.len(), 0);
 
     let coin = mock.query_balance(&mock.rover, &uatom_info.denom);

@@ -60,27 +60,27 @@ fn test_pagination_on_all_vault_positions_query_works() {
         }]);
     });
 
-    let token_id_a = mock.create_credit_account(&user_a).unwrap();
+    let account_id_a = mock.create_credit_account(&user_a).unwrap();
     mock.update_credit_account(
-        &token_id_a,
+        &account_id_a,
         &user_a,
         actions.clone(),
         &[uatom.to_coin(220), uosmo.to_coin(220)],
     )
     .unwrap();
 
-    let token_id_b = mock.create_credit_account(&user_b).unwrap();
+    let account_id_b = mock.create_credit_account(&user_b).unwrap();
     mock.update_credit_account(
-        &token_id_b,
+        &account_id_b,
         &user_b,
         actions.clone(),
         &[uatom.to_coin(220), uosmo.to_coin(220)],
     )
     .unwrap();
 
-    let token_id_c = mock.create_credit_account(&user_c).unwrap();
+    let account_id_c = mock.create_credit_account(&user_c).unwrap();
     mock.update_credit_account(
-        &token_id_c,
+        &account_id_c,
         &user_c,
         actions,
         &[uatom.to_coin(220), uosmo.to_coin(220)],
@@ -97,14 +97,14 @@ fn test_pagination_on_all_vault_positions_query_works() {
 
     let vaults_res_a = mock.query_all_vault_positions(None, None);
     let item = vaults_res_a.last().unwrap();
-    let vaults_res_b =
-        mock.query_all_vault_positions(Some((item.token_id.clone(), item.addr.clone())), Some(30));
+    let vaults_res_b = mock
+        .query_all_vault_positions(Some((item.account_id.clone(), item.addr.clone())), Some(30));
     let item = vaults_res_b.last().unwrap();
-    let vaults_res_c =
-        mock.query_all_vault_positions(Some((item.token_id.clone(), item.addr.clone())), Some(30));
+    let vaults_res_c = mock
+        .query_all_vault_positions(Some((item.account_id.clone(), item.addr.clone())), Some(30));
     let item = vaults_res_c.last().unwrap();
     let vaults_res_d =
-        mock.query_all_vault_positions(Some((item.token_id.clone(), item.addr.clone())), None);
+        mock.query_all_vault_positions(Some((item.account_id.clone(), item.addr.clone())), None);
 
     // Assert default is observed
     assert_eq!(vaults_res_a.len(), 10);

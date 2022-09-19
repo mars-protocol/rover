@@ -58,27 +58,27 @@ fn test_pagination_on_all_vault_coin_balances_query_works() {
         }]);
     });
 
-    let token_id_a = mock.create_credit_account(&user_a).unwrap();
+    let account_id_a = mock.create_credit_account(&user_a).unwrap();
     mock.update_credit_account(
-        &token_id_a,
+        &account_id_a,
         &user_a,
         actions.clone(),
         &[uatom.to_coin(220), uosmo.to_coin(220)],
     )
     .unwrap();
 
-    let token_id_b = mock.create_credit_account(&user_b).unwrap();
+    let account_id_b = mock.create_credit_account(&user_b).unwrap();
     mock.update_credit_account(
-        &token_id_b,
+        &account_id_b,
         &user_b,
         actions.clone(),
         &[uatom.to_coin(220), uosmo.to_coin(220)],
     )
     .unwrap();
 
-    let token_id_c = mock.create_credit_account(&user_c).unwrap();
+    let account_id_c = mock.create_credit_account(&user_c).unwrap();
     mock.update_credit_account(
-        &token_id_c,
+        &account_id_c,
         &user_c,
         actions,
         &[uatom.to_coin(220), uosmo.to_coin(220)],
