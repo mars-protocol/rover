@@ -25,7 +25,11 @@ pub enum QueryMsg {
     /// All the coins that would be redeemed for in exchange for
     /// vault coins. Used by Rover to calculate vault position values.
     #[returns(Vec<Coin>)]
-    PreviewRedeem { shares: Uint128 },
+    PreviewRedeem { amount: Uint128 },
+    /// Returns the total vault coins issued. In order to prevent Cream-attack, we cannot
+    /// query the bank module for this amount.
+    #[returns(Uint128)]
+    TotalVaultCoinsIssued {},
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]

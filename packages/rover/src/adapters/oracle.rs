@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 use std::ops::Add;
 
 use crate::error::ContractResult;
+use crate::traits::IntoDecimal;
 use mock_oracle::msg::QueryMsg;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
@@ -54,8 +55,7 @@ impl Oracle {
             .iter()
             .map(|coin| {
                 let res = self.query_price(querier, &coin.denom)?;
-                let asset_amount_dec = Decimal::from_atomics(coin.amount, 0)?;
-                Ok(res.price.checked_mul(asset_amount_dec)?)
+                Ok(res.price.checked_mul(coin.amount.to_dec()?)?)
             })
             .collect::<ContractResult<Vec<_>>>()?
             .iter()

@@ -101,7 +101,7 @@ pub enum CallbackMsg {
         vault: Vault,
         coins: Vec<Coin>,
     },
-    /// Used to update the account balance of vault coins after a deposit
+    /// Used to update the account balance of vault coins after a vault action has taken place
     UpdateVaultCoinBalance {
         vault: Vault,
         /// Account that needs vault coin balance adjustment

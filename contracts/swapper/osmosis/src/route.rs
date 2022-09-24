@@ -12,6 +12,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use rover::adapters::swap::{EstimateExactInSwapResponse, QueryMsg};
+use rover::traits::IntoDecimal;
 use swapper_base::{ContractError, ContractResult, Route};
 
 use crate::helpers::{hashset, GetValue, IntoUint128};
@@ -122,12 +123,11 @@ impl Route<OsmosisMsg, OsmosisQuery> for OsmosisRoute {
                 })?,
             }))?;
 
-        let swap_estimate_dec = Decimal::from_atomics(res.amount, 0)?;
         let swap_amount_with_slippage = SwapAmountWithLimit::ExactIn {
             input: coin_in.amount,
             min_output: Decimal::one()
                 .sub(slippage)
-                .checked_mul(swap_estimate_dec)?
+                .checked_mul(res.amount.to_dec()?)?
                 .uint128(),
         };
 
