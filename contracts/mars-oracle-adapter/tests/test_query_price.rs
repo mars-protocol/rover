@@ -4,8 +4,8 @@ use cosmwasm_std::{Decimal, Uint128};
 use cw_multi_test::App;
 use mars_outpost::oracle::PriceResponse;
 
+use mars_oracle_adapter::msg::QueryMsg;
 use mock_vault::contract::STARTING_VAULT_SHARES;
-use oracle_adapter::msg::QueryMsg;
 use rover::traits::IntoDecimal;
 
 use crate::helpers::{instantiate_oracle_adapter, mock_vault_info};

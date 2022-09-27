@@ -1,17 +1,16 @@
+use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
     to_binary, Addr, Api, BalanceResponse, BankQuery, Coin, CosmosMsg, Decimal, OverflowError,
     QuerierWrapper, QueryRequest, StdResult, Uint128, WasmMsg, WasmQuery,
 };
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
 use crate::adapters::Oracle;
 use crate::error::ContractResult;
 use crate::msg::vault::{ExecuteMsg, QueryMsg, VaultInfo};
 use crate::traits::Stringify;
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema, Default)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
+#[derive(Default)]
 pub struct VaultPositionState {
     pub unlocked: Uint128,
     pub locked: Uint128,
@@ -23,14 +22,13 @@ impl VaultPositionState {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub struct VaultPosition {
     pub vault: Vault,
     pub state: VaultPositionState,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[cw_serde]
 pub struct VaultBase<T> {
     pub address: T,
 }

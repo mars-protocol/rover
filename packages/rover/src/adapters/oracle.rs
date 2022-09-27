@@ -1,14 +1,15 @@
+use std::ops::Add;
+
+use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Addr, Api, Coin, Decimal, QuerierWrapper, StdResult};
 use mars_outpost::oracle::PriceResponse;
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
-use std::ops::Add;
+
+use mock_oracle::msg::QueryMsg;
 
 use crate::error::ContractResult;
 use crate::traits::IntoDecimal;
-use mock_oracle::msg::QueryMsg;
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
+#[cw_serde]
 pub struct OracleBase<T>(T);
 
 impl<T> OracleBase<T> {

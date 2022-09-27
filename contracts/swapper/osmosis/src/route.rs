@@ -1,6 +1,7 @@
 use std::fmt;
 use std::ops::Sub;
 
+use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
     to_binary, Addr, Coin, CosmosMsg, Decimal, Deps, Env, QuerierWrapper, QueryRequest, WasmQuery,
 };
@@ -8,16 +9,13 @@ use osmo_bindings::{
     EstimatePriceResponse as OsmoResponse, OsmosisMsg, OsmosisQuery, PoolStateResponse, Step, Swap,
     SwapAmount, SwapAmountWithLimit,
 };
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
-
 use rover::adapters::swap::{EstimateExactInSwapResponse, QueryMsg};
 use rover::traits::IntoDecimal;
 use swapper_base::{ContractError, ContractResult, Route};
 
 use crate::helpers::{hashset, GetValue, IntoUint128};
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[cw_serde]
 pub struct OsmosisRoute {
     pub steps: Vec<Step>,
 }

@@ -27,7 +27,7 @@ pub fn instantiate(
 ) -> ContractResult<Response> {
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     store_config(deps, &msg)?;
-    Ok(Response::new().add_attribute("method", "instantiate"))
+    Ok(Response::default())
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]

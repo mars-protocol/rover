@@ -1,8 +1,6 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Coin, Decimal, Uint128};
 use mars_health::health::Health;
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
 use crate::adapters::{Vault, VaultPosition, VaultUnchecked};
 use crate::traits::Coins;
@@ -69,31 +67,27 @@ pub enum QueryMsg {
     },
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub struct CoinBalanceResponseItem {
     pub account_id: String,
     pub denom: String,
     pub amount: Uint128,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub struct SharesResponseItem {
     pub account_id: String,
     pub denom: String,
     pub shares: Uint128,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub struct DebtShares {
     pub denom: String,
     pub shares: Uint128,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub struct DebtAmount {
     pub denom: String,
     /// number of shares in debt pool
@@ -104,8 +98,7 @@ pub struct DebtAmount {
 
 impl Coins for Vec<DebtAmount> {
     fn to_coins(&self) -> Vec<Coin> {
-        self.to_vec()
-            .iter()
+        self.iter()
             .map(|d| Coin {
                 denom: d.denom.to_string(),
                 amount: d.amount,
@@ -114,8 +107,7 @@ impl Coins for Vec<DebtAmount> {
     }
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub struct CoinValue {
     pub denom: String,
     pub amount: Uint128,
@@ -123,8 +115,7 @@ pub struct CoinValue {
     pub value: Decimal,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub struct Positions {
     pub account_id: String,
     pub coins: Vec<Coin>,
@@ -132,29 +123,25 @@ pub struct Positions {
     pub vaults: Vec<VaultPosition>,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub struct VaultPositionResponseItem {
     pub account_id: String,
     pub position: VaultPosition,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub struct VaultWithBalance {
     pub vault: Vault,
     pub balance: Uint128,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub struct VaultPositionValue {
     pub position: VaultPosition,
     pub value: Decimal,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub struct ConfigResponse {
     pub owner: String,
     pub account_nft: Option<String>,
@@ -165,8 +152,7 @@ pub struct ConfigResponse {
     pub swapper: String,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-#[serde(rename_all = "snake_case")]
+#[cw_serde]
 pub struct HealthResponse {
     pub total_debt_value: Decimal,
     pub total_collateral_value: Decimal,

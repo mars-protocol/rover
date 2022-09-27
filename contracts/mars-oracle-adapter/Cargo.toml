@@ -1,5 +1,5 @@
 [package]
-name = "oracle-adapter"
+name = "mars-oracle-adapter"
 version = "1.0.0"
 authors = ["grod220 <gabe.r@delphilabs.io>"]
 edition = "2021"
@@ -20,8 +20,6 @@ rover = { version = "1.0", path = "../../packages/rover" }
 cosmwasm-schema = "1.1"
 cosmwasm-std = "1.1"
 cw-storage-plus = "0.15"
-schemars = "0.8"
-serde = { version = "1.0", default-features = false, features = ["derive"] }
 thiserror = "1.0"
 
 [dev-dependencies]

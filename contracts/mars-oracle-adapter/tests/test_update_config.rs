@@ -1,8 +1,10 @@
 use cosmwasm_std::Addr;
 use cw_multi_test::{App, Executor};
 
-use oracle_adapter::error::ContractError;
-use oracle_adapter::msg::{ConfigResponse, ConfigUpdates, ExecuteMsg, QueryMsg, VaultPricingInfo};
+use mars_oracle_adapter::error::ContractError;
+use mars_oracle_adapter::msg::{
+    ConfigResponse, ConfigUpdates, ExecuteMsg, QueryMsg, VaultPricingInfo,
+};
 use rover::adapters::{OracleBase, OracleUnchecked};
 
 use crate::helpers::{assert_err, instantiate_oracle_adapter};

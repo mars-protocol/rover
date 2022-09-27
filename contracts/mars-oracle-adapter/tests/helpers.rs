@@ -1,9 +1,11 @@
 use anyhow::Result as AnyResult;
+use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{coin, Addr, Coin, Decimal};
 use cw_multi_test::{AppResponse, BankSudo, BasicApp, ContractWrapper, Executor, SudoMsg};
-use schemars::JsonSchema;
-use serde::{Deserialize, Serialize};
 
+use mars_oracle_adapter::contract::{execute, instantiate, query};
+use mars_oracle_adapter::error::ContractError;
+use mars_oracle_adapter::msg::{InstantiateMsg, PricingMethod, VaultPricingInfo};
 use mock_oracle::contract::{
     execute as oracleExecute, instantiate as oracleInstantiate, query as oracleQuery,
 };
@@ -13,9 +15,6 @@ use mock_vault::contract::{
     DEFAULT_VAULT_TOKEN_PREFUND,
 };
 use mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
-use oracle_adapter::contract::{execute, instantiate, query};
-use oracle_adapter::error::ContractError;
-use oracle_adapter::msg::{InstantiateMsg, PricingMethod, VaultPricingInfo};
 use rover::adapters::{OracleBase, OracleUnchecked, VaultBase};
 
 pub fn mock_vault_info() -> VaultTestInfo {
@@ -45,13 +44,13 @@ pub fn instantiate_oracle_adapter(app: &mut BasicApp) -> Addr {
             owner: owner.to_string(),
         },
         &[],
-        "oracle-adapter",
+        "mars-oracle-adapter",
         None,
     )
     .unwrap()
 }
 
-#[derive(Serialize, Deserialize, Clone, PartialEq, Eq, JsonSchema, Debug)]
+#[cw_serde]
 pub struct VaultTestInfo {
     pub vault_coin_denom: String,
     pub lockup: Option<u64>,

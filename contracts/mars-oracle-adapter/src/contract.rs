@@ -38,7 +38,7 @@ pub fn instantiate(
         VAULT_PRICING_INFO.save(deps.storage, &info.denom, &info)?;
     }
 
-    Ok(Response::new().add_attribute("method", "instantiate"))
+    Ok(Response::default())
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -94,16 +94,13 @@ fn query_all_pricing_info(
 fn query_price(deps: Deps, denom: &str) -> ContractResult<PriceResponse> {
     let info_opt = VAULT_PRICING_INFO.may_load(deps.storage, denom)?;
     let oracle = ORACLE.load(deps.storage)?;
+
     match info_opt {
-        None => Ok(oracle.query_price(&deps.querier, denom)?),
-        Some(info) => {
+        Some(info) if info.method == PricingMethod::PreviewRedeem => {
             let vault = VaultBase::new(info.addr.clone());
-            match info.method {
-                PricingMethod::PreviewRedeem => {
-                    calculate_preview_redeem(&deps, &oracle, &info, &vault)
-                }
-            }
+            calculate_preview_redeem(&deps, &oracle, &info, &vault)
         }
+        _ => Ok(oracle.query_price(&deps.querier, denom)?),
     }
 }
 
@@ -153,7 +150,7 @@ pub fn update_config(
     }
 
     let mut response =
-        Response::new().add_attribute("action", "rover/oracle_adapter/update_config");
+        Response::new().add_attribute("action", "rover/oracle-adapter/update_config");
 
     if let Some(addr_str) = new_config.owner {
         let validated = deps.api.addr_validate(&addr_str)?;
@@ -172,15 +169,15 @@ pub fn update_config(
 
     if let Some(vault_pricing) = new_config.vault_pricing {
         clear_map(deps.storage)?;
-        for info in vault_pricing.clone() {
-            VAULT_PRICING_INFO.save(deps.storage, &info.denom, &info)?;
+        for info in &vault_pricing {
+            VAULT_PRICING_INFO.save(deps.storage, &info.denom, info)?;
         }
         let value_str = if vault_pricing.is_empty() {
             "None".to_string()
         } else {
             vault_pricing
-                .iter()
-                .map(|info| info.denom.clone())
+                .into_iter()
+                .map(|info| info.denom)
                 .collect::<Vec<_>>()
                 .join(", ")
         };

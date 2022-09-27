@@ -3,7 +3,7 @@ members = [
     "contracts/account-nft",
     "contracts/credit-manager",
     "contracts/swapper/*",
-    "contracts/oracle-adapter",
+    "contracts/mars-oracle-adapter",
     "packages/*",
 
 #    Mock contracts
