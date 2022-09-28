@@ -592,9 +592,8 @@ dependencies = [
 name = "mars-outpost"
 version = "0.1.0"
 dependencies = [
+ "cosmwasm-schema",
  "cosmwasm-std",
- "schemars",
- "serde",
  "thiserror",
 ]
 
