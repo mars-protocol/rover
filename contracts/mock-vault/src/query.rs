@@ -46,10 +46,9 @@ pub fn query_unlocking_position(deps: Deps, id: Uint128) -> StdResult<UnlockingP
     UNLOCKING_COINS
         .range(deps.storage, None, None, Order::Ascending)
         .collect::<StdResult<Vec<_>>>()?
-        .iter()
+        .into_iter()
         .flat_map(|(_, positions)| positions)
         .find(|p| p.id == id)
-        .map(Clone::clone)
         .ok_or_else(|| StdError::generic_err("Id not found"))
 }
 

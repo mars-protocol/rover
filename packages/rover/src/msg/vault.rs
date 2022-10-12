@@ -1,6 +1,9 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Timestamp, Uint128};
 
+pub const UNLOCKING_POSITION_CREATED_EVENT_TYPE: &str = "unlocking_position_created";
+pub const UNLOCKING_POSITION_ATTR: &str = "id";
+
 /// Partial compatibility with EIP-4626
 #[cw_serde]
 pub enum ExecuteMsg {

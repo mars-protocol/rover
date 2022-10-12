@@ -1,7 +1,11 @@
 use std::str::FromStr;
 
+use crate::msg::vault::UNLOCKING_POSITION_CREATED_EVENT_TYPE;
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Reply, StdError, StdResult, SubMsgResult, Uint128};
+
+// https://github.com/CosmWasm/wasmd/blob/main/EVENTS.md#standard-events-in-xwasm
+const CONTRACT_ADDR_KEY: &str = "_contract_addr";
 
 #[cw_serde]
 pub struct AssetTransferMsg {
@@ -28,7 +32,9 @@ impl AttrParse for Reply {
                 let unlock_event = response
                     .events
                     .iter()
-                    .find(|event| event.ty == "wasm-unlocking_position_created")
+                    .find(|event| {
+                        event.ty == format!("wasm-{}", UNLOCKING_POSITION_CREATED_EVENT_TYPE)
+                    })
                     .ok_or_else(|| StdError::generic_err("No unlock event"))?;
 
                 let id = &unlock_event
@@ -37,17 +43,16 @@ impl AttrParse for Reply {
                     .find(|x| x.key == "id")
                     .ok_or_else(|| StdError::generic_err("No id attribute"))?
                     .value;
-                // parse_instantiate_response_data
-                // https://github.com/CosmWasm/wasmd/blob/main/EVENTS.md#standard-events-in-xwasm
+
                 let contract_addr = &unlock_event
                     .attributes
                     .iter()
-                    .find(|x| x.key == "_contract_addr")
+                    .find(|x| x.key == CONTRACT_ADDR_KEY)
                     .ok_or_else(|| StdError::generic_err("No contract attribute"))?
                     .value;
 
                 Ok(UnlockEvent {
-                    id: Uint128::from_str(id.as_str())?,
+                    id: Uint128::from_str(id)?,
                     vault_addr: contract_addr.to_string(),
                 })
             }

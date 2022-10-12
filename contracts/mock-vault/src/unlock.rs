@@ -1,6 +1,8 @@
 use cosmwasm_std::{DepsMut, Env, Event, MessageInfo, Response, StdResult, Uint128};
 
-use rover::msg::vault::UnlockingPosition;
+use rover::msg::vault::{
+    UnlockingPosition, UNLOCKING_POSITION_ATTR, UNLOCKING_POSITION_CREATED_EVENT_TYPE,
+};
 
 use crate::error::ContractError;
 use crate::state::{LOCKUP_TIME, NEXT_UNLOCK_ID, UNLOCKING_COINS};
@@ -30,7 +32,8 @@ pub fn request_unlock(
 
     NEXT_UNLOCK_ID.save(deps.storage, &(next_unlock_id + Uint128::from(1u128)))?;
 
-    let event = Event::new("unlocking_position_created").add_attribute("id", next_unlock_id);
+    let event = Event::new(UNLOCKING_POSITION_CREATED_EVENT_TYPE)
+        .add_attribute(UNLOCKING_POSITION_ATTR, next_unlock_id);
     Ok(Response::new().add_event(event))
 }
 
@@ -47,21 +50,18 @@ pub fn withdraw_unlocked(
     let matching_position = unlocking_positions
         .iter()
         .find(|p| p.id == id)
-        .ok_or(ContractError::UnlockRequired {})?;
+        .ok_or(ContractError::UnlockRequired {})?
+        .clone();
 
     if matching_position.unlocked_at > env.block.time {
         return Err(ContractError::UnlockNotReady {});
     }
 
-    UNLOCKING_COINS.save(
-        deps.storage,
-        info.sender.clone(),
-        &unlocking_positions
-            .iter()
-            .filter(|p| p.id != id)
-            .map(Clone::clone)
-            .collect(),
-    )?;
+    let remaining = unlocking_positions
+        .into_iter()
+        .filter(|p| p.id != id)
+        .collect();
+    UNLOCKING_COINS.save(deps.storage, info.sender.clone(), &remaining)?;
 
     _exchange(deps.storage, info.sender, matching_position.amount)
 }

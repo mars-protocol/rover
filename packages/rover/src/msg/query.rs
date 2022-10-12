@@ -127,7 +127,6 @@ pub struct Positions {
 pub struct VaultPositionResponseItem {
     pub account_id: String,
     pub position: VaultPosition,
-    // pub vault_addr: String,
 }
 
 #[cw_serde]
