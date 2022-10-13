@@ -30,10 +30,10 @@ pub fn request_unlock(
         Ok(unlocking_positions)
     })?;
 
-    NEXT_UNLOCK_ID.save(deps.storage, &(next_unlock_id + Uint128::from(1u128)))?;
+    NEXT_UNLOCK_ID.save(deps.storage, &(next_unlock_id + 1))?;
 
     let event = Event::new(UNLOCKING_POSITION_CREATED_EVENT_TYPE)
-        .add_attribute(UNLOCKING_POSITION_ATTR, next_unlock_id);
+        .add_attribute(UNLOCKING_POSITION_ATTR, next_unlock_id.to_string());
     Ok(Response::new().add_event(event))
 }
 
@@ -41,7 +41,7 @@ pub fn withdraw_unlocked(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    id: Uint128,
+    id: u64,
 ) -> Result<Response, ContractError> {
     let unlocking_positions = UNLOCKING_COINS
         .may_load(deps.storage, info.sender.clone())?
@@ -64,4 +64,33 @@ pub fn withdraw_unlocked(
     UNLOCKING_COINS.save(deps.storage, info.sender.clone(), &remaining)?;
 
     _exchange(deps.storage, info.sender, matching_position.amount)
+}
+
+pub fn withdraw_unlocking_force(
+    deps: DepsMut,
+    info: MessageInfo,
+    lockup_id: u64,
+    amount: Option<Uint128>,
+) -> Result<Response, ContractError> {
+    let mut unlocking_positions = UNLOCKING_COINS.load(deps.storage, info.sender.clone())?;
+    let mut unlocking_position = unlocking_positions
+        .iter()
+        .find(|p| p.id == lockup_id)
+        .cloned()
+        .ok_or(ContractError::LockupPositionNotFound(lockup_id))?;
+
+    unlocking_positions.retain(|p| p.id != lockup_id);
+
+    let amount_to_withdraw = match amount {
+        Some(a) if a != unlocking_position.amount => {
+            unlocking_position.amount -= a;
+            unlocking_positions.push(unlocking_position);
+            a
+        }
+        _ => unlocking_position.amount,
+    };
+
+    UNLOCKING_COINS.save(deps.storage, info.sender.clone(), &unlocking_positions)?;
+
+    _exchange(deps.storage, info.sender, amount_to_withdraw)
 }

@@ -5,6 +5,10 @@ use account_nft::contract::{
     execute as cw721Execute, instantiate as cw721Instantiate, query as cw721Query,
 };
 use credit_manager::contract::{execute, instantiate, query, reply};
+use mars_oracle_adapter::contract::{
+    execute as oracleAdapterExecute, instantiate as oracleAdapterInstantiate,
+    query as oracleAdapterQuery,
+};
 use mock_oracle::contract::{
     execute as oracleExecute, instantiate as oracleInstantiate, query as oracleQuery,
 };
@@ -39,6 +43,15 @@ pub fn mock_red_bank_contract() -> Box<dyn Contract<Empty>> {
 
 pub fn mock_oracle_contract() -> Box<dyn Contract<Empty>> {
     let contract = ContractWrapper::new(oracleExecute, oracleInstantiate, oracleQuery);
+    Box::new(contract)
+}
+
+pub fn mock_oracle_adapter_contract() -> Box<dyn Contract<Empty>> {
+    let contract = ContractWrapper::new(
+        oracleAdapterExecute,
+        oracleAdapterInstantiate,
+        oracleAdapterQuery,
+    );
     Box::new(contract)
 }
 
