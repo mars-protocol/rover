@@ -54,10 +54,10 @@ pub fn execute(
         ExecuteMsg::Withdraw {} => withdraw(deps, info),
         ExecuteMsg::ForceWithdraw {} => withdraw_force(deps, info),
         ExecuteMsg::ForceWithdrawUnlocking { lockup_id, amount } => {
-            withdraw_unlocking_force(deps, info, lockup_id, amount)
+            withdraw_unlocking_force(deps, &info.sender, lockup_id, amount)
         }
         ExecuteMsg::RequestUnlock {} => request_unlock(deps, env, info),
-        ExecuteMsg::WithdrawUnlocked { id } => withdraw_unlocked(deps, env, info, id),
+        ExecuteMsg::WithdrawUnlocked { id } => withdraw_unlocked(deps, env, &info.sender, id),
     }
 }
 

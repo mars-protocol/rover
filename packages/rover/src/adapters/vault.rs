@@ -54,10 +54,7 @@ pub struct VaultUnlockingPosition {
 
 impl VaultPositionState {
     pub fn total(&self) -> Result<Uint128, OverflowError> {
-        let total_unlocking = self
-            .unlocking
-            .iter()
-            .fold(Uint128::zero(), |total, position| total + position.amount);
+        let total_unlocking = self.unlocking.iter().map(|u| u.amount).sum();
         self.locked
             .checked_add(self.unlocked)?
             .checked_add(total_unlocking)

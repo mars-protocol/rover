@@ -145,7 +145,7 @@ fn get_vault_withdraw_msgs(
         }
 
         // If unlocking positions have been exhausted, liquidate from LOCKED bucket
-        if total_to_liquidate > Uint128::zero() {
+        if !total_to_liquidate.is_zero() {
             update_vault_position(
                 storage,
                 liquidatee_account_id,

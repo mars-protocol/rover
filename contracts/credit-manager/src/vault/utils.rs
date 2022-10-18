@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    coin, to_binary, Addr, Coin, Deps, QueryRequest, StdResult, Storage, Uint128, WasmQuery,
+    coin, to_binary, Addr, Coin, Deps, QueryRequest, StdResult, Storage, WasmQuery,
 };
 
 use mars_oracle_adapter::msg::QueryMsg::PriceableUnderlying;
@@ -57,7 +57,7 @@ pub fn update_vault_position(
                 matching_unlock.amount = matching_unlock.amount.checked_sub(amount)?;
 
                 new_position.unlocking.retain(|p| p.id != id);
-                if matching_unlock.amount != Uint128::zero() {
+                if !matching_unlock.amount.is_zero() {
                     new_position.unlocking.push(matching_unlock);
                 }
             }
