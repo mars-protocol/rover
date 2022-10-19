@@ -24,17 +24,18 @@ pub fn update_vault_position(
     update: VaultPositionUpdate,
 ) -> ContractResult<VaultPositionAmount> {
     let path = VAULT_POSITIONS.key((account_id, vault_addr.clone()));
-    let new_position = path
+    let mut amount = path
         .may_load(storage)?
-        .unwrap_or_else(|| update.default_amount())
-        .update(update)?;
+        .unwrap_or_else(|| update.default_amount());
 
-    if new_position.is_empty() {
+    amount.update(update)?;
+
+    if amount.is_empty() {
         path.remove(storage);
     } else {
-        path.save(storage, &new_position)?;
+        path.save(storage, &amount)?;
     }
-    Ok(new_position)
+    Ok(amount)
 }
 
 /// Returns the denoms received on a withdraw, inferred by vault entry requirements
