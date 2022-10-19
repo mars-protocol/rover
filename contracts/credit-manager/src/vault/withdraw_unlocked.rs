@@ -7,7 +7,6 @@ use rover::msg::vault::UnlockingPosition;
 use rover::msg::ExecuteMsg;
 
 use crate::state::VAULT_POSITIONS;
-use crate::vault::get_unlocking_position;
 use crate::vault::utils::{
     assert_vault_is_whitelisted, query_withdraw_denom_balances, update_vault_position,
 };
@@ -22,7 +21,9 @@ pub fn withdraw_unlocked_from_vault(
     assert_vault_is_whitelisted(deps.storage, &vault)?;
 
     let vault_position = VAULT_POSITIONS.load(deps.storage, (account_id, vault.address.clone()))?;
-    let matching_unlock = get_unlocking_position(position_id, &vault_position)?;
+    let matching_unlock = vault_position
+        .unlocking_position(position_id)
+        .ok_or_else(|| ContractError::NoPositionMatch(position_id.to_string()))?;
     let UnlockingPosition { unlocked_at, .. } =
         vault.query_unlocking_position_info(&deps.querier, matching_unlock.id)?;
     if unlocked_at > env.block.time {

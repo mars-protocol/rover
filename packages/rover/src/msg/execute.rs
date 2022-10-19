@@ -159,11 +159,6 @@ pub enum CallbackMsg {
         debt_coin: Coin,
         request_vault: Vault,
     },
-    /// Determine health factor improved as a consequence of liquidation event
-    AssertHealthFactorImproved {
-        account_id: String,
-        previous_health_factor: Decimal,
-    },
     /// Perform a swapper with an exact-in amount. Requires slippage allowance %.
     SwapExactIn {
         account_id: String,

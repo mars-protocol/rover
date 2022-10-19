@@ -108,8 +108,8 @@ fn test_not_owner_of_unlocking_position() {
         .vaults
         .first()
         .unwrap()
-        .state
-        .unlocking
+        .amount
+        .unlocking()
         .first()
         .unwrap()
         .id;
@@ -130,7 +130,7 @@ fn test_not_owner_of_unlocking_position() {
     assert_err(
         res,
         ContractError::Std(NotFound {
-            kind: "rover::adapters::vault::VaultPositionState".to_string(),
+            kind: "rover::adapters::vault::VaultPositionAmount".to_string(),
         }),
     );
 }
@@ -176,7 +176,14 @@ fn test_unlocking_position_not_ready() {
 
     let Positions { vaults, .. } = mock.query_positions(&account_id);
 
-    let position_id = vaults.first().unwrap().state.unlocking.first().unwrap().id;
+    let position_id = vaults
+        .first()
+        .unwrap()
+        .amount
+        .unlocking()
+        .first()
+        .unwrap()
+        .id;
 
     let res = mock.update_credit_account(
         &account_id,
@@ -240,7 +247,14 @@ fn test_withdraw_unlock_success() {
 
     let Positions { vaults, .. } = mock.query_positions(&account_id);
 
-    let position_id = vaults.first().unwrap().state.unlocking.first().unwrap().id;
+    let position_id = vaults
+        .first()
+        .unwrap()
+        .amount
+        .unlocking()
+        .first()
+        .unwrap()
+        .id;
 
     mock.update_credit_account(
         &account_id,

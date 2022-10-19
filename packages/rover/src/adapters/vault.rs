@@ -3,18 +3,148 @@ use cosmwasm_std::{
     to_binary, Addr, Api, BalanceResponse, BankQuery, Coin, CosmosMsg, OverflowError,
     QuerierWrapper, QueryRequest, StdResult, SubMsg, Uint128, WasmMsg, WasmQuery,
 };
+use std::hash::Hash;
 
+use crate::adapters::Oracle;
+use crate::error::{ContractError, ContractResult};
 use crate::msg::vault::{ExecuteMsg, QueryMsg, UnlockingPosition, VaultInfo};
 use crate::traits::Stringify;
 
 pub const VAULT_REQUEST_REPLY_ID: u64 = 10_001;
 
 #[cw_serde]
-#[derive(Default)]
-pub struct VaultPositionState {
-    pub unlocked: Uint128,
-    pub locked: Uint128,
-    pub unlocking: Vec<VaultUnlockingPosition>,
+pub enum VaultPositionAmount {
+    LockingVault {
+        locked: Uint128,
+        unlocking: Vec<VaultUnlockingPosition>,
+    },
+    UnlockedVault(Uint128),
+}
+
+impl VaultPositionAmount {
+    pub fn is_empty(&self) -> bool {
+        match self {
+            VaultPositionAmount::LockingVault { locked, unlocking } => {
+                locked.is_zero() && unlocking.len() == 0
+            }
+            VaultPositionAmount::UnlockedVault(unlocking) => unlocking.is_zero(),
+        }
+    }
+
+    pub fn unlocked(&self) -> Uint128 {
+        match self {
+            VaultPositionAmount::UnlockedVault(amount) => *amount,
+            _ => Uint128::zero(),
+        }
+    }
+
+    pub fn locked(&self) -> Uint128 {
+        match self {
+            VaultPositionAmount::LockingVault { locked, .. } => *locked,
+            _ => Uint128::zero(),
+        }
+    }
+
+    pub fn unlocking(&self) -> Vec<VaultUnlockingPosition> {
+        match self {
+            VaultPositionAmount::LockingVault { unlocking, .. } => unlocking.clone(),
+            _ => vec![],
+        }
+    }
+
+    pub fn unlocking_position(&self, position_id: u64) -> Option<VaultUnlockingPosition> {
+        self.unlocking()
+            .iter()
+            .find(|p| p.id == position_id)
+            .cloned()
+    }
+
+    pub fn update(&self, update: VaultPositionUpdate) -> ContractResult<VaultPositionAmount> {
+        match self {
+            VaultPositionAmount::UnlockedVault(unlocked) => {
+                if let VaultPositionUpdate::Unlocked { amount, kind } = update {
+                    match kind {
+                        UpdateType::Increment => {
+                            let new_amount = unlocked.checked_add(amount)?;
+                            Ok(VaultPositionAmount::UnlockedVault(new_amount))
+                        }
+                        UpdateType::Decrement => {
+                            let new_amount = unlocked.checked_sub(amount)?;
+                            Ok(VaultPositionAmount::UnlockedVault(new_amount))
+                        }
+                    }
+                } else {
+                    Err(ContractError::MismatchedVaultType {})
+                }
+            }
+            VaultPositionAmount::LockingVault { locked, unlocking } => match update {
+                VaultPositionUpdate::Locked { amount, kind } => match kind {
+                    UpdateType::Increment => {
+                        let new_amount = locked.checked_add(amount)?;
+                        Ok(VaultPositionAmount::LockingVault {
+                            locked: new_amount,
+                            unlocking: unlocking.clone(),
+                        })
+                    }
+                    UpdateType::Decrement => {
+                        let new_amount = locked.checked_sub(amount)?;
+                        Ok(VaultPositionAmount::LockingVault {
+                            locked: new_amount,
+                            unlocking: unlocking.clone(),
+                        })
+                    }
+                },
+                VaultPositionUpdate::Unlocking { id, amount, kind } => {
+                    let res = self.unlocking_position(id);
+                    let mut new_unlocking = unlocking.clone();
+
+                    match res {
+                        None => match kind {
+                            UpdateType::Increment => {
+                                new_unlocking.push(VaultUnlockingPosition { id, amount });
+                                Ok(VaultPositionAmount::LockingVault {
+                                    locked: *locked,
+                                    unlocking: new_unlocking,
+                                })
+                            }
+                            UpdateType::Decrement => {
+                                Err(ContractError::NoPositionMatch(id.to_string()))
+                            }
+                        },
+                        Some(matching) => {
+                            new_unlocking.retain(|p| p.id != matching.id);
+                            match kind {
+                                UpdateType::Increment => {
+                                    new_unlocking.push(VaultUnlockingPosition {
+                                        id: matching.id,
+                                        amount: matching.amount.checked_add(amount)?,
+                                    });
+                                    Ok(VaultPositionAmount::LockingVault {
+                                        locked: *locked,
+                                        unlocking: new_unlocking,
+                                    })
+                                }
+                                UpdateType::Decrement => {
+                                    let new_amount = matching.amount.checked_sub(amount)?;
+                                    if !new_amount.is_zero() {
+                                        new_unlocking.push(VaultUnlockingPosition {
+                                            id: matching.id,
+                                            amount: matching.amount.checked_sub(amount)?,
+                                        });
+                                    }
+                                    Ok(VaultPositionAmount::LockingVault {
+                                        locked: *locked,
+                                        unlocking: new_unlocking,
+                                    })
+                                }
+                            }
+                        }
+                    }
+                }
+                _ => Err(ContractError::MismatchedVaultType {}),
+            },
+        }
+    }
 }
 
 #[cw_serde]
@@ -40,6 +170,20 @@ pub enum VaultPositionUpdate {
     },
 }
 
+impl VaultPositionUpdate {
+    pub fn default_amount(&self) -> VaultPositionAmount {
+        match self {
+            VaultPositionUpdate::Unlocked { .. } => {
+                VaultPositionAmount::UnlockedVault(Uint128::zero())
+            }
+            _ => VaultPositionAmount::LockingVault {
+                locked: Uint128::zero(),
+                unlocking: vec![],
+            },
+        }
+    }
+}
+
 pub type UnlockingId = u64;
 
 #[cw_serde]
@@ -50,19 +194,23 @@ pub struct VaultUnlockingPosition {
     pub amount: Uint128,
 }
 
-impl VaultPositionState {
+impl VaultPositionAmount {
     pub fn total(&self) -> Result<Uint128, OverflowError> {
-        let total_unlocking = self.unlocking.iter().map(|u| u.amount).sum();
-        self.locked
-            .checked_add(self.unlocked)?
-            .checked_add(total_unlocking)
+        match self {
+            VaultPositionAmount::LockingVault { locked, unlocking } => unlocking
+                .iter()
+                .map(|u| u.amount)
+                .sum::<Uint128>()
+                .checked_add(*locked),
+            VaultPositionAmount::UnlockedVault(unlocked) => Ok(*unlocked),
+        }
     }
 }
 
 #[cw_serde]
 pub struct VaultPosition {
     pub vault: Vault,
-    pub state: VaultPositionState,
+    pub amount: VaultPositionAmount,
 }
 
 #[cw_serde]

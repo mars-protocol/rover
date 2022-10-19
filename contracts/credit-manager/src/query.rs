@@ -180,7 +180,7 @@ fn get_vault_positions(deps: Deps, account_id: &str) -> ContractResult<Vec<Vault
             let (addr, position) = res?;
             Ok(VaultPosition {
                 vault: VaultBase::new(addr),
-                state: position,
+                amount: position,
             })
         })
         .collect()
@@ -206,11 +206,11 @@ pub fn query_all_vault_positions(
         .take(limit)
         .collect::<StdResult<Vec<_>>>()?
         .iter()
-        .map(|((account_id, addr), state)| VaultPositionResponseItem {
+        .map(|((account_id, addr), amount)| VaultPositionResponseItem {
             account_id: account_id.clone(),
             position: VaultPosition {
                 vault: VaultBase::new(addr.clone()),
-                state: state.clone(),
+                amount: amount.clone(),
             },
         })
         .collect())
