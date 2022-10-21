@@ -4,7 +4,9 @@ use cosmwasm_std::{
     to_binary, Coin, CosmosMsg, DepsMut, Env, QuerierWrapper, Response, Storage, Uint128, WasmMsg,
 };
 
-use rover::adapters::{UpdateType, Vault, VaultPositionAmount, VaultPositionUpdate};
+use rover::adapters::vault::{
+    Total, UnlockingChange, UpdateType, Vault, VaultPositionAmount, VaultPositionUpdate,
+};
 use rover::error::ContractResult;
 use rover::msg::execute::CallbackMsg;
 use rover::msg::ExecuteMsg;
@@ -35,7 +37,7 @@ pub fn liquidate_vault(
         liquidatee_account_id,
         &debt_coin,
         &vault_info.token_denom,
-        liquidatee_position.total()?,
+        liquidatee_position.total(),
     )?;
 
     // Transfer debt coin from liquidator's coin balance to liquidatee
@@ -98,34 +100,28 @@ fn get_vault_withdraw_msgs(
     let mut vault_withdraw_msgs = vec![];
 
     match liquidatee_position {
-        VaultPositionAmount::UnlockedVault(_) => {
+        VaultPositionAmount::Unlocked(_) => {
             update_vault_position(
                 storage,
                 liquidatee_account_id,
                 &request_vault.address,
-                VaultPositionUpdate::Unlocked {
-                    amount: total_to_liquidate,
-                    kind: UpdateType::Decrement,
-                },
+                VaultPositionUpdate::Unlocked(UpdateType::Decrement(total_to_liquidate)),
             )?;
 
             let msg = request_vault.withdraw_msg(querier, total_to_liquidate, false)?;
             vault_withdraw_msgs.push(msg);
         }
-        VaultPositionAmount::LockingVault { unlocking, .. } => {
+        VaultPositionAmount::Locking(amount) => {
             // A locking vault can have two different positions: LOCKED & UNLOCKING
             // Priority goes to force withdrawing the unlocking buckets
-            for u in unlocking {
+            for u in amount.unlocking.positions() {
                 let amount = min(u.amount, total_to_liquidate);
+
                 update_vault_position(
                     storage,
                     liquidatee_account_id,
                     &request_vault.address,
-                    VaultPositionUpdate::Unlocking {
-                        id: u.id,
-                        amount,
-                        kind: UpdateType::Decrement,
-                    },
+                    VaultPositionUpdate::Unlocking(UnlockingChange::Decrement { id: u.id, amount }),
                 )?;
 
                 let msg = request_vault.force_withdraw_unlocking_msg(u.id, Some(amount))?;
@@ -140,10 +136,7 @@ fn get_vault_withdraw_msgs(
                     storage,
                     liquidatee_account_id,
                     &request_vault.address,
-                    VaultPositionUpdate::Locked {
-                        amount: total_to_liquidate,
-                        kind: UpdateType::Decrement,
-                    },
+                    VaultPositionUpdate::Locked(UpdateType::Decrement(total_to_liquidate)),
                 )?;
 
                 let msg = request_vault.withdraw_msg(querier, total_to_liquidate, true)?;

@@ -3,7 +3,7 @@ use cosmwasm_std::StdError::NotFound;
 use cosmwasm_std::{Addr, OverflowError, Uint128};
 
 use mock_oracle::msg::CoinPrice;
-use rover::adapters::VaultBase;
+use rover::adapters::vault::VaultBase;
 use rover::error::ContractError;
 use rover::msg::execute::Action::{
     Borrow, Deposit, LiquidateVault, VaultDeposit, VaultRequestUnlock,
@@ -63,9 +63,7 @@ fn test_liquidatee_must_have_the_request_vault_position() {
 
     assert_err(
         res,
-        ContractError::Std(NotFound {
-            kind: "rover::adapters::vault::VaultPositionAmount".to_string(),
-        }),
+        ContractError::Std(NotFound { kind: "rover::adapters::vault::amount::VaultPositionAmountBase<rover::adapters::vault::amount::VaultAmount, rover::adapters::vault::amount::LockingVaultAmount>".to_string() }),
     )
 }
 

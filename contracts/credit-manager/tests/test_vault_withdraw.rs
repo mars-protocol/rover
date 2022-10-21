@@ -2,7 +2,7 @@ use cosmwasm_std::OverflowOperation::Sub;
 use cosmwasm_std::{coin, Addr, Coin, OverflowError, Uint128};
 
 use mock_vault::contract::STARTING_VAULT_SHARES;
-use rover::adapters::VaultBase;
+use rover::adapters::vault::VaultBase;
 use rover::error::ContractError;
 use rover::error::ContractError::{NotTokenOwner, NotWhitelisted};
 use rover::msg::execute::Action::{Deposit, VaultDeposit, VaultWithdraw};

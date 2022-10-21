@@ -3,7 +3,7 @@ use cosmwasm_std::{
     WasmMsg,
 };
 
-use rover::adapters::{UpdateType, Vault, VaultPositionUpdate};
+use rover::adapters::vault::{UpdateType, Vault, VaultPositionUpdate};
 use rover::error::{ContractError, ContractResult};
 use rover::msg::execute::CallbackMsg;
 use rover::msg::ExecuteMsg;
@@ -69,14 +69,8 @@ pub fn update_vault_coin_balance(
         account_id,
         &vault.address,
         match vault_info.lockup {
-            None => VaultPositionUpdate::Unlocked {
-                amount: diff,
-                kind: UpdateType::Increment,
-            },
-            Some(_) => VaultPositionUpdate::Locked {
-                amount: diff,
-                kind: UpdateType::Increment,
-            },
+            None => VaultPositionUpdate::Unlocked(UpdateType::Increment(diff)),
+            Some(_) => VaultPositionUpdate::Locked(UpdateType::Increment(diff)),
         },
     )?;
 

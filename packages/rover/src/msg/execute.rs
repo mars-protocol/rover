@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{to_binary, Addr, Coin, CosmosMsg, Decimal, StdResult, Uint128, WasmMsg};
 
-use crate::adapters::{Vault, VaultUnchecked};
+use crate::adapters::vault::{Vault, VaultUnchecked};
 use crate::msg::instantiate::ConfigUpdates;
 
 #[cw_serde]

@@ -3,7 +3,8 @@ use cw_storage_plus::{Item, Map};
 
 use crate::vault::RequestTempStorage;
 use rover::adapters::swap::Swapper;
-use rover::adapters::{Oracle, RedBank, VaultPositionAmount};
+use rover::adapters::vault::VaultPositionAmount;
+use rover::adapters::{Oracle, RedBank};
 
 // Contract config
 pub const OWNER: Item<Addr> = Item::new("owner");

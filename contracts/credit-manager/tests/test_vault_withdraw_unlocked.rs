@@ -2,7 +2,7 @@ use cosmwasm_std::StdError::NotFound;
 use cosmwasm_std::{coin, Addr, Uint128};
 
 use mock_vault::contract::STARTING_VAULT_SHARES;
-use rover::adapters::VaultUnchecked;
+use rover::adapters::vault::VaultUnchecked;
 use rover::error::ContractError;
 use rover::msg::execute::Action::{
     Deposit, VaultDeposit, VaultRequestUnlock, VaultWithdrawUnlocked,
@@ -129,9 +129,7 @@ fn test_not_owner_of_unlocking_position() {
 
     assert_err(
         res,
-        ContractError::Std(NotFound {
-            kind: "rover::adapters::vault::VaultPositionAmount".to_string(),
-        }),
+        ContractError::Std(NotFound { kind: "rover::adapters::vault::amount::VaultPositionAmountBase<rover::adapters::vault::amount::VaultAmount, rover::adapters::vault::amount::LockingVaultAmount>".to_string() }),
     );
 }
 

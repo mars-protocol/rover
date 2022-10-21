@@ -1,7 +1,7 @@
 use cosmwasm_std::{Addr, Coin, Deps, Env, Order, StdResult, Uint128};
 use cw_storage_plus::Bound;
 
-use rover::adapters::{Vault, VaultBase, VaultPosition, VaultUnchecked};
+use rover::adapters::vault::{Vault, VaultBase, VaultPosition, VaultUnchecked};
 use rover::error::ContractResult;
 use rover::msg::instantiate::VaultInstantiateConfig;
 use rover::msg::query::{

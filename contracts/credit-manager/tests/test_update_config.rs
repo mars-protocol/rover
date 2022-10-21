@@ -1,10 +1,11 @@
 use cosmwasm_std::{Addr, Decimal};
 
 use rover::adapters::swap::SwapperBase;
-use rover::adapters::{OracleBase, RedBankBase, VaultBase};
+use rover::adapters::vault::VaultBase;
+use rover::adapters::{OracleBase, RedBankBase};
 use rover::msg::instantiate::ConfigUpdates;
 
-use crate::helpers::{uatom_info, uosmo_info, MockEnv, VaultTestInfo};
+use crate::helpers::{locked_vault_info, uatom_info, uosmo_info, MockEnv};
 
 pub mod helpers;
 
@@ -145,12 +146,7 @@ fn test_update_config_works_with_some_config() {
 fn test_update_config_removes_properly() {
     let uatom = uatom_info();
     let uosmo = uosmo_info();
-
-    let leverage_vault = VaultTestInfo {
-        denom: "uleverage".to_string(),
-        lockup: Some(213231),
-        underlying_denoms: vec!["uatom".to_string(), "uosmo".to_string()],
-    };
+    let leverage_vault = locked_vault_info();
 
     let mut mock = MockEnv::new()
         .allowed_coins(&[uatom, uosmo])

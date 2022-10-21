@@ -3,7 +3,7 @@ use cosmwasm_std::{coin, coins, Addr, OverflowError, Uint128};
 use cw_multi_test::{BankSudo, SudoMsg};
 
 use mock_vault::contract::STARTING_VAULT_SHARES;
-use rover::adapters::VaultUnchecked;
+use rover::adapters::vault::VaultUnchecked;
 use rover::error::ContractError;
 use rover::msg::execute::Action::{Deposit, VaultDeposit, VaultRequestUnlock};
 

@@ -3,7 +3,9 @@ use cosmwasm_std::{
 };
 
 use mars_oracle_adapter::msg::QueryMsg::PriceableUnderlying;
-use rover::adapters::{Vault, VaultPosition, VaultPositionAmount, VaultPositionUpdate};
+use rover::adapters::vault::{
+    Total, Vault, VaultPosition, VaultPositionAmount, VaultPositionUpdate,
+};
 use rover::error::{ContractError, ContractResult};
 
 use crate::state::{ALLOWED_VAULTS, ORACLE, VAULT_POSITIONS};
@@ -30,7 +32,7 @@ pub fn update_vault_position(
 
     amount.update(update)?;
 
-    if amount.is_empty() {
+    if amount.total().is_zero() {
         path.remove(storage);
     } else {
         path.save(storage, &amount)?;
@@ -59,7 +61,7 @@ pub fn get_priceable_coins(deps: &Deps, positions: &[VaultPosition]) -> Contract
     let mut coins: Vec<Coin> = vec![];
     for p in positions {
         let vault_info = p.vault.query_info(&deps.querier)?;
-        let total_vault_coins = p.amount.total()?;
+        let total_vault_coins = p.amount.total();
         let priceable_coins: Vec<Coin> =
             deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
                 contract_addr: oracle.address().to_string(),

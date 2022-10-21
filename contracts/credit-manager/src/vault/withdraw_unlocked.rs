@@ -1,6 +1,6 @@
 use cosmwasm_std::{to_binary, CosmosMsg, DepsMut, Env, Response, WasmMsg};
 
-use rover::adapters::{UpdateType, Vault, VaultPositionUpdate};
+use rover::adapters::vault::{UnlockingChange, Vault, VaultPositionUpdate};
 use rover::error::{ContractError, ContractResult};
 use rover::msg::execute::CallbackMsg;
 use rover::msg::vault::UnlockingPosition;
@@ -22,7 +22,7 @@ pub fn withdraw_unlocked_from_vault(
 
     let vault_position = VAULT_POSITIONS.load(deps.storage, (account_id, vault.address.clone()))?;
     let matching_unlock = vault_position
-        .unlocking_position(position_id)
+        .get_unlocking_position(position_id)
         .ok_or_else(|| ContractError::NoPositionMatch(position_id.to_string()))?;
     let UnlockingPosition { unlocked_at, .. } =
         vault.query_unlocking_position_info(&deps.querier, matching_unlock.id)?;
@@ -34,11 +34,10 @@ pub fn withdraw_unlocked_from_vault(
         deps.storage,
         account_id,
         &vault.address,
-        VaultPositionUpdate::Unlocking {
+        VaultPositionUpdate::Unlocking(UnlockingChange::Decrement {
             id: position_id,
             amount: matching_unlock.amount,
-            kind: UpdateType::Decrement,
-        },
+        }),
     )?;
 
     // Updates coin balances for account after the withdraw has taken place
