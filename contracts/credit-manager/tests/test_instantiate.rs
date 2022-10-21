@@ -38,18 +38,24 @@ fn test_allowed_vaults_set_on_instantiate() {
             lockup: None,
             underlying_denoms: vec![],
             deposit_cap: coin(1_000_000, "uusdc"),
+            max_ltv: Decimal::from_atomics(6u128, 1).unwrap(),
+            liquidation_threshold: Decimal::from_atomics(7u128, 1).unwrap(),
         },
         VaultTestInfo {
             denom: "vault_contract_2".to_string(),
             lockup: None,
             underlying_denoms: vec![],
             deposit_cap: coin(1_000_000, "uusdc"),
+            max_ltv: Decimal::from_atomics(6u128, 1).unwrap(),
+            liquidation_threshold: Decimal::from_atomics(7u128, 1).unwrap(),
         },
         VaultTestInfo {
             denom: "vault_contract_3".to_string(),
             lockup: None,
             underlying_denoms: vec![],
             deposit_cap: coin(1_000_000, "uusdc"),
+            max_ltv: Decimal::from_atomics(6u128, 1).unwrap(),
+            liquidation_threshold: Decimal::from_atomics(7u128, 1).unwrap(),
         },
     ];
 
@@ -57,9 +63,9 @@ fn test_allowed_vaults_set_on_instantiate() {
         .allowed_vaults(&allowed_vaults)
         .build()
         .unwrap();
-    let res = mock.query_allowed_vaults(None, None);
+    let res = mock.query_vault_configs(None, None);
     assert_contents_equal(
-        &res,
+        &res.iter().map(|v| v.vault.clone()).collect::<Vec<_>>(),
         &allowed_vaults
             .iter()
             .map(|info| mock.get_vault(info))

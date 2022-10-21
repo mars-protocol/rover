@@ -2,7 +2,7 @@ use std::hash::Hash;
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    to_binary, Addr, Api, BalanceResponse, BankQuery, Coin, CosmosMsg, QuerierWrapper,
+    to_binary, Addr, Api, BalanceResponse, BankQuery, Coin, CosmosMsg, Decimal, QuerierWrapper,
     QueryRequest, StdResult, SubMsg, Uint128, WasmMsg, WasmQuery,
 };
 
@@ -26,6 +26,14 @@ pub struct VaultUnlockingPosition {
 pub struct VaultPosition {
     pub vault: Vault,
     pub amount: VaultPositionAmount,
+}
+
+#[cw_serde]
+pub struct VaultConfig {
+    pub deposit_cap: Coin,
+    pub max_ltv: Decimal,
+    pub liquidation_threshold: Decimal,
+    pub whitelisted: bool,
 }
 
 #[cw_serde]
