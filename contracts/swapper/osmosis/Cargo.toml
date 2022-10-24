@@ -21,6 +21,8 @@ library    = []
 cosmwasm-schema = { workspace = true }
 cosmwasm-std    = { workspace = true }
 cw-storage-plus = { workspace = true }
+mars-osmosis    = { version = "0.1.0", path = "../../../../outposts/packages/chains/osmosis" }
+osmosis-std     = "0.12"
 osmo-bindings   = "0.5"
 schemars        = { workspace = true }
 swapper-base    = { workspace = true }
