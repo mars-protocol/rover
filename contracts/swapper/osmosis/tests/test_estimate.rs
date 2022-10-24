@@ -1,7 +1,7 @@
 use cosmwasm_std::{coin, Addr, StdError, StdResult, Uint128};
 use cw_multi_test::Executor;
-use osmo_bindings::Step;
 use osmo_bindings_test::{Pool as OsmoPool, Pool};
+use osmosis_std::types::osmosis::gamm::v1beta1::SwapAmountInRoute;
 
 use rover::adapters::swap::{EstimateExactInSwapResponse, ExecuteMsg, QueryMsg};
 use swapper_osmosis::route::OsmosisRoute;
@@ -56,12 +56,10 @@ fn test_estimate_swap_one_step() {
         &ExecuteMsg::SetRoute {
             denom_in: "osmo".to_string(),
             denom_out: "atom".to_string(),
-            route: OsmosisRoute {
-                steps: vec![Step {
-                    pool_id,
-                    denom_out: "atom".to_string(),
-                }],
-            },
+            route: OsmosisRoute(vec![SwapAmountInRoute {
+                pool_id,
+                token_out_denom: "atom".to_string(),
+            }]),
         },
         &[],
     )
@@ -115,18 +113,16 @@ fn test_estimate_swap_multi_step() {
         &ExecuteMsg::SetRoute {
             denom_in: "uatom".to_string(),
             denom_out: "umars".to_string(),
-            route: OsmosisRoute {
-                steps: vec![
-                    Step {
-                        pool_id: 1,
-                        denom_out: "uosmo".to_string(),
-                    },
-                    Step {
-                        pool_id: 420,
-                        denom_out: "umars".to_string(),
-                    },
-                ],
-            },
+            route: OsmosisRoute(vec![
+                SwapAmountInRoute {
+                    pool_id: 1,
+                    token_out_denom: "uosmo".to_string(),
+                },
+                SwapAmountInRoute {
+                    pool_id: 420,
+                    token_out_denom: "umars".to_string(),
+                },
+            ]),
         },
         &[],
     )
@@ -138,18 +134,16 @@ fn test_estimate_swap_multi_step() {
         &ExecuteMsg::SetRoute {
             denom_in: "uatom".to_string(),
             denom_out: "uusdc".to_string(),
-            route: OsmosisRoute {
-                steps: vec![
-                    Step {
-                        pool_id: 1,
-                        denom_out: "uosmo".to_string(),
-                    },
-                    Step {
-                        pool_id: 69,
-                        denom_out: "uusdc".to_string(),
-                    },
-                ],
-            },
+            route: OsmosisRoute(vec![
+                SwapAmountInRoute {
+                    pool_id: 1,
+                    token_out_denom: "uosmo".to_string(),
+                },
+                SwapAmountInRoute {
+                    pool_id: 69,
+                    token_out_denom: "uusdc".to_string(),
+                },
+            ]),
         },
         &[],
     )
@@ -161,12 +155,10 @@ fn test_estimate_swap_multi_step() {
         &ExecuteMsg::SetRoute {
             denom_in: "uosmo".to_string(),
             denom_out: "umars".to_string(),
-            route: OsmosisRoute {
-                steps: vec![Step {
-                    pool_id: 420,
-                    denom_out: "umars".to_string(),
-                }],
-            },
+            route: OsmosisRoute(vec![SwapAmountInRoute {
+                pool_id: 420,
+                token_out_denom: "umars".to_string(),
+            }]),
         },
         &[],
     )

@@ -1,7 +1,8 @@
+use cosmwasm_std::testing::mock_env;
 use cosmwasm_std::{coin, Addr, Decimal, Querier, QuerierResult, QuerierWrapper, Uint128};
 use cw_multi_test::Executor;
-use osmo_bindings::Step;
 use osmo_bindings_test::{OsmosisApp, OsmosisError, Pool};
+use osmosis_std::types::osmosis::gamm::v1beta1::SwapAmountInRoute;
 
 use rover::adapters::swap::ExecuteMsg;
 use rover::error::ContractError as RoverError;
@@ -51,6 +52,7 @@ fn test_swap_exact_in_slippage_too_high() {
             self.app.raw_query(bin_request)
         }
     }
+    let env = mock_env();
 
     let owner = Addr::unchecked("owner");
     let whale = Addr::unchecked("whale");
@@ -74,12 +76,10 @@ fn test_swap_exact_in_slippage_too_high() {
             .unwrap();
     });
 
-    let route = OsmosisRoute {
-        steps: vec![Step {
-            pool_id: pool_id_x,
-            denom_out: coin_b.denom,
-        }],
-    };
+    let route = OsmosisRoute(vec![SwapAmountInRoute {
+        pool_id: pool_id_x,
+        token_out_denom: coin_b.denom,
+    }]);
 
     app.execute_contract(
         owner.clone(),
@@ -100,7 +100,7 @@ fn test_swap_exact_in_slippage_too_high() {
     let msg = route
         .build_exact_in_swap_msg(
             &mock_querier,
-            contract_addr.clone(),
+            &env,
             &coin(10_000, "mars"),
             Decimal::from_atomics(6u128, 2).unwrap(),
         )
@@ -151,12 +151,10 @@ fn test_swap_exact_in_success() {
         &ExecuteMsg::SetRoute {
             denom_in: "mars".to_string(),
             denom_out: "osmo".to_string(),
-            route: OsmosisRoute {
-                steps: vec![Step {
-                    pool_id: pool_id_x,
-                    denom_out: "osmo".to_string(),
-                }],
-            },
+            route: OsmosisRoute(vec![SwapAmountInRoute {
+                pool_id: pool_id_x,
+                token_out_denom: "osmo".to_string(),
+            }]),
         },
         &[],
     )

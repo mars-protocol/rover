@@ -1,8 +1,8 @@
 use crate::helpers::{instantiate_contract, mock_osmosis_app};
 use cosmwasm_std::{coin, Addr};
 use cw_multi_test::Executor;
-use osmo_bindings::Step;
 use osmo_bindings_test::Pool;
+use osmosis_std::types::osmosis::gamm::v1beta1::SwapAmountInRoute;
 use rover::adapters::swap::{ExecuteMsg, QueryMsg, RouteResponse};
 use std::collections::HashMap;
 use swapper_osmosis::route::OsmosisRoute;
@@ -136,46 +136,40 @@ fn mock_routes() -> HashMap<(&'static str, &'static str), OsmosisRoute> {
     // uosmo -> umars
     map.insert(
         ("uosmo", "umars"),
-        OsmosisRoute {
-            steps: vec![Step {
-                pool_id: 420,
-                denom_out: "umars".to_string(),
-            }],
-        },
+        OsmosisRoute(vec![SwapAmountInRoute {
+            pool_id: 420,
+            token_out_denom: "umars".to_string(),
+        }]),
     );
 
     // uatom -> uosmo -> umars
     map.insert(
         ("uatom", "umars"),
-        OsmosisRoute {
-            steps: vec![
-                Step {
-                    pool_id: 1,
-                    denom_out: "uosmo".to_string(),
-                },
-                Step {
-                    pool_id: 420,
-                    denom_out: "umars".to_string(),
-                },
-            ],
-        },
+        OsmosisRoute(vec![
+            SwapAmountInRoute {
+                pool_id: 1,
+                token_out_denom: "uosmo".to_string(),
+            },
+            SwapAmountInRoute {
+                pool_id: 420,
+                token_out_denom: "umars".to_string(),
+            },
+        ]),
     );
 
     // uatom -> uosmo -> uusdc
     map.insert(
         ("uatom", "uusdc"),
-        OsmosisRoute {
-            steps: vec![
-                Step {
-                    pool_id: 1,
-                    denom_out: "uosmo".to_string(),
-                },
-                Step {
-                    pool_id: 69,
-                    denom_out: "uusdc".to_string(),
-                },
-            ],
-        },
+        OsmosisRoute(vec![
+            SwapAmountInRoute {
+                pool_id: 1,
+                token_out_denom: "uosmo".to_string(),
+            },
+            SwapAmountInRoute {
+                pool_id: 69,
+                token_out_denom: "uusdc".to_string(),
+            },
+        ]),
     );
 
     map

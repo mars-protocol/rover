@@ -1,8 +1,8 @@
 use cosmwasm_std::StdError::GenericErr;
 use cosmwasm_std::{coin, Addr};
 use cw_multi_test::Executor;
-use osmo_bindings::Step;
 use osmo_bindings_test::Pool;
+use osmosis_std::types::osmosis::gamm::v1beta1::SwapAmountInRoute;
 
 use rover::adapters::swap::{ExecuteMsg, QueryMsg, RouteResponse};
 use rover::error::ContractError as RoverError;
@@ -26,18 +26,16 @@ fn test_only_owner_can_set_routes() {
         &ExecuteMsg::SetRoute {
             denom_in: "mars".to_string(),
             denom_out: "weth".to_string(),
-            route: OsmosisRoute {
-                steps: vec![
-                    Step {
-                        pool_id: 1,
-                        denom_out: "osmo".to_string(),
-                    },
-                    Step {
-                        pool_id: 2,
-                        denom_out: "weth".to_string(),
-                    },
-                ],
-            },
+            route: OsmosisRoute(vec![
+                SwapAmountInRoute {
+                    pool_id: 1,
+                    token_out_denom: "osmo".to_string(),
+                },
+                SwapAmountInRoute {
+                    pool_id: 2,
+                    token_out_denom: "weth".to_string(),
+                },
+            ]),
         },
         &[],
     );
@@ -63,7 +61,7 @@ fn test_must_pass_at_least_one_step() {
         &ExecuteMsg::SetRoute {
             denom_in: "mars".to_string(),
             denom_out: "weth".to_string(),
-            route: OsmosisRoute { steps: vec![] },
+            route: OsmosisRoute(vec![]),
         },
         &[],
     );
@@ -88,12 +86,10 @@ fn test_must_be_available_in_osmosis() {
         &ExecuteMsg::SetRoute {
             denom_in: "mars".to_string(),
             denom_out: "weth".to_string(),
-            route: OsmosisRoute {
-                steps: vec![Step {
-                    pool_id: 1,
-                    denom_out: "osmo".to_string(),
-                }],
-            },
+            route: OsmosisRoute(vec![SwapAmountInRoute {
+                pool_id: 1,
+                token_out_denom: "osmo".to_string(),
+            }]),
         },
         &[],
     );
@@ -129,12 +125,10 @@ fn test_step_does_not_contain_input_denom() {
         &ExecuteMsg::SetRoute {
             denom_in: "mars".to_string(),
             denom_out: "weth".to_string(),
-            route: OsmosisRoute {
-                steps: vec![Step {
-                    pool_id: pool_id_x,
-                    denom_out: "osmo".to_string(),
-                }],
-            },
+            route: OsmosisRoute(vec![SwapAmountInRoute {
+                pool_id: pool_id_x,
+                token_out_denom: "osmo".to_string(),
+            }]),
         },
         &[],
     );
@@ -169,12 +163,10 @@ fn test_step_does_not_contain_output_denom() {
         &ExecuteMsg::SetRoute {
             denom_in: "mars".to_string(),
             denom_out: "weth".to_string(),
-            route: OsmosisRoute {
-                steps: vec![Step {
-                    pool_id: pool_id_x,
-                    denom_out: "weth".to_string(),
-                }],
-            },
+            route: OsmosisRoute(vec![SwapAmountInRoute {
+                pool_id: pool_id_x,
+                token_out_denom: "weth".to_string(),
+            }]),
         },
         &[],
     );
@@ -221,26 +213,24 @@ fn test_steps_do_not_loop() {
         &ExecuteMsg::SetRoute {
             denom_in: "atom".to_string(),
             denom_out: "mars".to_string(),
-            route: OsmosisRoute {
-                steps: vec![
-                    Step {
-                        pool_id: pool_id_x,
-                        denom_out: "osmo".to_string(),
-                    },
-                    Step {
-                        pool_id: pool_id_y,
-                        denom_out: "usdc".to_string(),
-                    },
-                    Step {
-                        pool_id: pool_id_y,
-                        denom_out: "osmo".to_string(),
-                    },
-                    Step {
-                        pool_id: pool_id_z,
-                        denom_out: "mars".to_string(),
-                    },
-                ],
-            },
+            route: OsmosisRoute(vec![
+                SwapAmountInRoute {
+                    pool_id: pool_id_x,
+                    token_out_denom: "osmo".to_string(),
+                },
+                SwapAmountInRoute {
+                    pool_id: pool_id_y,
+                    token_out_denom: "usdc".to_string(),
+                },
+                SwapAmountInRoute {
+                    pool_id: pool_id_y,
+                    token_out_denom: "osmo".to_string(),
+                },
+                SwapAmountInRoute {
+                    pool_id: pool_id_z,
+                    token_out_denom: "mars".to_string(),
+                },
+            ]),
         },
         &[],
     );
@@ -277,12 +267,10 @@ fn test_step_output_does_not_match() {
         &ExecuteMsg::SetRoute {
             denom_in: "atom".to_string(),
             denom_out: "mars".to_string(),
-            route: OsmosisRoute {
-                steps: vec![Step {
-                    pool_id: pool_id_x,
-                    denom_out: "osmo".to_string(),
-                }],
-            },
+            route: OsmosisRoute(vec![SwapAmountInRoute {
+                pool_id: pool_id_x,
+                token_out_denom: "osmo".to_string(),
+            }]),
         },
         &[],
     );
@@ -323,18 +311,16 @@ fn test_set_route_success() {
         &ExecuteMsg::SetRoute {
             denom_in: "mars".to_string(),
             denom_out: "weth".to_string(),
-            route: OsmosisRoute {
-                steps: vec![
-                    Step {
-                        pool_id: pool_id_x,
-                        denom_out: "osmo".to_string(),
-                    },
-                    Step {
-                        pool_id: pool_id_y,
-                        denom_out: "weth".to_string(),
-                    },
-                ],
-            },
+            route: OsmosisRoute(vec![
+                SwapAmountInRoute {
+                    pool_id: pool_id_x,
+                    token_out_denom: "osmo".to_string(),
+                },
+                SwapAmountInRoute {
+                    pool_id: pool_id_y,
+                    token_out_denom: "weth".to_string(),
+                },
+            ]),
         },
         &[],
     )
