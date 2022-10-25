@@ -4,7 +4,7 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
     BlockInfo, Coin, CosmosMsg, Decimal, Empty, Env, QuerierWrapper, StdResult, Uint128,
 };
-use mars_osmosis::helpers::{has_denom, query_pool, query_twap_price};
+use mars_osmosis::helpers::{has_denom, query_pool, query_spot_price, query_twap_price};
 use osmosis_std::types::osmosis::gamm::v1beta1::{MsgSwapExactAmountIn, SwapAmountInRoute};
 use rover::adapters::swap::EstimateExactInSwapResponse;
 use swapper_base::{ContractError, ContractResult, Route};
@@ -150,7 +150,7 @@ impl Route<Empty, Empty> for OsmosisRoute {
 /// 1) query pool_1 to get price for atom/osmo
 /// 2) query pool_69 to get price for osmo/usdc
 /// 3) atom/usdc = (price for atom/osmo) * (price for osmo/usdc)
-/// 4) out_amount = (atom amount) / (price for atom/usdc) = usdc amount
+/// 4) out_amount = (atom amount) * (price for atom/usdc) = usdc amount
 fn query_out_amount(
     querier: &QuerierWrapper,
     block: &BlockInfo,
@@ -162,16 +162,21 @@ fn query_out_amount(
     let mut price = Decimal::one();
     let mut denom_in = coin_in.denom.clone();
     for step in steps {
-        let step_price = query_twap_price(
+        // FIXME: twap not supported in osmosis-testing
+        /*let step_price = query_twap_price(
             querier,
             step.pool_id,
             &denom_in,
             &step.token_out_denom,
             start_time,
-        )?;
+        )?;*/
+        // FIXME: base asset = quote asset
+        let step_price = query_spot_price(querier, step.pool_id, &step.token_out_denom, &denom_in)?;
         price = price.checked_mul(step_price)?;
         denom_in = step.token_out_denom.clone();
     }
 
-    mars_outpost::math::divide_uint128_by_decimal(coin_in.amount, price)
+    let out_amount = coin_in.amount * price;
+    // let out_amount = Uint128::one() * out_amount;
+    Ok(out_amount)
 }

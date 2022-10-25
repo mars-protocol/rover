@@ -1,6 +1,5 @@
 use crate::helpers::instantiate_contract;
-use cosmwasm_std::{coin, Addr};
-use cw_multi_test::Executor;
+use cosmwasm_std::coin;
 use osmosis_std::types::osmosis::gamm::v1beta1::SwapAmountInRoute;
 use osmosis_testing::{Gamm, Module, OsmosisTestApp, SigningAccount, Wasm};
 use rover::adapters::swap::{ExecuteMsg, QueryMsg, RouteResponse};

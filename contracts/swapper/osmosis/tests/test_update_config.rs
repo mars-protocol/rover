@@ -1,5 +1,4 @@
-use cosmwasm_std::{coin, Addr};
-use cw_multi_test::Executor;
+use cosmwasm_std::coin;
 use osmosis_testing::{Account, Module, OsmosisTestApp, Wasm};
 
 use rover::adapters::swap::{Config, ExecuteMsg, QueryMsg};
@@ -7,7 +6,7 @@ use rover::error::ContractError as RoverError;
 use swapper_base::ContractError;
 use swapper_osmosis::route::OsmosisRoute;
 
-use crate::helpers::{assert_err, instantiate_contract};
+use crate::helpers::{assert_contract_err, instantiate_contract};
 
 pub mod helpers;
 
@@ -34,7 +33,8 @@ fn test_only_owner_can_update_config() {
             bad_guy,
         )
         .unwrap_err();
-    assert_err(
+
+    assert_contract_err(
         res_err,
         ContractError::Rover(RoverError::Unauthorized {
             user: bad_guy.address(),

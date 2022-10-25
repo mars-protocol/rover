@@ -1,17 +1,9 @@
-use std::fmt::Debug;
+use std::str::FromStr;
 
-use anyhow::Result as AnyResult;
-use cosmwasm_std::Addr;
-use cosmwasm_std::CustomQuery;
-use cw_multi_test::{AppResponse, Executor};
-use cw_multi_test::{Contract, ContractWrapper};
-use osmosis_testing::{Account, Module, OsmosisTestApp, RunnerError, SigningAccount, Wasm};
-use schemars::JsonSchema;
+use osmosis_testing::{Account, Bank, OsmosisTestApp, RunnerError, SigningAccount, Wasm};
 
-use rover::adapters::swap::{Config, ExecuteMsg, InstantiateMsg, QueryMsg};
+use rover::adapters::swap::InstantiateMsg;
 use swapper_base::ContractError;
-use swapper_osmosis::contract::{execute, instantiate, query};
-use swapper_osmosis::route::OsmosisRoute;
 
 pub fn instantiate_contract(wasm: &Wasm<OsmosisTestApp>, owner: &SigningAccount) -> String {
     let wasm_byte_code = std::fs::read("../../../artifacts/swapper_osmosis.wasm").unwrap();
@@ -36,9 +28,34 @@ pub fn instantiate_contract(wasm: &Wasm<OsmosisTestApp>, owner: &SigningAccount)
     .address
 }
 
-pub fn assert_err(exec_err: RunnerError, expected_err: ContractError) {
+pub fn query_balance(bank: &Bank<OsmosisTestApp>, addr: &str, denom: &str) -> u128 {
+    bank.query_all_balances(&addr, None)
+        .unwrap()
+        .balances
+        .iter()
+        .find(|b| b.denom == denom)
+        .map(|b| u128::from_str(&b.amount).unwrap())
+        .unwrap_or(0)
+}
+
+pub fn assert_contract_err(exec_err: RunnerError, expected_err: ContractError) {
     match exec_err {
         RunnerError::ExecuteError { msg } => {
+            assert!(msg.contains(&format!("{}", expected_err)))
+        }
+        RunnerError::QueryError { msg } => {
+            assert!(msg.contains(&format!("{}", expected_err)))
+        }
+        _ => panic!("Unhandled error"),
+    }
+}
+
+pub fn assert_string_err(exec_err: RunnerError, expected_err: &str) {
+    match exec_err {
+        RunnerError::ExecuteError { msg } => {
+            assert!(msg.contains(&format!("{}", expected_err)))
+        }
+        RunnerError::QueryError { msg } => {
             assert!(msg.contains(&format!("{}", expected_err)))
         }
         _ => panic!("Unhandled error"),

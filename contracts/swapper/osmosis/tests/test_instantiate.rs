@@ -1,5 +1,4 @@
-use cosmwasm_std::{coin, Addr};
-use cw_multi_test::Executor;
+use cosmwasm_std::coin;
 use osmosis_testing::{Account, Module, OsmosisTestApp, Wasm};
 
 use rover::adapters::swap::{Config, InstantiateMsg, QueryMsg};
