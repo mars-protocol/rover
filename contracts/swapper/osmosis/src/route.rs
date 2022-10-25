@@ -2,7 +2,7 @@ use std::fmt;
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    BlockInfo, Coin, CosmosMsg, Decimal, Empty, Env, QuerierWrapper, StdResult, Uint128,
+    BlockInfo, Coin, CosmosMsg, Decimal, Empty, Env, Fraction, QuerierWrapper, Uint128,
 };
 use mars_osmosis::helpers::{has_denom, query_pool, query_spot_price, query_twap_price};
 use osmosis_std::types::osmosis::gamm::v1beta1::{MsgSwapExactAmountIn, SwapAmountInRoute};
@@ -156,7 +156,7 @@ fn query_out_amount(
     block: &BlockInfo,
     coin_in: &Coin,
     steps: &[SwapAmountInRoute],
-) -> StdResult<Uint128> {
+) -> ContractResult<Uint128> {
     let start_time = block.time.seconds() - TWAP_WINDOW_SIZE_SECONDS;
 
     let mut price = Decimal::one();
@@ -170,13 +170,13 @@ fn query_out_amount(
             &step.token_out_denom,
             start_time,
         )?;*/
-        // FIXME: base asset = quote asset
-        let step_price = query_spot_price(querier, step.pool_id, &step.token_out_denom, &denom_in)?;
+        let step_price = query_spot_price(querier, step.pool_id, &denom_in, &step.token_out_denom)?;
         price = price.checked_mul(step_price)?;
         denom_in = step.token_out_denom.clone();
     }
 
-    let out_amount = coin_in.amount * price;
-    // let out_amount = Uint128::one() * out_amount;
+    let out_amount = coin_in
+        .amount
+        .checked_multiply_ratio(price.numerator(), price.denominator())?;
     Ok(out_amount)
 }
