@@ -1,5 +1,6 @@
 use std::str::FromStr;
 
+use osmosis_testing::cosmrs::proto::cosmos::bank::v1beta1::QueryBalanceRequest;
 use osmosis_testing::{Account, Bank, OsmosisTestApp, RunnerError, SigningAccount, Wasm};
 
 use rover::adapters::swap::InstantiateMsg;
@@ -29,13 +30,14 @@ pub fn instantiate_contract(wasm: &Wasm<OsmosisTestApp>, owner: &SigningAccount)
 }
 
 pub fn query_balance(bank: &Bank<OsmosisTestApp>, addr: &str, denom: &str) -> u128 {
-    bank.query_all_balances(&addr, None)
-        .unwrap()
-        .balances
-        .iter()
-        .find(|b| b.denom == denom)
-        .map(|b| u128::from_str(&b.amount).unwrap())
-        .unwrap_or(0)
+    bank.query_balance(&QueryBalanceRequest {
+        address: addr.to_string(),
+        denom: denom.to_string(),
+    })
+    .unwrap()
+    .balance
+    .map(|c| u128::from_str(&c.amount).unwrap())
+    .unwrap_or(0)
 }
 
 pub fn assert_contract_err(exec_err: RunnerError, expected_err: ContractError) {

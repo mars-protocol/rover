@@ -173,9 +173,8 @@ fn test_swap_exact_in_success() {
     assert_eq!(mars_balance, 0);
 
     // Assert no tokens in contract left over
-    // FIXME: can't query contract balance?
-    /*let osmo_balance = query_balance(&bank, &contract_addr,"uosmo");
+    let osmo_balance = query_balance(&bank, &contract_addr, "uosmo");
     let mars_balance = query_balance(&bank, &contract_addr, "umars");
     assert_eq!(osmo_balance, 0);
-    assert_eq!(mars_balance, 0);*/
+    assert_eq!(mars_balance, 0);
 }
