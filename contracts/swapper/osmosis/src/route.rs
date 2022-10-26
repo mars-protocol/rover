@@ -150,7 +150,7 @@ impl Route<Empty, Empty> for OsmosisRoute {
 /// 1) query pool_1 to get price for atom/osmo
 /// 2) query pool_69 to get price for osmo/usdc
 /// 3) atom/usdc = (price for atom/osmo) * (price for osmo/usdc)
-/// 4) out_amount = (atom amount) * (price for atom/usdc) = usdc amount
+/// 4) usdc_out_amount = (atom amount) * (price for atom/usdc)
 fn query_out_amount(
     querier: &QuerierWrapper,
     block: &BlockInfo,

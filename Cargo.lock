@@ -1659,7 +1659,6 @@ dependencies = [
  "anyhow",
  "cosmwasm-schema",
  "cosmwasm-std",
- "cw-multi-test",
  "cw-storage-plus 0.16.0",
  "mars-osmosis",
  "osmosis-std 0.12.0 (registry+https://github.com/rust-lang/crates.io-index)",

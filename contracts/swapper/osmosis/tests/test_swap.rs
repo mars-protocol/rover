@@ -7,7 +7,7 @@ use rover::error::ContractError as RoverError;
 use swapper_base::ContractError;
 use swapper_osmosis::route::OsmosisRoute;
 
-use crate::helpers::{assert_contract_err, assert_string_err, instantiate_contract, query_balance};
+use crate::helpers::{assert_err, instantiate_contract, query_balance};
 
 pub mod helpers;
 
@@ -37,7 +37,7 @@ fn test_transfer_callback_only_internal() {
         )
         .unwrap_err();
 
-    assert_contract_err(
+    assert_err(
         res_err,
         ContractError::Rover(RoverError::Unauthorized {
             user: bad_guy.address(),
@@ -102,7 +102,7 @@ fn test_swap_exact_in_slippage_too_high() {
         )
         .unwrap_err();
 
-    assert_string_err(
+    assert_err(
         res_err,
         "uosmo token is lesser than min amount: calculated amount is lesser than min amount",
     )

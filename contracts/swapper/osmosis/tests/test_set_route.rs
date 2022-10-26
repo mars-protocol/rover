@@ -8,7 +8,7 @@ use rover::error::ContractError as RoverError;
 use swapper_base::ContractError;
 use swapper_osmosis::route::OsmosisRoute;
 
-use crate::helpers::{assert_contract_err, instantiate_contract};
+use crate::helpers::{assert_err, instantiate_contract};
 
 pub mod helpers;
 
@@ -47,7 +47,7 @@ fn test_only_owner_can_set_routes() {
         )
         .unwrap_err();
 
-    assert_contract_err(
+    assert_err(
         res_err,
         ContractError::Rover(RoverError::Unauthorized {
             user: bad_guy.address(),
@@ -80,7 +80,7 @@ fn test_must_pass_at_least_one_step() {
         )
         .unwrap_err();
 
-    assert_contract_err(
+    assert_err(
         res_err,
         ContractError::InvalidRoute {
             reason: "the route must contain at least one step".to_string(),
@@ -115,7 +115,7 @@ fn test_must_be_available_in_osmosis() {
         )
         .unwrap_err();
 
-    assert_contract_err(
+    assert_err(
         res_err,
         ContractError::Std(GenericErr {
             msg: "Querier contract error".to_string(),
@@ -163,7 +163,7 @@ fn test_step_does_not_contain_input_denom() {
         )
         .unwrap_err();
 
-    assert_contract_err(
+    assert_err(
         res_err,
         ContractError::InvalidRoute {
             reason: format!(
@@ -214,7 +214,7 @@ fn test_step_does_not_contain_output_denom() {
         )
         .unwrap_err();
 
-    assert_contract_err(
+    assert_err(
         res_err,
         ContractError::InvalidRoute {
             reason: format!(
@@ -299,7 +299,7 @@ fn test_steps_do_not_loop() {
 
     // invalid - route contains a loop
     // this example: ATOM -> OSMO -> USDC -> OSMO -> MARS
-    assert_contract_err(
+    assert_err(
         res_err,
         ContractError::InvalidRoute {
             reason: "route contains a loop: denom uosmo seen twice".to_string(),
@@ -347,7 +347,7 @@ fn test_step_output_does_not_match() {
         )
         .unwrap_err();
 
-    assert_contract_err(
+    assert_err(
         res_err,
         ContractError::InvalidRoute {
             reason: "the route's output denom uosmo does not match the desired output umars"

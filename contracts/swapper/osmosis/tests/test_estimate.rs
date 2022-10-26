@@ -5,7 +5,7 @@ use osmosis_testing::{Gamm, Module, OsmosisTestApp, RunnerResult, Wasm};
 use rover::adapters::swap::{EstimateExactInSwapResponse, ExecuteMsg, QueryMsg};
 use swapper_osmosis::route::OsmosisRoute;
 
-use crate::helpers::{assert_string_err, instantiate_contract};
+use crate::helpers::{assert_err, instantiate_contract};
 
 pub mod helpers;
 
@@ -27,7 +27,7 @@ fn test_error_on_route_not_found() {
         },
     );
 
-    assert_string_err(
+    assert_err(
         res.unwrap_err(),
         "swapper_osmosis::route::OsmosisRoute not found",
     );
@@ -163,13 +163,13 @@ fn test_estimate_swap_multi_step() {
     .unwrap();
 
     // atom/usdc = (price for atom/osmo) * (price for osmo/usdc)
-    // out_amount = (atom amount) * (price for atom/usdc) = usdc amount
+    // usdc_out_amount = (atom amount) * (price for atom/usdc)
     //
     // 1 osmo = 4 atom => atom/osmo = 0.25
     // 1 osmo = 10 usdc => osmo/usdc = 10
     //
     // atom/usdc = 0.25 * 10 = 2.5
-    // out_amount = 1000 * 2.5 = 2500
+    // usdc_out_amount = 1000 * 2.5 = 2500
     let res: EstimateExactInSwapResponse = wasm
         .query(
             &contract_addr,
