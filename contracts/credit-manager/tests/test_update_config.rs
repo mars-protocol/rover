@@ -3,9 +3,10 @@ use cosmwasm_std::{coin, Addr, Decimal};
 use rover::adapters::swap::SwapperBase;
 use rover::adapters::vault::{VaultBase, VaultConfig};
 use rover::adapters::{OracleBase, RedBankBase};
+use rover::error::ContractError;
 use rover::msg::instantiate::{ConfigUpdates, VaultInstantiateConfig};
 
-use crate::helpers::{locked_vault_info, uatom_info, uosmo_info, MockEnv};
+use crate::helpers::{assert_err, locked_vault_info, uatom_info, uosmo_info, MockEnv};
 
 pub mod helpers;
 
@@ -32,6 +33,61 @@ fn test_only_owner_can_update_config() {
     if res.is_ok() {
         panic!("only owner should be able to update config");
     }
+}
+
+#[test]
+fn test_raises_on_invalid_vaults_config() {
+    let mut mock = MockEnv::new().build().unwrap();
+    let original_config = mock.query_config();
+    let res = mock.update_config(
+        &Addr::unchecked(original_config.owner.clone()),
+        ConfigUpdates {
+            account_nft: None,
+            owner: None,
+            allowed_coins: None,
+            red_bank: None,
+            oracle: None,
+            max_liquidation_bonus: None,
+            max_close_factor: None,
+            swapper: None,
+            vault_configs: Some(vec![VaultInstantiateConfig {
+                vault: VaultBase::new("vault_123".to_string()),
+                config: VaultConfig {
+                    deposit_cap: coin(10_000_000, "uusdc"),
+                    max_ltv: Decimal::from_atomics(8u128, 1).unwrap(),
+                    liquidation_threshold: Decimal::from_atomics(7u128, 1).unwrap(),
+                    whitelisted: true,
+                },
+            }]),
+        },
+    );
+
+    assert_err(res, ContractError::InvalidVaultConfig {});
+
+    let res = mock.update_config(
+        &Addr::unchecked(original_config.owner),
+        ConfigUpdates {
+            account_nft: None,
+            owner: None,
+            allowed_coins: None,
+            red_bank: None,
+            oracle: None,
+            max_liquidation_bonus: None,
+            max_close_factor: None,
+            swapper: None,
+            vault_configs: Some(vec![VaultInstantiateConfig {
+                vault: VaultBase::new("vault_123".to_string()),
+                config: VaultConfig {
+                    deposit_cap: coin(10_000_000, "uusdc"),
+                    max_ltv: Decimal::from_atomics(8u128, 1).unwrap(),
+                    liquidation_threshold: Decimal::from_atomics(9u128, 0).unwrap(),
+                    whitelisted: true,
+                },
+            }]),
+        },
+    );
+
+    assert_err(res, ContractError::InvalidVaultConfig {});
 }
 
 #[test]

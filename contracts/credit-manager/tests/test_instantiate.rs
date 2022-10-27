@@ -85,6 +85,45 @@ fn test_raises_on_invalid_vaults_addr() {
 }
 
 #[test]
+fn test_raises_on_invalid_vaults_config() {
+    let mock = MockEnv::new()
+        .pre_deployed_vault(
+            "addr_123",
+            &VaultTestInfo {
+                denom: "uleverage".to_string(),
+                lockup: None,
+                underlying_denoms: vec!["uatom".to_string(), "uosmo".to_string()],
+                deposit_cap: coin(10_000_000, "uusdc"),
+                max_ltv: Decimal::from_atomics(8u128, 1).unwrap(),
+                liquidation_threshold: Decimal::from_atomics(7u128, 1).unwrap(),
+            },
+        )
+        .build();
+
+    if mock.is_ok() {
+        panic!("Should have thrown an error: max_ltv > liquidation_threshold");
+    }
+
+    let mock = MockEnv::new()
+        .pre_deployed_vault(
+            "addr_123",
+            &VaultTestInfo {
+                denom: "uleverage".to_string(),
+                lockup: None,
+                underlying_denoms: vec!["uatom".to_string(), "uosmo".to_string()],
+                deposit_cap: coin(10_000_000, "uusdc"),
+                max_ltv: Decimal::from_atomics(8u128, 1).unwrap(),
+                liquidation_threshold: Decimal::from_atomics(9u128, 0).unwrap(),
+            },
+        )
+        .build();
+
+    if mock.is_ok() {
+        panic!("Should have thrown an error: liquidation_threshold > 1");
+    }
+}
+
+#[test]
 fn test_allowed_coins_set_on_instantiate() {
     let allowed_coins = vec![
         uosmo_info(),

@@ -99,9 +99,10 @@ pub fn update_config(
 
     if let Some(configs) = new_config.vault_configs {
         VAULT_CONFIGS.clear(deps.storage);
-        configs.iter().try_for_each(|v| {
+        configs.iter().try_for_each(|v| -> ContractResult<_> {
+            v.config.check()?;
             let vault = v.vault.check(deps.api)?;
-            VAULT_CONFIGS.save(deps.storage, &vault.address, &v.config)
+            Ok(VAULT_CONFIGS.save(deps.storage, &vault.address, &v.config)?)
         })?;
         response = response
             .add_attribute("key", "vault_configs")

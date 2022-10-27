@@ -7,6 +7,8 @@ use cosmwasm_std::{
 };
 
 use crate::adapters::vault::VaultPositionAmount;
+use crate::error::ContractError;
+use crate::error::ContractError::InvalidVaultConfig;
 use crate::msg::vault::{ExecuteMsg, QueryMsg, UnlockingPosition, VaultInfo};
 use crate::traits::Stringify;
 
@@ -34,6 +36,19 @@ pub struct VaultConfig {
     pub max_ltv: Decimal,
     pub liquidation_threshold: Decimal,
     pub whitelisted: bool,
+}
+
+impl VaultConfig {
+    pub fn check(&self) -> Result<(), ContractError> {
+        let max_ltv_too_big = self.max_ltv > Decimal::one();
+        let lqt_too_big = self.liquidation_threshold > Decimal::one();
+        let max_ltv_bigger_than_lqt = self.max_ltv > self.liquidation_threshold;
+
+        if max_ltv_too_big || lqt_too_big || max_ltv_bigger_than_lqt {
+            return Err(InvalidVaultConfig {});
+        }
+        Ok(())
+    }
 }
 
 #[cw_serde]
