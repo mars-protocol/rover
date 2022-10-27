@@ -73,13 +73,6 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> ContractResult<Binary> {
         QueryMsg::PreviewRedeem { amount } => {
             to_binary(&query_coins_for_shares(deps.storage, amount)?)
         }
-        QueryMsg::VaultStandardInfo {} => unimplemented!(),
-        QueryMsg::PreviewDeposit { .. } => unimplemented!(),
-        QueryMsg::MaxDeposit { .. } => unimplemented!(),
-        QueryMsg::MaxRedeem { .. } => unimplemented!(),
-        QueryMsg::TotalAssets {} => unimplemented!(),
-        QueryMsg::ConvertToShares { .. } => unimplemented!(),
-        QueryMsg::ConvertToAssets { .. } => unimplemented!(),
         QueryMsg::VaultExtension(ext) => match ext {
             ExtensionQueryMsg::Lockup(lockup_msg) => match lockup_msg {
                 LockupQueryMsg::Lockups { owner, .. } => to_binary(&query_lockups(deps, owner)?),
@@ -89,6 +82,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> ContractResult<Binary> {
                 LockupQueryMsg::LockupDuration {} => to_binary(&query_lockup_duration(deps)?),
             },
         },
+        _ => unimplemented!(),
     };
     res.map_err(Into::into)
 }

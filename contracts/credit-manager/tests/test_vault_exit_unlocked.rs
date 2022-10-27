@@ -100,17 +100,9 @@ fn test_not_owner_of_unlocking_position() {
     )
     .unwrap();
 
-    let res = mock.query_positions(&account_id_a);
-    assert_eq!(res.vaults.len(), 1);
-    let unlocking_id = res
-        .vaults
-        .first()
-        .unwrap()
-        .amount
-        .unlocking()
-        .first()
-        .unwrap()
-        .id;
+    let positions = mock.query_positions(&account_id_a);
+    assert_eq!(positions.vaults.len(), 1);
+    let lockup_id = get_lockup_id(&positions);
 
     let user_b = Addr::unchecked("user_b");
     let account_id_b = mock.create_credit_account(&user_b).unwrap();
@@ -119,7 +111,7 @@ fn test_not_owner_of_unlocking_position() {
         &account_id_b,
         &user_b,
         vec![ExitVaultUnlocked {
-            id: unlocking_id,
+            id: lockup_id,
             vault,
         }],
         &[],
@@ -168,22 +160,14 @@ fn test_unlocking_position_not_ready_time() {
     )
     .unwrap();
 
-    let Positions { vaults, .. } = mock.query_positions(&account_id);
-
-    let position_id = vaults
-        .first()
-        .unwrap()
-        .amount
-        .unlocking()
-        .first()
-        .unwrap()
-        .id;
+    let positions = mock.query_positions(&account_id);
+    let lockup_id = get_lockup_id(&positions);
 
     let res = mock.update_credit_account(
         &account_id,
         &user,
         vec![ExitVaultUnlocked {
-            id: position_id,
+            id: lockup_id,
             vault,
         }],
         &[],
@@ -229,22 +213,14 @@ fn test_unlocking_position_not_ready_blocks() {
     )
     .unwrap();
 
-    let Positions { vaults, .. } = mock.query_positions(&account_id);
-
-    let position_id = vaults
-        .first()
-        .unwrap()
-        .amount
-        .unlocking()
-        .first()
-        .unwrap()
-        .id;
+    let positions = mock.query_positions(&account_id);
+    let lockup_id = get_lockup_id(&positions);
 
     let res = mock.update_credit_account(
         &account_id,
         &user,
         vec![ExitVaultUnlocked {
-            id: position_id,
+            id: lockup_id,
             vault,
         }],
         &[],
@@ -300,22 +276,14 @@ fn test_withdraw_unlock_success_time_expiring() {
         }
     });
 
-    let Positions { vaults, .. } = mock.query_positions(&account_id);
-
-    let position_id = vaults
-        .first()
-        .unwrap()
-        .amount
-        .unlocking()
-        .first()
-        .unwrap()
-        .id;
+    let positions = mock.query_positions(&account_id);
+    let lockup_id = get_lockup_id(&positions);
 
     mock.update_credit_account(
         &account_id,
         &user,
         vec![ExitVaultUnlocked {
-            id: position_id,
+            id: lockup_id,
             vault,
         }],
         &[],
@@ -383,22 +351,14 @@ fn test_withdraw_unlock_success_block_expiring() {
         }
     });
 
-    let Positions { vaults, .. } = mock.query_positions(&account_id);
-
-    let position_id = vaults
-        .first()
-        .unwrap()
-        .amount
-        .unlocking()
-        .first()
-        .unwrap()
-        .id;
+    let positions = mock.query_positions(&account_id);
+    let lockup_id = get_lockup_id(&positions);
 
     mock.update_credit_account(
         &account_id,
         &user,
         vec![ExitVaultUnlocked {
-            id: position_id,
+            id: lockup_id,
             vault,
         }],
         &[],
@@ -417,4 +377,16 @@ fn test_withdraw_unlock_success_block_expiring() {
     // Assert Rover indeed has those on hand in the bank
     let lp = mock.query_balance(&mock.rover, &lp_token.denom);
     assert_eq!(lp.amount, Uint128::from(200u128));
+}
+
+fn get_lockup_id(positions: &Positions) -> u64 {
+    positions
+        .vaults
+        .first()
+        .unwrap()
+        .amount
+        .unlocking()
+        .first()
+        .unwrap()
+        .id
 }
