@@ -1,3 +1,13 @@
+use std::hash::Hash;
+
+use cosmwasm_schema::cw_serde;
+use cosmwasm_std::{
+    to_binary, Addr, Api, BalanceResponse, BankQuery, Coin, CosmosMsg, QuerierWrapper,
+    QueryRequest, StdResult, SubMsg, Uint128, WasmMsg, WasmQuery,
+};
+use cw_utils::Duration;
+
+use cosmos_vault_standard::extensions::lockup::Lockup;
 use cosmos_vault_standard::extensions::lockup::LockupExecuteMsg::{
     ForceWithdraw, ForceWithdrawUnlocking, Unlock, WithdrawUnlocked,
 };
@@ -7,60 +17,13 @@ use cosmos_vault_standard::extensions::lockup::LockupQueryMsg::{
 use cosmos_vault_standard::msg::{
     AssetsResponse, ExecuteMsg, ExtensionExecuteMsg, ExtensionQueryMsg, QueryMsg, VaultInfo,
 };
-use std::hash::Hash;
 
-use cosmos_vault_standard::extensions::lockup::Lockup;
-use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{
-    to_binary, Addr, Api, BalanceResponse, BankQuery, Coin, CosmosMsg, Decimal, QuerierWrapper,
-    QueryRequest, StdResult, SubMsg, Uint128, WasmMsg, WasmQuery,
-};
-use cw_utils::Duration;
-
-use crate::adapters::vault::VaultPositionAmount;
-use crate::error::ContractError;
-use crate::error::ContractError::InvalidVaultConfig;
 use crate::traits::Stringify;
 
 pub const VAULT_REQUEST_REPLY_ID: u64 = 10_001;
 
 type VaultExecuteMsg = ExecuteMsg<ExtensionExecuteMsg>;
 type VaultQueryMsg = QueryMsg<ExtensionQueryMsg>;
-
-#[cw_serde]
-pub struct VaultUnlockingPosition {
-    /// Unique identifier representing the unlocking position. Needed for `ExecuteMsg::WithdrawUnlocked {}` call.
-    pub id: u64,
-    /// Number of vault tokens
-    pub amount: Uint128,
-}
-
-#[cw_serde]
-pub struct VaultPosition {
-    pub vault: Vault,
-    pub amount: VaultPositionAmount,
-}
-
-#[cw_serde]
-pub struct VaultConfig {
-    pub deposit_cap: Coin,
-    pub max_ltv: Decimal,
-    pub liquidation_threshold: Decimal,
-    pub whitelisted: bool,
-}
-
-impl VaultConfig {
-    pub fn check(&self) -> Result<(), ContractError> {
-        let max_ltv_too_big = self.max_ltv > Decimal::one();
-        let lqt_too_big = self.liquidation_threshold > Decimal::one();
-        let max_ltv_bigger_than_lqt = self.max_ltv > self.liquidation_threshold;
-
-        if max_ltv_too_big || lqt_too_big || max_ltv_bigger_than_lqt {
-            return Err(InvalidVaultConfig {});
-        }
-        Ok(())
-    }
-}
 
 #[cw_serde]
 #[derive(Eq, Hash)]

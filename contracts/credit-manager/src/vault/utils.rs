@@ -1,6 +1,6 @@
 use cosmwasm_std::{Addr, Coin, Deps, StdResult, Storage};
 
-use rover::adapters::vault::{Total, Vault, VaultPositionAmount, VaultPositionUpdate};
+use rover::adapters::vault::{Vault, VaultPositionAmount, VaultPositionUpdate};
 use rover::error::{ContractError, ContractResult};
 
 use crate::state::{VAULT_CONFIGS, VAULT_POSITIONS};
@@ -29,7 +29,7 @@ pub fn update_vault_position(
 
     amount.update(update)?;
 
-    if amount.total().is_zero() {
+    if amount.is_empty() {
         path.remove(storage);
     } else {
         path.save(storage, &amount)?;

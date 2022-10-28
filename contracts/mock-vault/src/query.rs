@@ -8,20 +8,22 @@ use crate::error::ContractError::NotLockingVault;
 use crate::error::ContractResult;
 use crate::state::{COIN_BALANCE, LOCKUPS, LOCKUP_TIME, TOTAL_VAULT_SHARES, VAULT_TOKEN_DENOM};
 
-pub fn query_coins_for_shares(
+pub fn query_underlying_for_shares(
     storage: &dyn Storage,
     shares: Uint128,
 ) -> ContractResult<AssetsResponse> {
-    let total_shares_opt = TOTAL_VAULT_SHARES.may_load(storage)?;
+    let total_shares = TOTAL_VAULT_SHARES.load(storage)?;
     let balance = COIN_BALANCE.load(storage)?;
-    match total_shares_opt {
-        Some(total_vault_shares) if !total_vault_shares.is_zero() => Ok(AssetsResponse {
+
+    if total_shares.is_zero() {
+        Ok(AssetsResponse { coin: balance })
+    } else {
+        Ok(AssetsResponse {
             coin: Coin {
                 denom: balance.denom,
-                amount: balance.amount.multiply_ratio(shares, total_vault_shares),
+                amount: balance.amount.multiply_ratio(shares, total_shares),
             },
-        }),
-        _ => Ok(AssetsResponse { coin: balance }),
+        })
     }
 }
 
@@ -56,8 +58,5 @@ pub fn query_lockups(deps: Deps, addr: String) -> ContractResult<Vec<Lockup>> {
 }
 
 pub fn query_vault_token_supply(storage: &dyn Storage) -> ContractResult<Uint128> {
-    let amount_issued = TOTAL_VAULT_SHARES
-        .may_load(storage)?
-        .unwrap_or(Uint128::zero());
-    Ok(amount_issued)
+    Ok(TOTAL_VAULT_SHARES.load(storage)?)
 }

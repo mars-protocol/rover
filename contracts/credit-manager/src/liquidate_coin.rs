@@ -1,6 +1,6 @@
 use std::ops::{Add, Div};
 
-use cosmwasm_std::{Coin, Decimal, DepsMut, Env, Response, StdError, Uint128};
+use cosmwasm_std::{Coin, CosmosMsg, Decimal, DepsMut, Env, Response, StdError, Storage, Uint128};
 
 use rover::error::{ContractError, ContractResult};
 use rover::msg::execute::CallbackMsg;
@@ -32,15 +32,13 @@ pub fn liquidate_coin(
         request_coin_balance,
     )?;
 
-    // Transfer debt coin from liquidator's coin balance to liquidatee
-    // Will be used to pay off the debt via CallbackMsg::Repay {}
-    decrement_coin_balance(deps.storage, liquidator_account_id, &debt)?;
-    increment_coin_balance(deps.storage, liquidatee_account_id, &debt)?;
-    let repay_msg = (CallbackMsg::Repay {
-        account_id: liquidatee_account_id.to_string(),
-        coin: debt.clone(),
-    })
-    .into_cosmos_msg(&env.contract.address)?;
+    let repay_msg = repay_debt(
+        deps.storage,
+        &env,
+        liquidator_account_id,
+        liquidatee_account_id,
+        &debt,
+    )?;
 
     // Transfer requested coin from liquidatee to liquidator
     decrement_coin_balance(deps.storage, liquidatee_account_id, &request)?;
@@ -118,7 +116,9 @@ pub fn calculate_liquidation(
         .add(Decimal::one())
         .checked_mul(debt_res.price.checked_mul(final_debt_to_repay.to_dec()?)?)?
         .div(request_res.price)
-        .uint128();
+        .uint128()
+        // Effectively serves as a rounding up
+        .checked_add(Uint128::new(1))?;
 
     // (Debt Coin, Request Coin)
     Ok((
@@ -131,4 +131,23 @@ pub fn calculate_liquidation(
             amount: request_amount,
         },
     ))
+}
+
+pub fn repay_debt(
+    storage: &mut dyn Storage,
+    env: &Env,
+    liquidator_account_id: &str,
+    liquidatee_account_id: &str,
+    debt: &Coin,
+) -> ContractResult<CosmosMsg> {
+    // Transfer debt coin from liquidator's coin balance to liquidatee
+    // Will be used to pay off the debt via CallbackMsg::Repay {}
+    decrement_coin_balance(storage, liquidator_account_id, debt)?;
+    increment_coin_balance(storage, liquidatee_account_id, debt)?;
+    let msg = (CallbackMsg::Repay {
+        account_id: liquidatee_account_id.to_string(),
+        coin: debt.clone(),
+    })
+    .into_cosmos_msg(&env.contract.address)?;
+    Ok(msg)
 }

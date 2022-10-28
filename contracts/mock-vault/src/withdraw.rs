@@ -5,7 +5,7 @@ use cosmwasm_std::{
 };
 
 use crate::error::{ContractError, ContractResult};
-use crate::query::query_coins_for_shares;
+use crate::query::query_underlying_for_shares;
 use crate::state::{CHAIN_BANK, COIN_BALANCE, LOCKUP_TIME, TOTAL_VAULT_SHARES, VAULT_TOKEN_DENOM};
 
 pub fn withdraw(deps: DepsMut, info: MessageInfo) -> ContractResult<Response> {
@@ -40,18 +40,16 @@ pub fn withdraw_state_update(
     storage: &mut dyn Storage,
     shares: Uint128,
 ) -> ContractResult<AssetsResponse> {
-    let res = query_coins_for_shares(storage, shares)?;
-
-    TOTAL_VAULT_SHARES.update(storage, |current_amount| -> StdResult<_> {
-        Ok(current_amount - shares)
-    })?;
-
+    let res = query_underlying_for_shares(storage, shares)?;
     COIN_BALANCE.update(storage, |total| -> StdResult<_> {
         Ok(Coin {
             denom: total.denom,
             amount: total.amount - res.coin.amount,
         })
     })?;
+
+    let current_amount = TOTAL_VAULT_SHARES.load(storage)?;
+    TOTAL_VAULT_SHARES.save(storage, &(current_amount - shares))?;
 
     mock_lp_token_burn(storage, shares)?;
     Ok(res)

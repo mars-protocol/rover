@@ -9,11 +9,12 @@ use crate::deposit::deposit;
 use crate::error::ContractResult;
 use crate::msg::InstantiateMsg;
 use crate::query::{
-    query_coins_for_shares, query_lockup, query_lockup_duration, query_lockups, query_vault_info,
-    query_vault_token_supply,
+    query_lockup, query_lockup_duration, query_lockups, query_underlying_for_shares,
+    query_vault_info, query_vault_token_supply,
 };
 use crate::state::{
-    CHAIN_BANK, COIN_BALANCE, LOCKUP_TIME, NEXT_LOCKUP_ID, ORACLE, VAULT_TOKEN_DENOM,
+    CHAIN_BANK, COIN_BALANCE, LOCKUP_TIME, NEXT_LOCKUP_ID, ORACLE, TOTAL_VAULT_SHARES,
+    VAULT_TOKEN_DENOM,
 };
 use crate::unlock::{request_unlock, withdraw_unlocked, withdraw_unlocking_force};
 use crate::withdraw::{withdraw, withdraw_force};
@@ -37,6 +38,7 @@ pub fn instantiate(
     VAULT_TOKEN_DENOM.save(deps.storage, &msg.vault_token_denom)?;
     CHAIN_BANK.save(deps.storage, &DEFAULT_VAULT_TOKEN_PREFUND)?;
     NEXT_LOCKUP_ID.save(deps.storage, &1)?;
+    TOTAL_VAULT_SHARES.save(deps.storage, &Uint128::zero())?;
     Ok(Response::default())
 }
 
@@ -71,7 +73,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> ContractResult<Binary> {
         QueryMsg::TotalVaultTokenSupply {} => to_binary(&query_vault_token_supply(deps.storage)?),
         QueryMsg::Info {} => to_binary(&query_vault_info(deps)?),
         QueryMsg::PreviewRedeem { amount } => {
-            to_binary(&query_coins_for_shares(deps.storage, amount)?)
+            to_binary(&query_underlying_for_shares(deps.storage, amount)?)
         }
         QueryMsg::VaultExtension(ext) => match ext {
             ExtensionQueryMsg::Lockup(lockup_msg) => match lockup_msg {
