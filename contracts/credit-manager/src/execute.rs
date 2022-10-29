@@ -88,9 +88,10 @@ pub fn update_config(
 
     if let Some(coins) = new_config.allowed_coins {
         ALLOWED_COINS.clear(deps.storage);
-        coins
-            .iter()
-            .try_for_each(|denom| ALLOWED_COINS.save(deps.storage, denom, &Empty {}))?;
+        coins.iter().try_for_each(|denom| -> ContractResult<_> {
+            ALLOWED_COINS.insert(deps.storage, denom)?;
+            Ok(())
+        })?;
 
         response = response
             .add_attribute("key", "allowed_coins")
