@@ -27,10 +27,7 @@ pub fn store_config(deps: DepsMut, msg: &InstantiateMsg) -> ContractResult<()> {
 
     msg.allowed_coins
         .iter()
-        .try_for_each(|denom| -> ContractResult<_> {
-            ALLOWED_COINS.insert(deps.storage, denom)?;
-            Ok(())
-        })?;
+        .try_for_each(|denom| ALLOWED_COINS.insert(deps.storage, denom).map(|_| ()))?;
 
     Ok(())
 }
