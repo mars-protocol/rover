@@ -1,10 +1,6 @@
 [config]
 default_to_workspace = false
 
-[tasks.check]
-command = "cargo"
-args = ["check"]
-
 [tasks.build]
 command = "cargo"
 args = ["build", "--release", "--target", "wasm32-unknown-unknown", "--locked"]
@@ -12,14 +8,14 @@ args = ["build", "--release", "--target", "wasm32-unknown-unknown", "--locked"]
 [tasks.rust-optimizer]
 script = """
 if [[ $(arch) == "arm64" ]]; then
-  image="cosmwasm/workspace-optimizer-arm64"
+  image="cosmwasm/workspace-optimizer-arm64:0.12.8"
 else
-  image="cosmwasm/workspace-optimizer"
+  image="cosmwasm/workspace-optimizer:0.12.9"
 fi
 docker run --rm -v "$(pwd)":/code \
   --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
   --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
-  ${image}:0.12.9
+  ${image}
 """
 
 [tasks.test]
@@ -34,31 +30,65 @@ args = ["fmt", "--all", "--check"]
 command = "cargo"
 args = ["clippy", "--tests", "--", "-D", "warnings"]
 
+
+[tasks.generate-all-schemas]
+script_runner = "@rust"
+script = '''
+use std::fs;
+use std::process::Command;
+
+fn main() -> std::io::Result<()> {
+    fs::remove_dir_all("schema");
+    fs::remove_dir_all("schemas");
+    fs::create_dir("schemas")?;
+    println!("Done");
+
+    let contracts = vec![
+        "credit-manager",
+        "account-nft",
+        "swapper-base",
+        "mars-oracle-adapter",
+        "mock-red-bank",
+        "mock-vault",
+        "mock-oracle",
+    ];
+
+    for contract in contracts {
+        println!("{}", contract);
+
+        let output = Command::new("cargo")
+            .arg("run")
+            .arg("--package")
+            .arg(contract)
+            .arg("--example")
+            .arg("schema")
+            .output()
+            .expect("failed to execute process");
+
+        println!("status: {}", output.status);
+        println!("stdout: {}", String::from_utf8_lossy(&output.stdout));
+        println!("stderr: {}", String::from_utf8_lossy(&output.stderr));
+
+        fs::create_dir(format!("schemas/{}", contract))?;
+
+        fs::rename(
+            format!("schema/{}.json", contract),
+            format!("schemas/{}/{}.json", contract, contract),
+        )?;
+    }
+
+    fs::remove_dir_all("schema");
+
+    Ok(())
+}
+'''
+
 [tasks.all-github-actions]
 dependencies = [
-    "check",
     "build",
     "test",
     "fmt",
     "clippy",
+    "generate-all-schemas",
     "rust-optimizer",
 ]
-
-[tasks.generate-all-schemas]
-script = """
-    rm -rf schema
-    rm -rf schemas
-    mkdir schemas
-
-    array=( credit-manager account-nft swapper-base mars-oracle-adapter mock-red-bank mock-vault mock-oracle )
-    for i in "${array[@]}"
-    do
-      :
-      echo "$i"
-      cargo run --package "$i" --example schema
-      mkdir schemas/"$i"
-      mv schema/"$i".json schemas/"$i"/"$i".json
-    done
-
-    rm -rf schema
-"""
