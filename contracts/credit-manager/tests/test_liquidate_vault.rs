@@ -306,7 +306,7 @@ fn test_liquidate_locked_vault() {
         vec![
             Deposit(lp_token.to_coin(80)),
             EnterVault {
-                vault: vault.clone(),
+                vault,
                 coin: lp_token.to_coin(80),
             },
             Borrow(atom.to_coin(700)),
@@ -399,7 +399,7 @@ fn test_liquidate_unlocking_priority() {
             },
             Borrow(ujake.to_coin(175)),
             RequestVaultUnlock {
-                vault: vault.clone(),
+                vault,
                 amount: Uint128::new(100_000),
             },
         ],

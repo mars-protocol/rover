@@ -84,7 +84,7 @@ fn liquidate_unlocked(
         &env,
         liquidatee_account_id,
         &debt_coin,
-        &vault_info.vault_token_denom,
+        &vault_info.vault_token,
         amount,
     )?;
 
@@ -106,7 +106,7 @@ fn liquidate_unlocked(
     let vault_withdraw_msg = request_vault.withdraw_msg(&deps.querier, request.amount, false)?;
 
     let update_coin_balance_msg =
-        update_balances(deps, &env, &liquidator_account_id, &vault_info.req_denom)?;
+        update_balances(deps, &env, &liquidator_account_id, &vault_info.base_token)?;
 
     Ok(Response::new()
         .add_message(repay_msg)
@@ -136,7 +136,7 @@ fn liquidate_unlocking(
         &env,
         liquidatee_account_id,
         &debt_coin,
-        &vault_info.req_denom,
+        &vault_info.base_token,
         unlocking_positions.total(),
     )?;
 
@@ -172,7 +172,7 @@ fn liquidate_unlocking(
     }
 
     let update_coin_balance_msg =
-        update_balances(deps, &env, &liquidator_account_id, &vault_info.req_denom)?;
+        update_balances(deps, &env, &liquidator_account_id, &vault_info.base_token)?;
 
     Ok(Response::new()
         .add_message(repay_msg)
@@ -202,7 +202,7 @@ fn liquidate_locked(
         &env,
         liquidatee_account_id,
         &debt_coin,
-        &vault_info.vault_token_denom,
+        &vault_info.vault_token,
         amount,
     )?;
 
@@ -224,7 +224,7 @@ fn liquidate_locked(
     let vault_withdraw_msg = request_vault.withdraw_msg(&deps.querier, request.amount, true)?;
 
     let update_coin_balance_msg =
-        update_balances(deps, &env, &liquidator_account_id, &vault_info.req_denom)?;
+        update_balances(deps, &env, &liquidator_account_id, &vault_info.base_token)?;
 
     Ok(Response::new()
         .add_message(repay_msg)

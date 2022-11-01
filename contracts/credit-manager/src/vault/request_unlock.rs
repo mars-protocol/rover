@@ -47,7 +47,7 @@ pub fn request_vault_unlock(
 
     let vault_info = vault.query_info(&deps.querier)?;
     let request_unlock_msg = vault.request_unlock_msg(Coin {
-        denom: vault_info.vault_token_denom,
+        denom: vault_info.vault_token,
         amount,
     })?;
 
@@ -62,6 +62,7 @@ pub fn handle_unlock_request_reply(deps: DepsMut, reply: Reply) -> ContractResul
     let vault_addr = deps.api.addr_validate(unlock_event.vault_addr.as_str())?;
     let vault = VaultBase::new(vault_addr.clone());
     let lockup = vault.query_lockup(&deps.querier, unlock_event.id)?;
+    let info = vault.query_info(&deps.querier)?;
 
     update_vault_position(
         deps.storage,
@@ -69,7 +70,10 @@ pub fn handle_unlock_request_reply(deps: DepsMut, reply: Reply) -> ContractResul
         &vault_addr,
         VaultPositionUpdate::Unlocking(UnlockingChange::Add(VaultUnlockingPosition {
             id: lockup.id,
-            coin: lockup.coin,
+            coin: Coin {
+                denom: info.base_token,
+                amount: lockup.base_token_amount,
+            },
         })),
     )?;
 

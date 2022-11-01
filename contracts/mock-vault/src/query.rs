@@ -1,38 +1,32 @@
-use cosmwasm_std::{Coin, Deps, Order, StdError, StdResult, Storage, Uint128};
-use cw_utils::Duration;
-
 use cosmos_vault_standard::extensions::lockup::Lockup;
-use cosmos_vault_standard::msg::{AssetsResponse, VaultInfo};
+use cosmos_vault_standard::msg::VaultInfo;
+use cosmwasm_std::{Deps, Order, StdError, StdResult, Storage, Uint128};
+use cw_utils::Duration;
 
 use crate::error::ContractError::NotLockingVault;
 use crate::error::ContractResult;
 use crate::state::{COIN_BALANCE, LOCKUPS, LOCKUP_TIME, TOTAL_VAULT_SHARES, VAULT_TOKEN_DENOM};
 
-pub fn query_underlying_for_shares(
+pub fn shares_to_base_denom_amount(
     storage: &dyn Storage,
     shares: Uint128,
-) -> ContractResult<AssetsResponse> {
+) -> ContractResult<Uint128> {
     let total_shares = TOTAL_VAULT_SHARES.load(storage)?;
     let balance = COIN_BALANCE.load(storage)?;
 
     if total_shares.is_zero() {
-        Ok(AssetsResponse { coin: balance })
+        Ok(balance.amount)
     } else {
-        Ok(AssetsResponse {
-            coin: Coin {
-                denom: balance.denom,
-                amount: balance.amount.multiply_ratio(shares, total_shares),
-            },
-        })
+        Ok(balance.amount.multiply_ratio(shares, total_shares))
     }
 }
 
 pub fn query_vault_info(deps: Deps) -> ContractResult<VaultInfo> {
-    let req_denom = COIN_BALANCE.load(deps.storage)?.denom;
-    let vault_token_denom = VAULT_TOKEN_DENOM.load(deps.storage)?;
+    let base_token = COIN_BALANCE.load(deps.storage)?.denom;
+    let vault_token = VAULT_TOKEN_DENOM.load(deps.storage)?;
     Ok(VaultInfo {
-        req_denom,
-        vault_token_denom,
+        base_token,
+        vault_token,
     })
 }
 

@@ -1,3 +1,6 @@
+use cosmos_vault_standard::extensions::force_unlock::ForceUnlockExecuteMsg::{
+    ForceRedeem, ForceWithdrawUnlocking,
+};
 use std::hash::Hash;
 
 use cosmwasm_schema::cw_serde;
@@ -8,14 +11,12 @@ use cosmwasm_std::{
 use cw_utils::Duration;
 
 use cosmos_vault_standard::extensions::lockup::Lockup;
-use cosmos_vault_standard::extensions::lockup::LockupExecuteMsg::{
-    ForceWithdraw, ForceWithdrawUnlocking, Unlock, WithdrawUnlocked,
-};
+use cosmos_vault_standard::extensions::lockup::LockupExecuteMsg::{Unlock, WithdrawUnlocked};
 use cosmos_vault_standard::extensions::lockup::LockupQueryMsg::{
     Lockup as LockupQueryMsg, LockupDuration,
 };
 use cosmos_vault_standard::msg::{
-    AssetsResponse, ExecuteMsg, ExtensionExecuteMsg, ExtensionQueryMsg, QueryMsg, VaultInfo,
+    ExecuteMsg, ExtensionExecuteMsg, ExtensionQueryMsg, QueryMsg, VaultInfo,
 };
 
 use crate::traits::Stringify;
@@ -76,7 +77,10 @@ impl Vault {
         let deposit_msg = CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: self.address.to_string(),
             funds: vec![coin.clone()],
-            msg: to_binary(&VaultExecuteMsg::Deposit { recipient: None })?,
+            msg: to_binary(&VaultExecuteMsg::Deposit {
+                amount: coin.amount,
+                recipient: None,
+            })?,
         });
         Ok(deposit_msg)
     }
@@ -91,12 +95,12 @@ impl Vault {
         let withdraw_msg = CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: self.address.to_string(),
             funds: vec![Coin {
-                denom: vault_info.vault_token_denom,
+                denom: vault_info.vault_token,
                 amount,
             }],
             msg: to_binary(
                 &(if force {
-                    VaultExecuteMsg::VaultExtension(ExtensionExecuteMsg::Lockup(ForceWithdraw {
+                    VaultExecuteMsg::VaultExtension(ExtensionExecuteMsg::ForceUnlock(ForceRedeem {
                         recipient: None,
                         amount,
                     }))
@@ -120,7 +124,7 @@ impl Vault {
             contract_addr: self.address.to_string(),
             funds: vec![],
             msg: to_binary(&VaultExecuteMsg::VaultExtension(
-                ExtensionExecuteMsg::Lockup(ForceWithdrawUnlocking {
+                ExtensionExecuteMsg::ForceUnlock(ForceWithdrawUnlocking {
                     lockup_id,
                     amount,
                     recipient: None,
@@ -189,7 +193,7 @@ impl Vault {
         let vault_info = self.query_info(querier)?;
         let res: BalanceResponse = querier.query(&QueryRequest::Bank(BankQuery::Balance {
             address: addr.to_string(),
-            denom: vault_info.vault_token_denom,
+            denom: vault_info.vault_token,
         }))?;
         Ok(res.amount.amount)
     }
@@ -198,7 +202,7 @@ impl Vault {
         &self,
         querier: &QuerierWrapper,
         amount: Uint128,
-    ) -> StdResult<AssetsResponse> {
+    ) -> StdResult<Uint128> {
         querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
             contract_addr: self.address.to_string(),
             msg: to_binary(&VaultQueryMsg::PreviewRedeem { amount })?,

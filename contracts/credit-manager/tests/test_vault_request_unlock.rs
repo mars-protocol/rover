@@ -259,7 +259,7 @@ fn test_request_unlocked() {
             match res.first().unwrap().release_at {
                 Expiration::AtTime(t) => {
                     assert_eq!(res.len(), 1);
-                    assert_eq!(res.first().unwrap().coin.amount, Uint128::new(23));
+                    assert_eq!(res.first().unwrap().base_token_amount, Uint128::new(23));
                     assert_eq!(t.seconds(), expected_unlock_time);
                 }
                 _ => panic!("Wrong type of expiration"),

@@ -44,5 +44,5 @@ pub fn query_withdraw_denom_balances(
     vault: &Vault,
 ) -> StdResult<Vec<Coin>> {
     let vault_info = vault.query_info(&deps.querier)?;
-    query_balances(deps, rover_addr, &[vault_info.req_denom.as_str()])
+    query_balances(deps, rover_addr, &[vault_info.base_token.as_str()])
 }

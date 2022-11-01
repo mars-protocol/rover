@@ -7,7 +7,7 @@ use cosmwasm_std::{
 use cw_utils::{Duration, Expiration};
 
 use crate::error::ContractError;
-use crate::state::{LOCKUPS, LOCKUP_TIME, NEXT_LOCKUP_ID};
+use crate::state::{COIN_BALANCE, LOCKUPS, LOCKUP_TIME, NEXT_LOCKUP_ID};
 use crate::withdraw::{get_vault_token, withdraw_state_update};
 
 pub fn request_unlock(
@@ -19,7 +19,7 @@ pub fn request_unlock(
     let lockup_duration = lockup_time_opt.ok_or(ContractError::NotLockingVault {})?;
 
     let vault_token = get_vault_token(deps.storage, info.funds)?;
-    let to_lock = withdraw_state_update(deps.storage, vault_token.amount)?;
+    let lock_amount = withdraw_state_update(deps.storage, vault_token.amount)?;
 
     let next_lockup_id = NEXT_LOCKUP_ID.load(deps.storage)?;
 
@@ -34,7 +34,7 @@ pub fn request_unlock(
             owner: info.sender.clone(),
             id: next_lockup_id,
             release_at,
-            coin: to_lock.coin,
+            base_token_amount: lock_amount,
         });
         Ok(lockups)
     })?;
@@ -73,9 +73,13 @@ pub fn withdraw_unlocked(
     let remaining = lockups.into_iter().filter(|p| p.id != id).collect();
     LOCKUPS.save(deps.storage, sender.clone(), &remaining)?;
 
+    let underlying_coin = COIN_BALANCE.load(deps.storage)?;
     let transfer_msg = CosmosMsg::Bank(BankMsg::Send {
         to_address: sender.to_string(),
-        amount: vec![matching_position.coin],
+        amount: vec![Coin {
+            denom: underlying_coin.denom,
+            amount: matching_position.base_token_amount,
+        }],
     });
     Ok(Response::new().add_message(transfer_msg))
 }
@@ -97,19 +101,20 @@ pub fn withdraw_unlocking_force(
 
     let amount_to_withdraw = match amounts {
         Some(a) => {
-            lockup.coin.amount -= a;
+            lockup.base_token_amount -= a;
             lockups.push(lockup.clone());
             a
         }
-        None => lockup.coin.amount,
+        None => lockup.base_token_amount,
     };
 
     LOCKUPS.save(deps.storage, sender.clone(), &lockups)?;
 
+    let base_token = COIN_BALANCE.load(deps.storage)?;
     let transfer_msg = CosmosMsg::Bank(BankMsg::Send {
         to_address: sender.to_string(),
         amount: vec![Coin {
-            denom: lockup.coin.denom,
+            denom: base_token.denom,
             amount: amount_to_withdraw,
         }],
     });

@@ -53,7 +53,7 @@ fn get_positions_for_vaults(
         .iter()
         .map(|v| {
             let info = v.vault.query_info(&deps.querier)?;
-            let price_res = oracle.query_price(&deps.querier, &info.vault_token_denom)?;
+            let price_res = oracle.query_price(&deps.querier, &info.vault_token)?;
             let config = VAULT_CONFIGS.load(deps.storage, &v.vault.address)?;
             let mut positions = vec![];
 

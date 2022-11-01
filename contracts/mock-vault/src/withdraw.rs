@@ -1,11 +1,10 @@
-use cosmos_vault_standard::msg::AssetsResponse;
 use cosmwasm_std::{
     Addr, BankMsg, Coin, CosmosMsg, DepsMut, MessageInfo, Response, StdError, StdResult, Storage,
     Uint128,
 };
 
 use crate::error::{ContractError, ContractResult};
-use crate::query::query_underlying_for_shares;
+use crate::query::shares_to_base_denom_amount;
 use crate::state::{CHAIN_BANK, COIN_BALANCE, LOCKUP_TIME, TOTAL_VAULT_SHARES, VAULT_TOKEN_DENOM};
 
 pub fn withdraw(deps: DepsMut, info: MessageInfo) -> ContractResult<Response> {
@@ -17,7 +16,7 @@ pub fn withdraw(deps: DepsMut, info: MessageInfo) -> ContractResult<Response> {
     _exchange(deps.storage, &info.sender, vault_tokens.amount)
 }
 
-pub fn withdraw_force(deps: DepsMut, info: MessageInfo) -> ContractResult<Response> {
+pub fn redeem_force(deps: DepsMut, info: MessageInfo) -> ContractResult<Response> {
     let vault_tokens = get_vault_token(deps.storage, info.funds.clone())?;
     _exchange(deps.storage, &info.sender, vault_tokens.amount)
 }
@@ -28,10 +27,14 @@ pub fn _exchange(
     send_to: &Addr,
     shares: Uint128,
 ) -> ContractResult<Response> {
-    let res = withdraw_state_update(storage, shares)?;
+    let amount = withdraw_state_update(storage, shares)?;
+    let base_token = COIN_BALANCE.load(storage)?;
     let transfer_msg = CosmosMsg::Bank(BankMsg::Send {
         to_address: send_to.to_string(),
-        amount: vec![res.coin],
+        amount: vec![Coin {
+            denom: base_token.denom,
+            amount,
+        }],
     });
     Ok(Response::new().add_message(transfer_msg))
 }
@@ -39,12 +42,12 @@ pub fn _exchange(
 pub fn withdraw_state_update(
     storage: &mut dyn Storage,
     shares: Uint128,
-) -> ContractResult<AssetsResponse> {
-    let res = query_underlying_for_shares(storage, shares)?;
+) -> ContractResult<Uint128> {
+    let base_amount = shares_to_base_denom_amount(storage, shares)?;
     COIN_BALANCE.update(storage, |total| -> StdResult<_> {
         Ok(Coin {
             denom: total.denom,
-            amount: total.amount - res.coin.amount,
+            amount: total.amount - base_amount,
         })
     })?;
 
@@ -52,7 +55,7 @@ pub fn withdraw_state_update(
     TOTAL_VAULT_SHARES.save(storage, &(current_amount - shares))?;
 
     mock_lp_token_burn(storage, shares)?;
-    Ok(res)
+    Ok(base_amount)
 }
 
 pub fn get_vault_token(storage: &mut dyn Storage, funds: Vec<Coin>) -> ContractResult<Coin> {
