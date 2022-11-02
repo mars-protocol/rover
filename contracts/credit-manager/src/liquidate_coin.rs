@@ -117,7 +117,9 @@ pub fn calculate_liquidation(
         .checked_mul(debt_res.price.checked_mul(final_debt_to_repay.to_dec()?)?)?
         .div(request_res.price)
         .uint128()
-        // Effectively serves as a rounding up
+        // Given the nature of integers, these operations will round down. This means the liquidation balance will get
+        // closer and closer to 0, but never actually get there and stay as a single denom unit.
+        // The remediation for this is to round up at the very end of the calculation. Which adding 1 effectively does.
         .checked_add(Uint128::new(1))?;
 
     // (Debt Coin, Request Coin)

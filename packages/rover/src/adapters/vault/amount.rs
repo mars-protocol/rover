@@ -118,9 +118,7 @@ impl UnlockingPositions {
     }
 
     pub fn total(&self) -> Uint128 {
-        self.0
-            .iter()
-            .fold(Uint128::zero(), |total, u| total + u.coin.amount)
+        self.0.iter().map(|u| u.coin.amount).sum()
     }
 
     pub fn is_empty(&self) -> bool {
