@@ -1,20 +1,16 @@
 use std::cmp::min;
 
-use cosmwasm_std::{
-    to_binary, Coin, CosmosMsg, DepsMut, Env, Response, StdResult, Uint128, WasmMsg,
-};
+use cosmwasm_std::{Coin, DepsMut, Env, Response, Uint128};
 
 use rover::adapters::vault::{
     UnlockingChange, UnlockingPositions, UpdateType, Vault, VaultPositionAmount,
     VaultPositionUpdate,
 };
 use rover::error::ContractResult;
-use rover::msg::execute::CallbackMsg;
-use rover::msg::ExecuteMsg;
 
 use crate::liquidate_coin::{calculate_liquidation, repay_debt};
 use crate::state::VAULT_POSITIONS;
-use crate::update_coin_balances::query_balances;
+use crate::utils::update_balance_msg;
 use crate::vault::update_vault_position;
 
 pub fn liquidate_vault(
@@ -105,8 +101,12 @@ fn liquidate_unlocked(
 
     let vault_withdraw_msg = request_vault.withdraw_msg(&deps.querier, request.amount, false)?;
 
-    let update_coin_balance_msg =
-        update_balances(deps, &env, &liquidator_account_id, &vault_info.base_token)?;
+    let update_coin_balance_msg = update_balance_msg(
+        &deps.querier,
+        &env.contract.address,
+        liquidator_account_id,
+        &vault_info.base_token,
+    )?;
 
     Ok(Response::new()
         .add_message(repay_msg)
@@ -171,8 +171,12 @@ fn liquidate_unlocking(
         total_to_liquidate = total_to_liquidate.checked_sub(amount)?;
     }
 
-    let update_coin_balance_msg =
-        update_balances(deps, &env, &liquidator_account_id, &vault_info.base_token)?;
+    let update_coin_balance_msg = update_balance_msg(
+        &deps.querier,
+        &env.contract.address,
+        liquidator_account_id,
+        &vault_info.base_token,
+    )?;
 
     Ok(Response::new()
         .add_message(repay_msg)
@@ -223,8 +227,12 @@ fn liquidate_locked(
 
     let vault_withdraw_msg = request_vault.withdraw_msg(&deps.querier, request.amount, true)?;
 
-    let update_coin_balance_msg =
-        update_balances(deps, &env, &liquidator_account_id, &vault_info.base_token)?;
+    let update_coin_balance_msg = update_balance_msg(
+        &deps.querier,
+        &env.contract.address,
+        liquidator_account_id,
+        &vault_info.base_token,
+    )?;
 
     Ok(Response::new()
         .add_message(repay_msg)
@@ -236,22 +244,4 @@ fn liquidate_locked(
         .add_attribute("debt_repaid_amount", debt.amount)
         .add_attribute("vault_coin_denom", request.denom)
         .add_attribute("vault_coin_liquidated", request.amount))
-}
-
-/// Updates coin balances of liquidator after withdraws have been made
-fn update_balances(
-    deps: DepsMut,
-    env: &Env,
-    liquidator_account_id: &&str,
-    denom: &str,
-) -> StdResult<CosmosMsg> {
-    let previous_balances = query_balances(deps.as_ref(), &env.contract.address, &[denom])?;
-    Ok(CosmosMsg::Wasm(WasmMsg::Execute {
-        contract_addr: env.contract.address.to_string(),
-        funds: vec![],
-        msg: to_binary(&ExecuteMsg::Callback(CallbackMsg::UpdateCoinBalances {
-            account_id: liquidator_account_id.to_string(),
-            previous_balances,
-        }))?,
-    }))
 }
