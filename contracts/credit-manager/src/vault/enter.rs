@@ -63,6 +63,19 @@ fn or_full_balance_default(
     }
 }
 
+fn or_full_balance_default(
+    storage: &dyn Storage,
+    amount_opt: Option<Uint128>,
+    account_id: &str,
+    denom: &str,
+) -> ContractResult<Uint128> {
+    if let Some(a) = amount_opt {
+        Ok(a)
+    } else {
+        Ok(COIN_BALANCES.load(storage, (account_id, denom))?)
+    }
+}
+
 pub fn update_vault_coin_balance(
     deps: DepsMut,
     vault: Vault,
