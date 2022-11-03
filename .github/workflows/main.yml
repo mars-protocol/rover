@@ -2,6 +2,10 @@ on: pull_request
 
 name: Main
 
+env:
+  # Directory with wasm files
+  ARTIFACTS_DIR_PATH: 'artifacts'
+
 jobs:
 
   check:
@@ -33,9 +37,6 @@ jobs:
       - name: Generate schemas
         run: cargo make generate-all-schemas
 
-      - name: Compile contracts to wasm
-        run: cargo make rust-optimizer
-
   test:
     name: Test Suite
     runs-on: ubuntu-latest
@@ -57,6 +58,9 @@ jobs:
 
       - name: Install cargo make
         uses: davidB/rust-cargo-make@v1
+
+      - name: Compile contracts to wasm
+        run: cargo make rust-optimizer
 
       - name: Run tests
         run: cargo make test
