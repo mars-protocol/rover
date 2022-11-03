@@ -47,6 +47,7 @@ fn test_transfer_callback_only_internal() {
 }
 
 #[test]
+#[ignore] // FIXME: TWAP doesn't work on osmosis-testing - fix in progress
 fn test_swap_exact_in_slippage_too_high() {
     let app = OsmosisTestApp::new();
     let wasm = Wasm::new(&app);
@@ -109,6 +110,7 @@ fn test_swap_exact_in_slippage_too_high() {
 }
 
 #[test]
+#[ignore] // FIXME: TWAP doesn't work on osmosis-testing - fix in progress
 fn test_swap_exact_in_success() {
     let app = OsmosisTestApp::new();
     let wasm = Wasm::new(&app);
