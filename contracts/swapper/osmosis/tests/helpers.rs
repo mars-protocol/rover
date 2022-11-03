@@ -10,7 +10,7 @@ const ARTIFACTS_DIR_PATH: &str = env!("ARTIFACTS_DIR_PATH");
 const CONTRACT_NAME: &str = env!("CARGO_PKG_NAME");
 
 pub fn wasm_file() -> String {
-    let snaked_name = CONTRACT_NAME.replace("-", "_");
+    let snaked_name = CONTRACT_NAME.replace('-', "_");
     format!("../../../{}/{}.wasm", ARTIFACTS_DIR_PATH, snaked_name)
 }
 
