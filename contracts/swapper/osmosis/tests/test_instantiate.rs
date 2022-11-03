@@ -3,7 +3,7 @@ use osmosis_testing::{Account, Module, OsmosisTestApp, Wasm};
 
 use rover::adapters::swap::{Config, InstantiateMsg, QueryMsg};
 
-use crate::helpers::instantiate_contract;
+use crate::helpers::{instantiate_contract, wasm_file};
 
 pub mod helpers;
 
@@ -29,7 +29,7 @@ fn test_raises_on_invalid_owner_addr() {
         .init_account(&[coin(1_000_000_000_000, "uosmo")])
         .unwrap();
 
-    let wasm_byte_code = std::fs::read("../../../artifacts/swapper_osmosis.wasm").unwrap();
+    let wasm_byte_code = std::fs::read(wasm_file()).unwrap();
     let code_id = wasm
         .store_code(&wasm_byte_code, None, &signer)
         .unwrap()

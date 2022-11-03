@@ -6,8 +6,16 @@ use osmosis_testing::{Account, Bank, OsmosisTestApp, RunnerError, SigningAccount
 
 use rover::adapters::swap::InstantiateMsg;
 
+const ARTIFACTS_DIR_PATH: &str = env!("ARTIFACTS_DIR_PATH");
+const CONTRACT_NAME: &str = env!("CARGO_PKG_NAME");
+
+pub fn wasm_file() -> String {
+    let snaked_name = CONTRACT_NAME.replace("-", "_");
+    format!("../../../{}/{}.wasm", ARTIFACTS_DIR_PATH, snaked_name)
+}
+
 pub fn instantiate_contract(wasm: &Wasm<OsmosisTestApp>, owner: &SigningAccount) -> String {
-    let wasm_byte_code = std::fs::read("../../../artifacts/swapper_osmosis.wasm").unwrap();
+    let wasm_byte_code = std::fs::read(wasm_file()).unwrap();
     let code_id = wasm
         .store_code(&wasm_byte_code, None, owner)
         .unwrap()
