@@ -21,7 +21,7 @@ library    = []
 cosmwasm-schema = { workspace = true }
 cosmwasm-std    = { workspace = true }
 cw-storage-plus = { workspace = true }
-mars-osmosis    = { version = "0.1.0", path = "../../../../outposts/packages/chains/osmosis" }
+mars-osmosis    = { version = "0.1.0", path = "../../../packages/chains/osmosis" }
 osmosis-std     = "0.12"
 schemars        = { workspace = true }
 swapper-base    = { workspace = true }
@@ -29,5 +29,5 @@ rover           = { workspace = true }
 thiserror       = { workspace = true }
 
 [dev-dependencies]
-anyhow             = { workspace = true }
-osmosis-testing    = { version = "0.12", git = "https://github.com/osmosis-labs/osmosis-rust" }
+anyhow          = { workspace = true }
+osmosis-testing = { version = "0.12", git = "https://github.com/osmosis-labs/osmosis-rust" }
