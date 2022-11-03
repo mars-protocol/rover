@@ -81,7 +81,7 @@ fn test_swap_exact_in_slippage_too_high() {
         &ExecuteMsg::SetRoute {
             denom_in: "umars".to_string(),
             denom_out: "uosmo".to_string(),
-            route: route.clone(),
+            route,
         },
         &[],
         &signer,

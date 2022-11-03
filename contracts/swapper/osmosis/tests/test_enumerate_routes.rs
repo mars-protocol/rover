@@ -123,18 +123,18 @@ fn create_pools_and_routes(
     let pool_atom_osmo = gamm
         .create_basic_pool(
             &[coin(6_000_000, "uatom"), coin(1_500_000, "uosmo")],
-            &signer,
+            signer,
         )
         .unwrap()
         .data
         .pool_id;
     let pool_osmo_mars = gamm
-        .create_basic_pool(&[coin(100_000, "uosmo"), coin(1_000_000, "umars")], &signer)
+        .create_basic_pool(&[coin(100_000, "uosmo"), coin(1_000_000, "umars")], signer)
         .unwrap()
         .data
         .pool_id;
     let pool_osmo_usdc = gamm
-        .create_basic_pool(&[coin(100_000, "uosmo"), coin(1_000_000, "uusdc")], &signer)
+        .create_basic_pool(&[coin(100_000, "uosmo"), coin(1_000_000, "uusdc")], signer)
         .unwrap()
         .data
         .pool_id;
