@@ -3,8 +3,8 @@ on: pull_request
 name: Main
 
 env:
-  # Directory with wasm files
-  ARTIFACTS_DIR_PATH: 'artifacts'
+  # Directory with wasm files used by `tests`
+  ARTIFACTS_DIR_PATH: 'target/wasm32-unknown-unknown/release'
 
 jobs:
 
@@ -34,6 +34,9 @@ jobs:
       - name: Compile workspace
         run: cargo make build
 
+      - name: Compile contracts to wasm
+        run: cargo make rust-optimizer
+
       - name: Generate schemas
         run: cargo make generate-all-schemas
 
@@ -55,12 +58,13 @@ jobs:
           profile: minimal
           toolchain: stable
           override: true
+          target: wasm32-unknown-unknown
 
       - name: Install cargo make
         uses: davidB/rust-cargo-make@v1
 
-      - name: Compile contracts to wasm
-        run: cargo make rust-optimizer
+      - name: Compile workspace
+        run: cargo make build
 
       - name: Run tests
         run: cargo make test
