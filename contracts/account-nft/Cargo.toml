@@ -1,5 +1,5 @@
 [package]
-name          = "account-nft"
+name          = "mars-account-nft"
 version       = { workspace = true }
 authors       = { workspace = true }
 edition       = { workspace = true }

@@ -8,9 +8,9 @@ use cw2::set_contract_version;
 use cw_storage_plus::Bound;
 use mars_outpost::oracle::PriceResponse;
 
-use rover::adapters::vault::VaultBase;
-use rover::adapters::Oracle;
-use rover::traits::IntoDecimal;
+use mars_rover::adapters::vault::VaultBase;
+use mars_rover::adapters::Oracle;
+use mars_rover::traits::IntoDecimal;
 
 use crate::error::{ContractError, ContractResult};
 use crate::msg::{
