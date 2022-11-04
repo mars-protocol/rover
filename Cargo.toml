@@ -16,7 +16,8 @@ members = [
 version       = "1.0.0"
 authors       = [
     "grod220 <gabe.r@delphilabs.io>",
-    "larry_0x <larry@delphidigital.io>"
+    "larry_0x <larry@delphidigital.io>",
+    "Piotr Babel <piotr@delphilabs.io>",
 ]
 edition       = "2021"
 repository    = "https://github.com/mars-protocol/rover"
