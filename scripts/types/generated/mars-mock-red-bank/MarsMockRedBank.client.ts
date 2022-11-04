@@ -28,8 +28,8 @@ import {
   ArrayOfUserDebtResponse,
   UserHealthStatus,
   UserPositionResponse,
-} from './MockRedBank.types'
-export interface MockRedBankReadOnlyInterface {
+} from './MarsMockRedBank.types'
+export interface MarsMockRedBankReadOnlyInterface {
   contractAddress: string
   config: () => Promise<ConfigForString>
   market: ({ denom }: { denom: string }) => Promise<Market>
@@ -100,7 +100,7 @@ export interface MockRedBankReadOnlyInterface {
     denom: string
   }) => Promise<Uint128>
 }
-export class MockRedBankQueryClient implements MockRedBankReadOnlyInterface {
+export class MarsMockRedBankQueryClient implements MarsMockRedBankReadOnlyInterface {
   client: CosmWasmClient
   contractAddress: string
 
@@ -306,7 +306,7 @@ export class MockRedBankQueryClient implements MockRedBankReadOnlyInterface {
     })
   }
 }
-export interface MockRedBankInterface extends MockRedBankReadOnlyInterface {
+export interface MarsMockRedBankInterface extends MarsMockRedBankReadOnlyInterface {
   contractAddress: string
   sender: string
   updateConfig: (
@@ -432,7 +432,10 @@ export interface MockRedBankInterface extends MockRedBankReadOnlyInterface {
     funds?: Coin[],
   ) => Promise<ExecuteResult>
 }
-export class MockRedBankClient extends MockRedBankQueryClient implements MockRedBankInterface {
+export class MarsMockRedBankClient
+  extends MarsMockRedBankQueryClient
+  implements MarsMockRedBankInterface
+{
   client: SigningCosmWasmClient
   sender: string
   contractAddress: string

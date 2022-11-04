@@ -5,9 +5,9 @@
  * and run the @cosmwasm/ts-codegen generate command to regenerate this file.
  */
 
-import * as _3 from './CreditManager.types'
-import * as _4 from './CreditManager.client'
-import * as _5 from './CreditManager.react-query'
+import * as _9 from './MarsMockRedBank.types'
+import * as _10 from './MarsMockRedBank.client'
+import * as _11 from './MarsMockRedBank.react-query'
 export namespace contracts {
-  export const CreditManager = { ..._3, ..._4, ..._5 }
+  export const MarsMockRedBank = { ..._9, ..._10, ..._11 }
 }

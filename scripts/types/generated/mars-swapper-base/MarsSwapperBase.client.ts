@@ -20,8 +20,8 @@ import {
   EstimateExactInSwapResponse,
   RouteResponseForEmpty,
   ArrayOfRouteResponseForEmpty,
-} from './SwapperBase.types'
-export interface SwapperBaseReadOnlyInterface {
+} from './MarsSwapperBase.types'
+export interface MarsSwapperBaseReadOnlyInterface {
   contractAddress: string
   config: () => Promise<ConfigForString>
   route: ({
@@ -46,7 +46,7 @@ export interface SwapperBaseReadOnlyInterface {
     denomOut: string
   }) => Promise<EstimateExactInSwapResponse>
 }
-export class SwapperBaseQueryClient implements SwapperBaseReadOnlyInterface {
+export class MarsSwapperBaseQueryClient implements MarsSwapperBaseReadOnlyInterface {
   client: CosmWasmClient
   contractAddress: string
 
@@ -107,7 +107,7 @@ export class SwapperBaseQueryClient implements SwapperBaseReadOnlyInterface {
     })
   }
 }
-export interface SwapperBaseInterface extends SwapperBaseReadOnlyInterface {
+export interface MarsSwapperBaseInterface extends MarsSwapperBaseReadOnlyInterface {
   contractAddress: string
   sender: string
   updateConfig: (
@@ -163,7 +163,10 @@ export interface SwapperBaseInterface extends SwapperBaseReadOnlyInterface {
     funds?: Coin[],
   ) => Promise<ExecuteResult>
 }
-export class SwapperBaseClient extends SwapperBaseQueryClient implements SwapperBaseInterface {
+export class MarsSwapperBaseClient
+  extends MarsSwapperBaseQueryClient
+  implements MarsSwapperBaseInterface
+{
   client: SigningCosmWasmClient
   sender: string
   contractAddress: string

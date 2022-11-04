@@ -5,9 +5,9 @@
  * and run the @cosmwasm/ts-codegen generate command to regenerate this file.
  */
 
-import * as _0 from './AccountNft.types'
-import * as _1 from './AccountNft.client'
-import * as _2 from './AccountNft.react-query'
+import * as _0 from './MarsAccountNft.types'
+import * as _1 from './MarsAccountNft.client'
+import * as _2 from './MarsAccountNft.react-query'
 export namespace contracts {
-  export const AccountNft = { ..._0, ..._1, ..._2 }
+  export const MarsAccountNft = { ..._0, ..._1, ..._2 }
 }

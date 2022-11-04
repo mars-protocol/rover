@@ -5,9 +5,9 @@
  * and run the @cosmwasm/ts-codegen generate command to regenerate this file.
  */
 
-import * as _6 from './MarsOracleAdapter.types'
-import * as _7 from './MarsOracleAdapter.client'
-import * as _8 from './MarsOracleAdapter.react-query'
+import * as _18 from './MarsOracleAdapter.types'
+import * as _19 from './MarsOracleAdapter.client'
+import * as _20 from './MarsOracleAdapter.react-query'
 export namespace contracts {
-  export const MarsOracleAdapter = { ..._6, ..._7, ..._8 }
+  export const MarsOracleAdapter = { ..._18, ..._19, ..._20 }
 }

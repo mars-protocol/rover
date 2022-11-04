@@ -23,55 +23,61 @@ import {
   VaultInfo,
   Empty,
   VaultStandardInfo,
-} from './MockVault.types'
-import { MockVaultQueryClient, MockVaultClient } from './MockVault.client'
-export const mockVaultQueryKeys = {
+} from './MarsMockVault.types'
+import { MarsMockVaultQueryClient, MarsMockVaultClient } from './MarsMockVault.client'
+export const marsMockVaultQueryKeys = {
   contract: [
     {
-      contract: 'mockVault',
+      contract: 'marsMockVault',
     },
   ] as const,
   address: (contractAddress: string | undefined) =>
-    [{ ...mockVaultQueryKeys.contract[0], address: contractAddress }] as const,
+    [{ ...marsMockVaultQueryKeys.contract[0], address: contractAddress }] as const,
   vaultStandardInfo: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
-      { ...mockVaultQueryKeys.address(contractAddress)[0], method: 'vault_standard_info', args },
+      {
+        ...marsMockVaultQueryKeys.address(contractAddress)[0],
+        method: 'vault_standard_info',
+        args,
+      },
     ] as const,
   info: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...mockVaultQueryKeys.address(contractAddress)[0], method: 'info', args }] as const,
+    [{ ...marsMockVaultQueryKeys.address(contractAddress)[0], method: 'info', args }] as const,
   previewDeposit: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
-      { ...mockVaultQueryKeys.address(contractAddress)[0], method: 'preview_deposit', args },
+      { ...marsMockVaultQueryKeys.address(contractAddress)[0], method: 'preview_deposit', args },
     ] as const,
   previewRedeem: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
-      { ...mockVaultQueryKeys.address(contractAddress)[0], method: 'preview_redeem', args },
+      { ...marsMockVaultQueryKeys.address(contractAddress)[0], method: 'preview_redeem', args },
     ] as const,
   totalAssets: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...mockVaultQueryKeys.address(contractAddress)[0], method: 'total_assets', args }] as const,
+    [
+      { ...marsMockVaultQueryKeys.address(contractAddress)[0], method: 'total_assets', args },
+    ] as const,
   totalVaultTokenSupply: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
       {
-        ...mockVaultQueryKeys.address(contractAddress)[0],
+        ...marsMockVaultQueryKeys.address(contractAddress)[0],
         method: 'total_vault_token_supply',
         args,
       },
     ] as const,
   convertToShares: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
-      { ...mockVaultQueryKeys.address(contractAddress)[0], method: 'convert_to_shares', args },
+      { ...marsMockVaultQueryKeys.address(contractAddress)[0], method: 'convert_to_shares', args },
     ] as const,
   convertToAssets: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
-      { ...mockVaultQueryKeys.address(contractAddress)[0], method: 'convert_to_assets', args },
+      { ...marsMockVaultQueryKeys.address(contractAddress)[0], method: 'convert_to_assets', args },
     ] as const,
   vaultExtension: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
-      { ...mockVaultQueryKeys.address(contractAddress)[0], method: 'vault_extension', args },
+      { ...marsMockVaultQueryKeys.address(contractAddress)[0], method: 'vault_extension', args },
     ] as const,
 }
-export interface MockVaultReactQuery<TResponse, TData = TResponse> {
-  client: MockVaultQueryClient | undefined
+export interface MarsMockVaultReactQuery<TResponse, TData = TResponse> {
+  client: MarsMockVaultQueryClient | undefined
   options?: Omit<
     UseQueryOptions<TResponse, Error, TData>,
     "'queryKey' | 'queryFn' | 'initialData'"
@@ -79,29 +85,31 @@ export interface MockVaultReactQuery<TResponse, TData = TResponse> {
     initialData?: undefined
   }
 }
-export interface MockVaultVaultExtensionQuery<TData> extends MockVaultReactQuery<Empty, TData> {}
-export function useMockVaultVaultExtensionQuery<TData = Empty>({
+export interface MarsMockVaultVaultExtensionQuery<TData>
+  extends MarsMockVaultReactQuery<Empty, TData> {}
+export function useMarsMockVaultVaultExtensionQuery<TData = Empty>({
   client,
   options,
-}: MockVaultVaultExtensionQuery<TData>) {
+}: MarsMockVaultVaultExtensionQuery<TData>) {
   return useQuery<Empty, Error, TData>(
-    mockVaultQueryKeys.vaultExtension(client?.contractAddress),
+    marsMockVaultQueryKeys.vaultExtension(client?.contractAddress),
     () => (client ? client.vaultExtension() : Promise.reject(new Error('Invalid client'))),
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockVaultConvertToAssetsQuery<TData> extends MockVaultReactQuery<Uint128, TData> {
+export interface MarsMockVaultConvertToAssetsQuery<TData>
+  extends MarsMockVaultReactQuery<Uint128, TData> {
   args: {
     amount: Uint128
   }
 }
-export function useMockVaultConvertToAssetsQuery<TData = Uint128>({
+export function useMarsMockVaultConvertToAssetsQuery<TData = Uint128>({
   client,
   args,
   options,
-}: MockVaultConvertToAssetsQuery<TData>) {
+}: MarsMockVaultConvertToAssetsQuery<TData>) {
   return useQuery<Uint128, Error, TData>(
-    mockVaultQueryKeys.convertToAssets(client?.contractAddress, args),
+    marsMockVaultQueryKeys.convertToAssets(client?.contractAddress, args),
     () =>
       client
         ? client.convertToAssets({
@@ -111,18 +119,19 @@ export function useMockVaultConvertToAssetsQuery<TData = Uint128>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockVaultConvertToSharesQuery<TData> extends MockVaultReactQuery<Uint128, TData> {
+export interface MarsMockVaultConvertToSharesQuery<TData>
+  extends MarsMockVaultReactQuery<Uint128, TData> {
   args: {
     amount: Uint128
   }
 }
-export function useMockVaultConvertToSharesQuery<TData = Uint128>({
+export function useMarsMockVaultConvertToSharesQuery<TData = Uint128>({
   client,
   args,
   options,
-}: MockVaultConvertToSharesQuery<TData>) {
+}: MarsMockVaultConvertToSharesQuery<TData>) {
   return useQuery<Uint128, Error, TData>(
-    mockVaultQueryKeys.convertToShares(client?.contractAddress, args),
+    marsMockVaultQueryKeys.convertToShares(client?.contractAddress, args),
     () =>
       client
         ? client.convertToShares({
@@ -132,41 +141,43 @@ export function useMockVaultConvertToSharesQuery<TData = Uint128>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockVaultTotalVaultTokenSupplyQuery<TData>
-  extends MockVaultReactQuery<Uint128, TData> {}
-export function useMockVaultTotalVaultTokenSupplyQuery<TData = Uint128>({
+export interface MarsMockVaultTotalVaultTokenSupplyQuery<TData>
+  extends MarsMockVaultReactQuery<Uint128, TData> {}
+export function useMarsMockVaultTotalVaultTokenSupplyQuery<TData = Uint128>({
   client,
   options,
-}: MockVaultTotalVaultTokenSupplyQuery<TData>) {
+}: MarsMockVaultTotalVaultTokenSupplyQuery<TData>) {
   return useQuery<Uint128, Error, TData>(
-    mockVaultQueryKeys.totalVaultTokenSupply(client?.contractAddress),
+    marsMockVaultQueryKeys.totalVaultTokenSupply(client?.contractAddress),
     () => (client ? client.totalVaultTokenSupply() : Promise.reject(new Error('Invalid client'))),
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockVaultTotalAssetsQuery<TData> extends MockVaultReactQuery<Uint128, TData> {}
-export function useMockVaultTotalAssetsQuery<TData = Uint128>({
+export interface MarsMockVaultTotalAssetsQuery<TData>
+  extends MarsMockVaultReactQuery<Uint128, TData> {}
+export function useMarsMockVaultTotalAssetsQuery<TData = Uint128>({
   client,
   options,
-}: MockVaultTotalAssetsQuery<TData>) {
+}: MarsMockVaultTotalAssetsQuery<TData>) {
   return useQuery<Uint128, Error, TData>(
-    mockVaultQueryKeys.totalAssets(client?.contractAddress),
+    marsMockVaultQueryKeys.totalAssets(client?.contractAddress),
     () => (client ? client.totalAssets() : Promise.reject(new Error('Invalid client'))),
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockVaultPreviewRedeemQuery<TData> extends MockVaultReactQuery<Uint128, TData> {
+export interface MarsMockVaultPreviewRedeemQuery<TData>
+  extends MarsMockVaultReactQuery<Uint128, TData> {
   args: {
     amount: Uint128
   }
 }
-export function useMockVaultPreviewRedeemQuery<TData = Uint128>({
+export function useMarsMockVaultPreviewRedeemQuery<TData = Uint128>({
   client,
   args,
   options,
-}: MockVaultPreviewRedeemQuery<TData>) {
+}: MarsMockVaultPreviewRedeemQuery<TData>) {
   return useQuery<Uint128, Error, TData>(
-    mockVaultQueryKeys.previewRedeem(client?.contractAddress, args),
+    marsMockVaultQueryKeys.previewRedeem(client?.contractAddress, args),
     () =>
       client
         ? client.previewRedeem({
@@ -176,18 +187,19 @@ export function useMockVaultPreviewRedeemQuery<TData = Uint128>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockVaultPreviewDepositQuery<TData> extends MockVaultReactQuery<Uint128, TData> {
+export interface MarsMockVaultPreviewDepositQuery<TData>
+  extends MarsMockVaultReactQuery<Uint128, TData> {
   args: {
     amount: Uint128
   }
 }
-export function useMockVaultPreviewDepositQuery<TData = Uint128>({
+export function useMarsMockVaultPreviewDepositQuery<TData = Uint128>({
   client,
   args,
   options,
-}: MockVaultPreviewDepositQuery<TData>) {
+}: MarsMockVaultPreviewDepositQuery<TData>) {
   return useQuery<Uint128, Error, TData>(
-    mockVaultQueryKeys.previewDeposit(client?.contractAddress, args),
+    marsMockVaultQueryKeys.previewDeposit(client?.contractAddress, args),
     () =>
       client
         ? client.previewDeposit({
@@ -197,31 +209,31 @@ export function useMockVaultPreviewDepositQuery<TData = Uint128>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockVaultInfoQuery<TData> extends MockVaultReactQuery<VaultInfo, TData> {}
-export function useMockVaultInfoQuery<TData = VaultInfo>({
+export interface MarsMockVaultInfoQuery<TData> extends MarsMockVaultReactQuery<VaultInfo, TData> {}
+export function useMarsMockVaultInfoQuery<TData = VaultInfo>({
   client,
   options,
-}: MockVaultInfoQuery<TData>) {
+}: MarsMockVaultInfoQuery<TData>) {
   return useQuery<VaultInfo, Error, TData>(
-    mockVaultQueryKeys.info(client?.contractAddress),
+    marsMockVaultQueryKeys.info(client?.contractAddress),
     () => (client ? client.info() : Promise.reject(new Error('Invalid client'))),
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockVaultVaultStandardInfoQuery<TData>
-  extends MockVaultReactQuery<VaultStandardInfo, TData> {}
-export function useMockVaultVaultStandardInfoQuery<TData = VaultStandardInfo>({
+export interface MarsMockVaultVaultStandardInfoQuery<TData>
+  extends MarsMockVaultReactQuery<VaultStandardInfo, TData> {}
+export function useMarsMockVaultVaultStandardInfoQuery<TData = VaultStandardInfo>({
   client,
   options,
-}: MockVaultVaultStandardInfoQuery<TData>) {
+}: MarsMockVaultVaultStandardInfoQuery<TData>) {
   return useQuery<VaultStandardInfo, Error, TData>(
-    mockVaultQueryKeys.vaultStandardInfo(client?.contractAddress),
+    marsMockVaultQueryKeys.vaultStandardInfo(client?.contractAddress),
     () => (client ? client.vaultStandardInfo() : Promise.reject(new Error('Invalid client'))),
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockVaultVaultExtensionMutation {
-  client: MockVaultClient
+export interface MarsMockVaultVaultExtensionMutation {
+  client: MarsMockVaultClient
   msg: ExtensionExecuteMsg
   args?: {
     fee?: number | StdFee | 'auto'
@@ -229,20 +241,20 @@ export interface MockVaultVaultExtensionMutation {
     funds?: Coin[]
   }
 }
-export function useMockVaultVaultExtensionMutation(
+export function useMarsMockVaultVaultExtensionMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, MockVaultVaultExtensionMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsMockVaultVaultExtensionMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, MockVaultVaultExtensionMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockVaultVaultExtensionMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) =>
       client.vaultExtension(msg, fee, memo, funds),
     options,
   )
 }
-export interface MockVaultRedeemMutation {
-  client: MockVaultClient
+export interface MarsMockVaultRedeemMutation {
+  client: MarsMockVaultClient
   msg: {
     amount: Uint128
     recipient?: string
@@ -253,16 +265,19 @@ export interface MockVaultRedeemMutation {
     funds?: Coin[]
   }
 }
-export function useMockVaultRedeemMutation(
-  options?: Omit<UseMutationOptions<ExecuteResult, Error, MockVaultRedeemMutation>, 'mutationFn'>,
+export function useMarsMockVaultRedeemMutation(
+  options?: Omit<
+    UseMutationOptions<ExecuteResult, Error, MarsMockVaultRedeemMutation>,
+    'mutationFn'
+  >,
 ) {
-  return useMutation<ExecuteResult, Error, MockVaultRedeemMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockVaultRedeemMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.redeem(msg, fee, memo, funds),
     options,
   )
 }
-export interface MockVaultDepositMutation {
-  client: MockVaultClient
+export interface MarsMockVaultDepositMutation {
+  client: MarsMockVaultClient
   msg: {
     amount: Uint128
     recipient?: string
@@ -273,10 +288,13 @@ export interface MockVaultDepositMutation {
     funds?: Coin[]
   }
 }
-export function useMockVaultDepositMutation(
-  options?: Omit<UseMutationOptions<ExecuteResult, Error, MockVaultDepositMutation>, 'mutationFn'>,
+export function useMarsMockVaultDepositMutation(
+  options?: Omit<
+    UseMutationOptions<ExecuteResult, Error, MarsMockVaultDepositMutation>,
+    'mutationFn'
+  >,
 ) {
-  return useMutation<ExecuteResult, Error, MockVaultDepositMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockVaultDepositMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.deposit(msg, fee, memo, funds),
     options,
   )

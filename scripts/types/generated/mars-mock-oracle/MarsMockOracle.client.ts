@@ -14,12 +14,12 @@ import {
   ExecuteMsg,
   QueryMsg,
   PriceResponse,
-} from './MockOracle.types'
-export interface MockOracleReadOnlyInterface {
+} from './MarsMockOracle.types'
+export interface MarsMockOracleReadOnlyInterface {
   contractAddress: string
   price: ({ denom }: { denom: string }) => Promise<PriceResponse>
 }
-export class MockOracleQueryClient implements MockOracleReadOnlyInterface {
+export class MarsMockOracleQueryClient implements MarsMockOracleReadOnlyInterface {
   client: CosmWasmClient
   contractAddress: string
 
@@ -37,7 +37,7 @@ export class MockOracleQueryClient implements MockOracleReadOnlyInterface {
     })
   }
 }
-export interface MockOracleInterface extends MockOracleReadOnlyInterface {
+export interface MarsMockOracleInterface extends MarsMockOracleReadOnlyInterface {
   contractAddress: string
   sender: string
   changePrice: (
@@ -53,7 +53,10 @@ export interface MockOracleInterface extends MockOracleReadOnlyInterface {
     funds?: Coin[],
   ) => Promise<ExecuteResult>
 }
-export class MockOracleClient extends MockOracleQueryClient implements MockOracleInterface {
+export class MarsMockOracleClient
+  extends MarsMockOracleQueryClient
+  implements MarsMockOracleInterface
+{
   client: SigningCosmWasmClient
   sender: string
   contractAddress: string

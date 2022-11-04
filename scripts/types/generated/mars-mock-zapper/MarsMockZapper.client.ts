@@ -16,8 +16,8 @@ import {
   QueryMsg,
   Coin,
   ArrayOfCoin,
-} from './MockZapper.types'
-export interface MockZapperReadOnlyInterface {
+} from './MarsMockZapper.types'
+export interface MarsMockZapperReadOnlyInterface {
   contractAddress: string
   estimateProvideLiquidity: ({
     coinsIn,
@@ -28,7 +28,7 @@ export interface MockZapperReadOnlyInterface {
   }) => Promise<Uint128>
   estimateWithdrawLiquidity: ({ coinIn }: { coinIn: Coin }) => Promise<ArrayOfCoin>
 }
-export class MockZapperQueryClient implements MockZapperReadOnlyInterface {
+export class MarsMockZapperQueryClient implements MarsMockZapperReadOnlyInterface {
   client: CosmWasmClient
   contractAddress: string
 
@@ -61,7 +61,7 @@ export class MockZapperQueryClient implements MockZapperReadOnlyInterface {
     })
   }
 }
-export interface MockZapperInterface extends MockZapperReadOnlyInterface {
+export interface MarsMockZapperInterface extends MarsMockZapperReadOnlyInterface {
   contractAddress: string
   sender: string
   provideLiquidity: (
@@ -89,7 +89,10 @@ export interface MockZapperInterface extends MockZapperReadOnlyInterface {
     funds?: Coin[],
   ) => Promise<ExecuteResult>
 }
-export class MockZapperClient extends MockZapperQueryClient implements MockZapperInterface {
+export class MarsMockZapperClient
+  extends MarsMockZapperQueryClient
+  implements MarsMockZapperInterface
+{
   client: SigningCosmWasmClient
   sender: string
   contractAddress: string

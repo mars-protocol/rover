@@ -29,29 +29,29 @@ import {
   ArrayOfUserDebtResponse,
   UserHealthStatus,
   UserPositionResponse,
-} from './MockRedBank.types'
-import { MockRedBankQueryClient, MockRedBankClient } from './MockRedBank.client'
-export const mockRedBankQueryKeys = {
+} from './MarsMockRedBank.types'
+import { MarsMockRedBankQueryClient, MarsMockRedBankClient } from './MarsMockRedBank.client'
+export const marsMockRedBankQueryKeys = {
   contract: [
     {
-      contract: 'mockRedBank',
+      contract: 'marsMockRedBank',
     },
   ] as const,
   address: (contractAddress: string | undefined) =>
-    [{ ...mockRedBankQueryKeys.contract[0], address: contractAddress }] as const,
+    [{ ...marsMockRedBankQueryKeys.contract[0], address: contractAddress }] as const,
   config: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...mockRedBankQueryKeys.address(contractAddress)[0], method: 'config', args }] as const,
+    [{ ...marsMockRedBankQueryKeys.address(contractAddress)[0], method: 'config', args }] as const,
   market: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...mockRedBankQueryKeys.address(contractAddress)[0], method: 'market', args }] as const,
+    [{ ...marsMockRedBankQueryKeys.address(contractAddress)[0], method: 'market', args }] as const,
   markets: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...mockRedBankQueryKeys.address(contractAddress)[0], method: 'markets', args }] as const,
+    [{ ...marsMockRedBankQueryKeys.address(contractAddress)[0], method: 'markets', args }] as const,
   uncollateralizedLoanLimit: (
     contractAddress: string | undefined,
     args?: Record<string, unknown>,
   ) =>
     [
       {
-        ...mockRedBankQueryKeys.address(contractAddress)[0],
+        ...marsMockRedBankQueryKeys.address(contractAddress)[0],
         method: 'uncollateralized_loan_limit',
         args,
       },
@@ -62,38 +62,46 @@ export const mockRedBankQueryKeys = {
   ) =>
     [
       {
-        ...mockRedBankQueryKeys.address(contractAddress)[0],
+        ...marsMockRedBankQueryKeys.address(contractAddress)[0],
         method: 'uncollateralized_loan_limits',
         args,
       },
     ] as const,
   userDebt: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...mockRedBankQueryKeys.address(contractAddress)[0], method: 'user_debt', args }] as const,
+    [
+      { ...marsMockRedBankQueryKeys.address(contractAddress)[0], method: 'user_debt', args },
+    ] as const,
   userDebts: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...mockRedBankQueryKeys.address(contractAddress)[0], method: 'user_debts', args }] as const,
+    [
+      { ...marsMockRedBankQueryKeys.address(contractAddress)[0], method: 'user_debts', args },
+    ] as const,
   userCollateral: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
-      { ...mockRedBankQueryKeys.address(contractAddress)[0], method: 'user_collateral', args },
+      { ...marsMockRedBankQueryKeys.address(contractAddress)[0], method: 'user_collateral', args },
     ] as const,
   userCollaterals: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
-      { ...mockRedBankQueryKeys.address(contractAddress)[0], method: 'user_collaterals', args },
+      { ...marsMockRedBankQueryKeys.address(contractAddress)[0], method: 'user_collaterals', args },
     ] as const,
   userPosition: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
-      { ...mockRedBankQueryKeys.address(contractAddress)[0], method: 'user_position', args },
+      { ...marsMockRedBankQueryKeys.address(contractAddress)[0], method: 'user_position', args },
     ] as const,
   scaledLiquidityAmount: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
       {
-        ...mockRedBankQueryKeys.address(contractAddress)[0],
+        ...marsMockRedBankQueryKeys.address(contractAddress)[0],
         method: 'scaled_liquidity_amount',
         args,
       },
     ] as const,
   scaledDebtAmount: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
-      { ...mockRedBankQueryKeys.address(contractAddress)[0], method: 'scaled_debt_amount', args },
+      {
+        ...marsMockRedBankQueryKeys.address(contractAddress)[0],
+        method: 'scaled_debt_amount',
+        args,
+      },
     ] as const,
   underlyingLiquidityAmount: (
     contractAddress: string | undefined,
@@ -101,7 +109,7 @@ export const mockRedBankQueryKeys = {
   ) =>
     [
       {
-        ...mockRedBankQueryKeys.address(contractAddress)[0],
+        ...marsMockRedBankQueryKeys.address(contractAddress)[0],
         method: 'underlying_liquidity_amount',
         args,
       },
@@ -109,14 +117,14 @@ export const mockRedBankQueryKeys = {
   underlyingDebtAmount: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
       {
-        ...mockRedBankQueryKeys.address(contractAddress)[0],
+        ...marsMockRedBankQueryKeys.address(contractAddress)[0],
         method: 'underlying_debt_amount',
         args,
       },
     ] as const,
 }
-export interface MockRedBankReactQuery<TResponse, TData = TResponse> {
-  client: MockRedBankQueryClient | undefined
+export interface MarsMockRedBankReactQuery<TResponse, TData = TResponse> {
+  client: MarsMockRedBankQueryClient | undefined
   options?: Omit<
     UseQueryOptions<TResponse, Error, TData>,
     "'queryKey' | 'queryFn' | 'initialData'"
@@ -124,20 +132,20 @@ export interface MockRedBankReactQuery<TResponse, TData = TResponse> {
     initialData?: undefined
   }
 }
-export interface MockRedBankUnderlyingDebtAmountQuery<TData>
-  extends MockRedBankReactQuery<Uint128, TData> {
+export interface MarsMockRedBankUnderlyingDebtAmountQuery<TData>
+  extends MarsMockRedBankReactQuery<Uint128, TData> {
   args: {
     amountScaled: Uint128
     denom: string
   }
 }
-export function useMockRedBankUnderlyingDebtAmountQuery<TData = Uint128>({
+export function useMarsMockRedBankUnderlyingDebtAmountQuery<TData = Uint128>({
   client,
   args,
   options,
-}: MockRedBankUnderlyingDebtAmountQuery<TData>) {
+}: MarsMockRedBankUnderlyingDebtAmountQuery<TData>) {
   return useQuery<Uint128, Error, TData>(
-    mockRedBankQueryKeys.underlyingDebtAmount(client?.contractAddress, args),
+    marsMockRedBankQueryKeys.underlyingDebtAmount(client?.contractAddress, args),
     () =>
       client
         ? client.underlyingDebtAmount({
@@ -148,20 +156,20 @@ export function useMockRedBankUnderlyingDebtAmountQuery<TData = Uint128>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockRedBankUnderlyingLiquidityAmountQuery<TData>
-  extends MockRedBankReactQuery<Uint128, TData> {
+export interface MarsMockRedBankUnderlyingLiquidityAmountQuery<TData>
+  extends MarsMockRedBankReactQuery<Uint128, TData> {
   args: {
     amountScaled: Uint128
     denom: string
   }
 }
-export function useMockRedBankUnderlyingLiquidityAmountQuery<TData = Uint128>({
+export function useMarsMockRedBankUnderlyingLiquidityAmountQuery<TData = Uint128>({
   client,
   args,
   options,
-}: MockRedBankUnderlyingLiquidityAmountQuery<TData>) {
+}: MarsMockRedBankUnderlyingLiquidityAmountQuery<TData>) {
   return useQuery<Uint128, Error, TData>(
-    mockRedBankQueryKeys.underlyingLiquidityAmount(client?.contractAddress, args),
+    marsMockRedBankQueryKeys.underlyingLiquidityAmount(client?.contractAddress, args),
     () =>
       client
         ? client.underlyingLiquidityAmount({
@@ -172,20 +180,20 @@ export function useMockRedBankUnderlyingLiquidityAmountQuery<TData = Uint128>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockRedBankScaledDebtAmountQuery<TData>
-  extends MockRedBankReactQuery<Uint128, TData> {
+export interface MarsMockRedBankScaledDebtAmountQuery<TData>
+  extends MarsMockRedBankReactQuery<Uint128, TData> {
   args: {
     amount: Uint128
     denom: string
   }
 }
-export function useMockRedBankScaledDebtAmountQuery<TData = Uint128>({
+export function useMarsMockRedBankScaledDebtAmountQuery<TData = Uint128>({
   client,
   args,
   options,
-}: MockRedBankScaledDebtAmountQuery<TData>) {
+}: MarsMockRedBankScaledDebtAmountQuery<TData>) {
   return useQuery<Uint128, Error, TData>(
-    mockRedBankQueryKeys.scaledDebtAmount(client?.contractAddress, args),
+    marsMockRedBankQueryKeys.scaledDebtAmount(client?.contractAddress, args),
     () =>
       client
         ? client.scaledDebtAmount({
@@ -196,20 +204,20 @@ export function useMockRedBankScaledDebtAmountQuery<TData = Uint128>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockRedBankScaledLiquidityAmountQuery<TData>
-  extends MockRedBankReactQuery<Uint128, TData> {
+export interface MarsMockRedBankScaledLiquidityAmountQuery<TData>
+  extends MarsMockRedBankReactQuery<Uint128, TData> {
   args: {
     amount: Uint128
     denom: string
   }
 }
-export function useMockRedBankScaledLiquidityAmountQuery<TData = Uint128>({
+export function useMarsMockRedBankScaledLiquidityAmountQuery<TData = Uint128>({
   client,
   args,
   options,
-}: MockRedBankScaledLiquidityAmountQuery<TData>) {
+}: MarsMockRedBankScaledLiquidityAmountQuery<TData>) {
   return useQuery<Uint128, Error, TData>(
-    mockRedBankQueryKeys.scaledLiquidityAmount(client?.contractAddress, args),
+    marsMockRedBankQueryKeys.scaledLiquidityAmount(client?.contractAddress, args),
     () =>
       client
         ? client.scaledLiquidityAmount({
@@ -220,19 +228,19 @@ export function useMockRedBankScaledLiquidityAmountQuery<TData = Uint128>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockRedBankUserPositionQuery<TData>
-  extends MockRedBankReactQuery<UserPositionResponse, TData> {
+export interface MarsMockRedBankUserPositionQuery<TData>
+  extends MarsMockRedBankReactQuery<UserPositionResponse, TData> {
   args: {
     user: string
   }
 }
-export function useMockRedBankUserPositionQuery<TData = UserPositionResponse>({
+export function useMarsMockRedBankUserPositionQuery<TData = UserPositionResponse>({
   client,
   args,
   options,
-}: MockRedBankUserPositionQuery<TData>) {
+}: MarsMockRedBankUserPositionQuery<TData>) {
   return useQuery<UserPositionResponse, Error, TData>(
-    mockRedBankQueryKeys.userPosition(client?.contractAddress, args),
+    marsMockRedBankQueryKeys.userPosition(client?.contractAddress, args),
     () =>
       client
         ? client.userPosition({
@@ -242,21 +250,21 @@ export function useMockRedBankUserPositionQuery<TData = UserPositionResponse>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockRedBankUserCollateralsQuery<TData>
-  extends MockRedBankReactQuery<ArrayOfUserCollateralResponse, TData> {
+export interface MarsMockRedBankUserCollateralsQuery<TData>
+  extends MarsMockRedBankReactQuery<ArrayOfUserCollateralResponse, TData> {
   args: {
     limit?: number
     startAfter?: string
     user: string
   }
 }
-export function useMockRedBankUserCollateralsQuery<TData = ArrayOfUserCollateralResponse>({
+export function useMarsMockRedBankUserCollateralsQuery<TData = ArrayOfUserCollateralResponse>({
   client,
   args,
   options,
-}: MockRedBankUserCollateralsQuery<TData>) {
+}: MarsMockRedBankUserCollateralsQuery<TData>) {
   return useQuery<ArrayOfUserCollateralResponse, Error, TData>(
-    mockRedBankQueryKeys.userCollaterals(client?.contractAddress, args),
+    marsMockRedBankQueryKeys.userCollaterals(client?.contractAddress, args),
     () =>
       client
         ? client.userCollaterals({
@@ -268,20 +276,20 @@ export function useMockRedBankUserCollateralsQuery<TData = ArrayOfUserCollateral
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockRedBankUserCollateralQuery<TData>
-  extends MockRedBankReactQuery<UserCollateralResponse, TData> {
+export interface MarsMockRedBankUserCollateralQuery<TData>
+  extends MarsMockRedBankReactQuery<UserCollateralResponse, TData> {
   args: {
     denom: string
     user: string
   }
 }
-export function useMockRedBankUserCollateralQuery<TData = UserCollateralResponse>({
+export function useMarsMockRedBankUserCollateralQuery<TData = UserCollateralResponse>({
   client,
   args,
   options,
-}: MockRedBankUserCollateralQuery<TData>) {
+}: MarsMockRedBankUserCollateralQuery<TData>) {
   return useQuery<UserCollateralResponse, Error, TData>(
-    mockRedBankQueryKeys.userCollateral(client?.contractAddress, args),
+    marsMockRedBankQueryKeys.userCollateral(client?.contractAddress, args),
     () =>
       client
         ? client.userCollateral({
@@ -292,21 +300,21 @@ export function useMockRedBankUserCollateralQuery<TData = UserCollateralResponse
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockRedBankUserDebtsQuery<TData>
-  extends MockRedBankReactQuery<ArrayOfUserDebtResponse, TData> {
+export interface MarsMockRedBankUserDebtsQuery<TData>
+  extends MarsMockRedBankReactQuery<ArrayOfUserDebtResponse, TData> {
   args: {
     limit?: number
     startAfter?: string
     user: string
   }
 }
-export function useMockRedBankUserDebtsQuery<TData = ArrayOfUserDebtResponse>({
+export function useMarsMockRedBankUserDebtsQuery<TData = ArrayOfUserDebtResponse>({
   client,
   args,
   options,
-}: MockRedBankUserDebtsQuery<TData>) {
+}: MarsMockRedBankUserDebtsQuery<TData>) {
   return useQuery<ArrayOfUserDebtResponse, Error, TData>(
-    mockRedBankQueryKeys.userDebts(client?.contractAddress, args),
+    marsMockRedBankQueryKeys.userDebts(client?.contractAddress, args),
     () =>
       client
         ? client.userDebts({
@@ -318,20 +326,20 @@ export function useMockRedBankUserDebtsQuery<TData = ArrayOfUserDebtResponse>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockRedBankUserDebtQuery<TData>
-  extends MockRedBankReactQuery<UserDebtResponse, TData> {
+export interface MarsMockRedBankUserDebtQuery<TData>
+  extends MarsMockRedBankReactQuery<UserDebtResponse, TData> {
   args: {
     denom: string
     user: string
   }
 }
-export function useMockRedBankUserDebtQuery<TData = UserDebtResponse>({
+export function useMarsMockRedBankUserDebtQuery<TData = UserDebtResponse>({
   client,
   args,
   options,
-}: MockRedBankUserDebtQuery<TData>) {
+}: MarsMockRedBankUserDebtQuery<TData>) {
   return useQuery<UserDebtResponse, Error, TData>(
-    mockRedBankQueryKeys.userDebt(client?.contractAddress, args),
+    marsMockRedBankQueryKeys.userDebt(client?.contractAddress, args),
     () =>
       client
         ? client.userDebt({
@@ -342,19 +350,19 @@ export function useMockRedBankUserDebtQuery<TData = UserDebtResponse>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockRedBankUncollateralizedLoanLimitsQuery<TData>
-  extends MockRedBankReactQuery<ArrayOfUncollateralizedLoanLimitResponse, TData> {
+export interface MarsMockRedBankUncollateralizedLoanLimitsQuery<TData>
+  extends MarsMockRedBankReactQuery<ArrayOfUncollateralizedLoanLimitResponse, TData> {
   args: {
     limit?: number
     startAfter?: string
     user: string
   }
 }
-export function useMockRedBankUncollateralizedLoanLimitsQuery<
+export function useMarsMockRedBankUncollateralizedLoanLimitsQuery<
   TData = ArrayOfUncollateralizedLoanLimitResponse,
->({ client, args, options }: MockRedBankUncollateralizedLoanLimitsQuery<TData>) {
+>({ client, args, options }: MarsMockRedBankUncollateralizedLoanLimitsQuery<TData>) {
   return useQuery<ArrayOfUncollateralizedLoanLimitResponse, Error, TData>(
-    mockRedBankQueryKeys.uncollateralizedLoanLimits(client?.contractAddress, args),
+    marsMockRedBankQueryKeys.uncollateralizedLoanLimits(client?.contractAddress, args),
     () =>
       client
         ? client.uncollateralizedLoanLimits({
@@ -366,18 +374,18 @@ export function useMockRedBankUncollateralizedLoanLimitsQuery<
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockRedBankUncollateralizedLoanLimitQuery<TData>
-  extends MockRedBankReactQuery<UncollateralizedLoanLimitResponse, TData> {
+export interface MarsMockRedBankUncollateralizedLoanLimitQuery<TData>
+  extends MarsMockRedBankReactQuery<UncollateralizedLoanLimitResponse, TData> {
   args: {
     denom: string
     user: string
   }
 }
-export function useMockRedBankUncollateralizedLoanLimitQuery<
+export function useMarsMockRedBankUncollateralizedLoanLimitQuery<
   TData = UncollateralizedLoanLimitResponse,
->({ client, args, options }: MockRedBankUncollateralizedLoanLimitQuery<TData>) {
+>({ client, args, options }: MarsMockRedBankUncollateralizedLoanLimitQuery<TData>) {
   return useQuery<UncollateralizedLoanLimitResponse, Error, TData>(
-    mockRedBankQueryKeys.uncollateralizedLoanLimit(client?.contractAddress, args),
+    marsMockRedBankQueryKeys.uncollateralizedLoanLimit(client?.contractAddress, args),
     () =>
       client
         ? client.uncollateralizedLoanLimit({
@@ -388,20 +396,20 @@ export function useMockRedBankUncollateralizedLoanLimitQuery<
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockRedBankMarketsQuery<TData>
-  extends MockRedBankReactQuery<ArrayOfMarket, TData> {
+export interface MarsMockRedBankMarketsQuery<TData>
+  extends MarsMockRedBankReactQuery<ArrayOfMarket, TData> {
   args: {
     limit?: number
     startAfter?: string
   }
 }
-export function useMockRedBankMarketsQuery<TData = ArrayOfMarket>({
+export function useMarsMockRedBankMarketsQuery<TData = ArrayOfMarket>({
   client,
   args,
   options,
-}: MockRedBankMarketsQuery<TData>) {
+}: MarsMockRedBankMarketsQuery<TData>) {
   return useQuery<ArrayOfMarket, Error, TData>(
-    mockRedBankQueryKeys.markets(client?.contractAddress, args),
+    marsMockRedBankQueryKeys.markets(client?.contractAddress, args),
     () =>
       client
         ? client.markets({
@@ -412,18 +420,19 @@ export function useMockRedBankMarketsQuery<TData = ArrayOfMarket>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockRedBankMarketQuery<TData> extends MockRedBankReactQuery<Market, TData> {
+export interface MarsMockRedBankMarketQuery<TData>
+  extends MarsMockRedBankReactQuery<Market, TData> {
   args: {
     denom: string
   }
 }
-export function useMockRedBankMarketQuery<TData = Market>({
+export function useMarsMockRedBankMarketQuery<TData = Market>({
   client,
   args,
   options,
-}: MockRedBankMarketQuery<TData>) {
+}: MarsMockRedBankMarketQuery<TData>) {
   return useQuery<Market, Error, TData>(
-    mockRedBankQueryKeys.market(client?.contractAddress, args),
+    marsMockRedBankQueryKeys.market(client?.contractAddress, args),
     () =>
       client
         ? client.market({
@@ -433,20 +442,20 @@ export function useMockRedBankMarketQuery<TData = Market>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockRedBankConfigQuery<TData>
-  extends MockRedBankReactQuery<ConfigForString, TData> {}
-export function useMockRedBankConfigQuery<TData = ConfigForString>({
+export interface MarsMockRedBankConfigQuery<TData>
+  extends MarsMockRedBankReactQuery<ConfigForString, TData> {}
+export function useMarsMockRedBankConfigQuery<TData = ConfigForString>({
   client,
   options,
-}: MockRedBankConfigQuery<TData>) {
+}: MarsMockRedBankConfigQuery<TData>) {
   return useQuery<ConfigForString, Error, TData>(
-    mockRedBankQueryKeys.config(client?.contractAddress),
+    marsMockRedBankQueryKeys.config(client?.contractAddress),
     () => (client ? client.config() : Promise.reject(new Error('Invalid client'))),
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockRedBankUpdateAssetCollateralStatusMutation {
-  client: MockRedBankClient
+export interface MarsMockRedBankUpdateAssetCollateralStatusMutation {
+  client: MarsMockRedBankClient
   msg: {
     denom: string
     enable: boolean
@@ -457,20 +466,20 @@ export interface MockRedBankUpdateAssetCollateralStatusMutation {
     funds?: Coin[]
   }
 }
-export function useMockRedBankUpdateAssetCollateralStatusMutation(
+export function useMarsMockRedBankUpdateAssetCollateralStatusMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, MockRedBankUpdateAssetCollateralStatusMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsMockRedBankUpdateAssetCollateralStatusMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, MockRedBankUpdateAssetCollateralStatusMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockRedBankUpdateAssetCollateralStatusMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) =>
       client.updateAssetCollateralStatus(msg, fee, memo, funds),
     options,
   )
 }
-export interface MockRedBankLiquidateMutation {
-  client: MockRedBankClient
+export interface MarsMockRedBankLiquidateMutation {
+  client: MarsMockRedBankClient
   msg: {
     collateralDenom: string
     recipient?: string
@@ -482,19 +491,19 @@ export interface MockRedBankLiquidateMutation {
     funds?: Coin[]
   }
 }
-export function useMockRedBankLiquidateMutation(
+export function useMarsMockRedBankLiquidateMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, MockRedBankLiquidateMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsMockRedBankLiquidateMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, MockRedBankLiquidateMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockRedBankLiquidateMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.liquidate(msg, fee, memo, funds),
     options,
   )
 }
-export interface MockRedBankRepayMutation {
-  client: MockRedBankClient
+export interface MarsMockRedBankRepayMutation {
+  client: MarsMockRedBankClient
   msg: {
     onBehalfOf?: string
   }
@@ -504,16 +513,19 @@ export interface MockRedBankRepayMutation {
     funds?: Coin[]
   }
 }
-export function useMockRedBankRepayMutation(
-  options?: Omit<UseMutationOptions<ExecuteResult, Error, MockRedBankRepayMutation>, 'mutationFn'>,
+export function useMarsMockRedBankRepayMutation(
+  options?: Omit<
+    UseMutationOptions<ExecuteResult, Error, MarsMockRedBankRepayMutation>,
+    'mutationFn'
+  >,
 ) {
-  return useMutation<ExecuteResult, Error, MockRedBankRepayMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockRedBankRepayMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.repay(msg, fee, memo, funds),
     options,
   )
 }
-export interface MockRedBankBorrowMutation {
-  client: MockRedBankClient
+export interface MarsMockRedBankBorrowMutation {
+  client: MarsMockRedBankClient
   msg: {
     amount: Uint128
     denom: string
@@ -525,16 +537,19 @@ export interface MockRedBankBorrowMutation {
     funds?: Coin[]
   }
 }
-export function useMockRedBankBorrowMutation(
-  options?: Omit<UseMutationOptions<ExecuteResult, Error, MockRedBankBorrowMutation>, 'mutationFn'>,
+export function useMarsMockRedBankBorrowMutation(
+  options?: Omit<
+    UseMutationOptions<ExecuteResult, Error, MarsMockRedBankBorrowMutation>,
+    'mutationFn'
+  >,
 ) {
-  return useMutation<ExecuteResult, Error, MockRedBankBorrowMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockRedBankBorrowMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.borrow(msg, fee, memo, funds),
     options,
   )
 }
-export interface MockRedBankWithdrawMutation {
-  client: MockRedBankClient
+export interface MarsMockRedBankWithdrawMutation {
+  client: MarsMockRedBankClient
   msg: {
     amount?: Uint128
     denom: string
@@ -546,19 +561,19 @@ export interface MockRedBankWithdrawMutation {
     funds?: Coin[]
   }
 }
-export function useMockRedBankWithdrawMutation(
+export function useMarsMockRedBankWithdrawMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, MockRedBankWithdrawMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsMockRedBankWithdrawMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, MockRedBankWithdrawMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockRedBankWithdrawMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.withdraw(msg, fee, memo, funds),
     options,
   )
 }
-export interface MockRedBankDepositMutation {
-  client: MockRedBankClient
+export interface MarsMockRedBankDepositMutation {
+  client: MarsMockRedBankClient
   msg: {
     onBehalfOf?: string
   }
@@ -568,19 +583,19 @@ export interface MockRedBankDepositMutation {
     funds?: Coin[]
   }
 }
-export function useMockRedBankDepositMutation(
+export function useMarsMockRedBankDepositMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, MockRedBankDepositMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsMockRedBankDepositMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, MockRedBankDepositMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockRedBankDepositMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.deposit(msg, fee, memo, funds),
     options,
   )
 }
-export interface MockRedBankUpdateUncollateralizedLoanLimitMutation {
-  client: MockRedBankClient
+export interface MarsMockRedBankUpdateUncollateralizedLoanLimitMutation {
+  client: MarsMockRedBankClient
   msg: {
     denom: string
     newLimit: Uint128
@@ -592,20 +607,24 @@ export interface MockRedBankUpdateUncollateralizedLoanLimitMutation {
     funds?: Coin[]
   }
 }
-export function useMockRedBankUpdateUncollateralizedLoanLimitMutation(
+export function useMarsMockRedBankUpdateUncollateralizedLoanLimitMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, MockRedBankUpdateUncollateralizedLoanLimitMutation>,
+    UseMutationOptions<
+      ExecuteResult,
+      Error,
+      MarsMockRedBankUpdateUncollateralizedLoanLimitMutation
+    >,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, MockRedBankUpdateUncollateralizedLoanLimitMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockRedBankUpdateUncollateralizedLoanLimitMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) =>
       client.updateUncollateralizedLoanLimit(msg, fee, memo, funds),
     options,
   )
 }
-export interface MockRedBankUpdateAssetMutation {
-  client: MockRedBankClient
+export interface MarsMockRedBankUpdateAssetMutation {
+  client: MarsMockRedBankClient
   msg: {
     denom: string
     params: InitOrUpdateAssetParams
@@ -616,19 +635,19 @@ export interface MockRedBankUpdateAssetMutation {
     funds?: Coin[]
   }
 }
-export function useMockRedBankUpdateAssetMutation(
+export function useMarsMockRedBankUpdateAssetMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, MockRedBankUpdateAssetMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsMockRedBankUpdateAssetMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, MockRedBankUpdateAssetMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockRedBankUpdateAssetMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.updateAsset(msg, fee, memo, funds),
     options,
   )
 }
-export interface MockRedBankInitAssetMutation {
-  client: MockRedBankClient
+export interface MarsMockRedBankInitAssetMutation {
+  client: MarsMockRedBankClient
   msg: {
     denom: string
     params: InitOrUpdateAssetParams
@@ -639,19 +658,19 @@ export interface MockRedBankInitAssetMutation {
     funds?: Coin[]
   }
 }
-export function useMockRedBankInitAssetMutation(
+export function useMarsMockRedBankInitAssetMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, MockRedBankInitAssetMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsMockRedBankInitAssetMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, MockRedBankInitAssetMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockRedBankInitAssetMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.initAsset(msg, fee, memo, funds),
     options,
   )
 }
-export interface MockRedBankUpdateConfigMutation {
-  client: MockRedBankClient
+export interface MarsMockRedBankUpdateConfigMutation {
+  client: MarsMockRedBankClient
   msg: {
     config: CreateOrUpdateConfig
   }
@@ -661,13 +680,13 @@ export interface MockRedBankUpdateConfigMutation {
     funds?: Coin[]
   }
 }
-export function useMockRedBankUpdateConfigMutation(
+export function useMarsMockRedBankUpdateConfigMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, MockRedBankUpdateConfigMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsMockRedBankUpdateConfigMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, MockRedBankUpdateConfigMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockRedBankUpdateConfigMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) =>
       client.updateConfig(msg, fee, memo, funds),
     options,

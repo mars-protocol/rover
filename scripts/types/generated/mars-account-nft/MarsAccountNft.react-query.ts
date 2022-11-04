@@ -29,49 +29,61 @@ import {
   MinterResponse,
   NumTokensResponse,
   String,
-} from './AccountNft.types'
-import { AccountNftQueryClient, AccountNftClient } from './AccountNft.client'
-export const accountNftQueryKeys = {
+} from './MarsAccountNft.types'
+import { MarsAccountNftQueryClient, MarsAccountNftClient } from './MarsAccountNft.client'
+export const marsAccountNftQueryKeys = {
   contract: [
     {
-      contract: 'accountNft',
+      contract: 'marsAccountNft',
     },
   ] as const,
   address: (contractAddress: string | undefined) =>
-    [{ ...accountNftQueryKeys.contract[0], address: contractAddress }] as const,
+    [{ ...marsAccountNftQueryKeys.contract[0], address: contractAddress }] as const,
   proposedNewOwner: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
-      { ...accountNftQueryKeys.address(contractAddress)[0], method: 'proposed_new_owner', args },
+      {
+        ...marsAccountNftQueryKeys.address(contractAddress)[0],
+        method: 'proposed_new_owner',
+        args,
+      },
     ] as const,
   ownerOf: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...accountNftQueryKeys.address(contractAddress)[0], method: 'owner_of', args }] as const,
+    [{ ...marsAccountNftQueryKeys.address(contractAddress)[0], method: 'owner_of', args }] as const,
   approval: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...accountNftQueryKeys.address(contractAddress)[0], method: 'approval', args }] as const,
+    [{ ...marsAccountNftQueryKeys.address(contractAddress)[0], method: 'approval', args }] as const,
   approvals: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...accountNftQueryKeys.address(contractAddress)[0], method: 'approvals', args }] as const,
+    [
+      { ...marsAccountNftQueryKeys.address(contractAddress)[0], method: 'approvals', args },
+    ] as const,
   allOperators: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
-      { ...accountNftQueryKeys.address(contractAddress)[0], method: 'all_operators', args },
+      { ...marsAccountNftQueryKeys.address(contractAddress)[0], method: 'all_operators', args },
     ] as const,
   numTokens: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...accountNftQueryKeys.address(contractAddress)[0], method: 'num_tokens', args }] as const,
+    [
+      { ...marsAccountNftQueryKeys.address(contractAddress)[0], method: 'num_tokens', args },
+    ] as const,
   contractInfo: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
-      { ...accountNftQueryKeys.address(contractAddress)[0], method: 'contract_info', args },
+      { ...marsAccountNftQueryKeys.address(contractAddress)[0], method: 'contract_info', args },
     ] as const,
   nftInfo: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...accountNftQueryKeys.address(contractAddress)[0], method: 'nft_info', args }] as const,
+    [{ ...marsAccountNftQueryKeys.address(contractAddress)[0], method: 'nft_info', args }] as const,
   allNftInfo: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...accountNftQueryKeys.address(contractAddress)[0], method: 'all_nft_info', args }] as const,
+    [
+      { ...marsAccountNftQueryKeys.address(contractAddress)[0], method: 'all_nft_info', args },
+    ] as const,
   tokens: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...accountNftQueryKeys.address(contractAddress)[0], method: 'tokens', args }] as const,
+    [{ ...marsAccountNftQueryKeys.address(contractAddress)[0], method: 'tokens', args }] as const,
   allTokens: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...accountNftQueryKeys.address(contractAddress)[0], method: 'all_tokens', args }] as const,
+    [
+      { ...marsAccountNftQueryKeys.address(contractAddress)[0], method: 'all_tokens', args },
+    ] as const,
   minter: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...accountNftQueryKeys.address(contractAddress)[0], method: 'minter', args }] as const,
+    [{ ...marsAccountNftQueryKeys.address(contractAddress)[0], method: 'minter', args }] as const,
 }
-export interface AccountNftReactQuery<TResponse, TData = TResponse> {
-  client: AccountNftQueryClient | undefined
+export interface MarsAccountNftReactQuery<TResponse, TData = TResponse> {
+  client: MarsAccountNftQueryClient | undefined
   options?: Omit<
     UseQueryOptions<TResponse, Error, TData>,
     "'queryKey' | 'queryFn' | 'initialData'"
@@ -79,31 +91,32 @@ export interface AccountNftReactQuery<TResponse, TData = TResponse> {
     initialData?: undefined
   }
 }
-export interface AccountNftMinterQuery<TData> extends AccountNftReactQuery<MinterResponse, TData> {}
-export function useAccountNftMinterQuery<TData = MinterResponse>({
+export interface MarsAccountNftMinterQuery<TData>
+  extends MarsAccountNftReactQuery<MinterResponse, TData> {}
+export function useMarsAccountNftMinterQuery<TData = MinterResponse>({
   client,
   options,
-}: AccountNftMinterQuery<TData>) {
+}: MarsAccountNftMinterQuery<TData>) {
   return useQuery<MinterResponse, Error, TData>(
-    accountNftQueryKeys.minter(client?.contractAddress),
+    marsAccountNftQueryKeys.minter(client?.contractAddress),
     () => (client ? client.minter() : Promise.reject(new Error('Invalid client'))),
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface AccountNftAllTokensQuery<TData>
-  extends AccountNftReactQuery<TokensResponse, TData> {
+export interface MarsAccountNftAllTokensQuery<TData>
+  extends MarsAccountNftReactQuery<TokensResponse, TData> {
   args: {
     limit?: number
     startAfter?: string
   }
 }
-export function useAccountNftAllTokensQuery<TData = TokensResponse>({
+export function useMarsAccountNftAllTokensQuery<TData = TokensResponse>({
   client,
   args,
   options,
-}: AccountNftAllTokensQuery<TData>) {
+}: MarsAccountNftAllTokensQuery<TData>) {
   return useQuery<TokensResponse, Error, TData>(
-    accountNftQueryKeys.allTokens(client?.contractAddress, args),
+    marsAccountNftQueryKeys.allTokens(client?.contractAddress, args),
     () =>
       client
         ? client.allTokens({
@@ -114,20 +127,21 @@ export function useAccountNftAllTokensQuery<TData = TokensResponse>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface AccountNftTokensQuery<TData> extends AccountNftReactQuery<TokensResponse, TData> {
+export interface MarsAccountNftTokensQuery<TData>
+  extends MarsAccountNftReactQuery<TokensResponse, TData> {
   args: {
     limit?: number
     owner: string
     startAfter?: string
   }
 }
-export function useAccountNftTokensQuery<TData = TokensResponse>({
+export function useMarsAccountNftTokensQuery<TData = TokensResponse>({
   client,
   args,
   options,
-}: AccountNftTokensQuery<TData>) {
+}: MarsAccountNftTokensQuery<TData>) {
   return useQuery<TokensResponse, Error, TData>(
-    accountNftQueryKeys.tokens(client?.contractAddress, args),
+    marsAccountNftQueryKeys.tokens(client?.contractAddress, args),
     () =>
       client
         ? client.tokens({
@@ -139,20 +153,20 @@ export function useAccountNftTokensQuery<TData = TokensResponse>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface AccountNftAllNftInfoQuery<TData>
-  extends AccountNftReactQuery<AllNftInfoResponseForEmpty, TData> {
+export interface MarsAccountNftAllNftInfoQuery<TData>
+  extends MarsAccountNftReactQuery<AllNftInfoResponseForEmpty, TData> {
   args: {
     includeExpired?: boolean
     tokenId: string
   }
 }
-export function useAccountNftAllNftInfoQuery<TData = AllNftInfoResponseForEmpty>({
+export function useMarsAccountNftAllNftInfoQuery<TData = AllNftInfoResponseForEmpty>({
   client,
   args,
   options,
-}: AccountNftAllNftInfoQuery<TData>) {
+}: MarsAccountNftAllNftInfoQuery<TData>) {
   return useQuery<AllNftInfoResponseForEmpty, Error, TData>(
-    accountNftQueryKeys.allNftInfo(client?.contractAddress, args),
+    marsAccountNftQueryKeys.allNftInfo(client?.contractAddress, args),
     () =>
       client
         ? client.allNftInfo({
@@ -163,19 +177,19 @@ export function useAccountNftAllNftInfoQuery<TData = AllNftInfoResponseForEmpty>
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface AccountNftNftInfoQuery<TData>
-  extends AccountNftReactQuery<NftInfoResponseForEmpty, TData> {
+export interface MarsAccountNftNftInfoQuery<TData>
+  extends MarsAccountNftReactQuery<NftInfoResponseForEmpty, TData> {
   args: {
     tokenId: string
   }
 }
-export function useAccountNftNftInfoQuery<TData = NftInfoResponseForEmpty>({
+export function useMarsAccountNftNftInfoQuery<TData = NftInfoResponseForEmpty>({
   client,
   args,
   options,
-}: AccountNftNftInfoQuery<TData>) {
+}: MarsAccountNftNftInfoQuery<TData>) {
   return useQuery<NftInfoResponseForEmpty, Error, TData>(
-    accountNftQueryKeys.nftInfo(client?.contractAddress, args),
+    marsAccountNftQueryKeys.nftInfo(client?.contractAddress, args),
     () =>
       client
         ? client.nftInfo({
@@ -185,32 +199,32 @@ export function useAccountNftNftInfoQuery<TData = NftInfoResponseForEmpty>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface AccountNftContractInfoQuery<TData>
-  extends AccountNftReactQuery<ContractInfoResponse, TData> {}
-export function useAccountNftContractInfoQuery<TData = ContractInfoResponse>({
+export interface MarsAccountNftContractInfoQuery<TData>
+  extends MarsAccountNftReactQuery<ContractInfoResponse, TData> {}
+export function useMarsAccountNftContractInfoQuery<TData = ContractInfoResponse>({
   client,
   options,
-}: AccountNftContractInfoQuery<TData>) {
+}: MarsAccountNftContractInfoQuery<TData>) {
   return useQuery<ContractInfoResponse, Error, TData>(
-    accountNftQueryKeys.contractInfo(client?.contractAddress),
+    marsAccountNftQueryKeys.contractInfo(client?.contractAddress),
     () => (client ? client.contractInfo() : Promise.reject(new Error('Invalid client'))),
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface AccountNftNumTokensQuery<TData>
-  extends AccountNftReactQuery<NumTokensResponse, TData> {}
-export function useAccountNftNumTokensQuery<TData = NumTokensResponse>({
+export interface MarsAccountNftNumTokensQuery<TData>
+  extends MarsAccountNftReactQuery<NumTokensResponse, TData> {}
+export function useMarsAccountNftNumTokensQuery<TData = NumTokensResponse>({
   client,
   options,
-}: AccountNftNumTokensQuery<TData>) {
+}: MarsAccountNftNumTokensQuery<TData>) {
   return useQuery<NumTokensResponse, Error, TData>(
-    accountNftQueryKeys.numTokens(client?.contractAddress),
+    marsAccountNftQueryKeys.numTokens(client?.contractAddress),
     () => (client ? client.numTokens() : Promise.reject(new Error('Invalid client'))),
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface AccountNftAllOperatorsQuery<TData>
-  extends AccountNftReactQuery<OperatorsResponse, TData> {
+export interface MarsAccountNftAllOperatorsQuery<TData>
+  extends MarsAccountNftReactQuery<OperatorsResponse, TData> {
   args: {
     includeExpired?: boolean
     limit?: number
@@ -218,13 +232,13 @@ export interface AccountNftAllOperatorsQuery<TData>
     startAfter?: string
   }
 }
-export function useAccountNftAllOperatorsQuery<TData = OperatorsResponse>({
+export function useMarsAccountNftAllOperatorsQuery<TData = OperatorsResponse>({
   client,
   args,
   options,
-}: AccountNftAllOperatorsQuery<TData>) {
+}: MarsAccountNftAllOperatorsQuery<TData>) {
   return useQuery<OperatorsResponse, Error, TData>(
-    accountNftQueryKeys.allOperators(client?.contractAddress, args),
+    marsAccountNftQueryKeys.allOperators(client?.contractAddress, args),
     () =>
       client
         ? client.allOperators({
@@ -237,20 +251,20 @@ export function useAccountNftAllOperatorsQuery<TData = OperatorsResponse>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface AccountNftApprovalsQuery<TData>
-  extends AccountNftReactQuery<ApprovalsResponse, TData> {
+export interface MarsAccountNftApprovalsQuery<TData>
+  extends MarsAccountNftReactQuery<ApprovalsResponse, TData> {
   args: {
     includeExpired?: boolean
     tokenId: string
   }
 }
-export function useAccountNftApprovalsQuery<TData = ApprovalsResponse>({
+export function useMarsAccountNftApprovalsQuery<TData = ApprovalsResponse>({
   client,
   args,
   options,
-}: AccountNftApprovalsQuery<TData>) {
+}: MarsAccountNftApprovalsQuery<TData>) {
   return useQuery<ApprovalsResponse, Error, TData>(
-    accountNftQueryKeys.approvals(client?.contractAddress, args),
+    marsAccountNftQueryKeys.approvals(client?.contractAddress, args),
     () =>
       client
         ? client.approvals({
@@ -261,21 +275,21 @@ export function useAccountNftApprovalsQuery<TData = ApprovalsResponse>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface AccountNftApprovalQuery<TData>
-  extends AccountNftReactQuery<ApprovalResponse, TData> {
+export interface MarsAccountNftApprovalQuery<TData>
+  extends MarsAccountNftReactQuery<ApprovalResponse, TData> {
   args: {
     includeExpired?: boolean
     spender: string
     tokenId: string
   }
 }
-export function useAccountNftApprovalQuery<TData = ApprovalResponse>({
+export function useMarsAccountNftApprovalQuery<TData = ApprovalResponse>({
   client,
   args,
   options,
-}: AccountNftApprovalQuery<TData>) {
+}: MarsAccountNftApprovalQuery<TData>) {
   return useQuery<ApprovalResponse, Error, TData>(
-    accountNftQueryKeys.approval(client?.contractAddress, args),
+    marsAccountNftQueryKeys.approval(client?.contractAddress, args),
     () =>
       client
         ? client.approval({
@@ -287,20 +301,20 @@ export function useAccountNftApprovalQuery<TData = ApprovalResponse>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface AccountNftOwnerOfQuery<TData>
-  extends AccountNftReactQuery<OwnerOfResponse, TData> {
+export interface MarsAccountNftOwnerOfQuery<TData>
+  extends MarsAccountNftReactQuery<OwnerOfResponse, TData> {
   args: {
     includeExpired?: boolean
     tokenId: string
   }
 }
-export function useAccountNftOwnerOfQuery<TData = OwnerOfResponse>({
+export function useMarsAccountNftOwnerOfQuery<TData = OwnerOfResponse>({
   client,
   args,
   options,
-}: AccountNftOwnerOfQuery<TData>) {
+}: MarsAccountNftOwnerOfQuery<TData>) {
   return useQuery<OwnerOfResponse, Error, TData>(
-    accountNftQueryKeys.ownerOf(client?.contractAddress, args),
+    marsAccountNftQueryKeys.ownerOf(client?.contractAddress, args),
     () =>
       client
         ? client.ownerOf({
@@ -311,20 +325,20 @@ export function useAccountNftOwnerOfQuery<TData = OwnerOfResponse>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface AccountNftProposedNewOwnerQuery<TData>
-  extends AccountNftReactQuery<String, TData> {}
-export function useAccountNftProposedNewOwnerQuery<TData = String>({
+export interface MarsAccountNftProposedNewOwnerQuery<TData>
+  extends MarsAccountNftReactQuery<String, TData> {}
+export function useMarsAccountNftProposedNewOwnerQuery<TData = String>({
   client,
   options,
-}: AccountNftProposedNewOwnerQuery<TData>) {
+}: MarsAccountNftProposedNewOwnerQuery<TData>) {
   return useQuery<String, Error, TData>(
-    accountNftQueryKeys.proposedNewOwner(client?.contractAddress),
+    marsAccountNftQueryKeys.proposedNewOwner(client?.contractAddress),
     () => (client ? client.proposedNewOwner() : Promise.reject(new Error('Invalid client'))),
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface AccountNftBurnMutation {
-  client: AccountNftClient
+export interface MarsAccountNftBurnMutation {
+  client: MarsAccountNftClient
   msg: {
     tokenId: string
   }
@@ -334,16 +348,19 @@ export interface AccountNftBurnMutation {
     funds?: Coin[]
   }
 }
-export function useAccountNftBurnMutation(
-  options?: Omit<UseMutationOptions<ExecuteResult, Error, AccountNftBurnMutation>, 'mutationFn'>,
+export function useMarsAccountNftBurnMutation(
+  options?: Omit<
+    UseMutationOptions<ExecuteResult, Error, MarsAccountNftBurnMutation>,
+    'mutationFn'
+  >,
 ) {
-  return useMutation<ExecuteResult, Error, AccountNftBurnMutation>(
+  return useMutation<ExecuteResult, Error, MarsAccountNftBurnMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.burn(msg, fee, memo, funds),
     options,
   )
 }
-export interface AccountNftRevokeAllMutation {
-  client: AccountNftClient
+export interface MarsAccountNftRevokeAllMutation {
+  client: MarsAccountNftClient
   msg: {
     operator: string
   }
@@ -353,19 +370,19 @@ export interface AccountNftRevokeAllMutation {
     funds?: Coin[]
   }
 }
-export function useAccountNftRevokeAllMutation(
+export function useMarsAccountNftRevokeAllMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, AccountNftRevokeAllMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsAccountNftRevokeAllMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, AccountNftRevokeAllMutation>(
+  return useMutation<ExecuteResult, Error, MarsAccountNftRevokeAllMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.revokeAll(msg, fee, memo, funds),
     options,
   )
 }
-export interface AccountNftApproveAllMutation {
-  client: AccountNftClient
+export interface MarsAccountNftApproveAllMutation {
+  client: MarsAccountNftClient
   msg: {
     expires?: Expiration
     operator: string
@@ -376,19 +393,19 @@ export interface AccountNftApproveAllMutation {
     funds?: Coin[]
   }
 }
-export function useAccountNftApproveAllMutation(
+export function useMarsAccountNftApproveAllMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, AccountNftApproveAllMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsAccountNftApproveAllMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, AccountNftApproveAllMutation>(
+  return useMutation<ExecuteResult, Error, MarsAccountNftApproveAllMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.approveAll(msg, fee, memo, funds),
     options,
   )
 }
-export interface AccountNftRevokeMutation {
-  client: AccountNftClient
+export interface MarsAccountNftRevokeMutation {
+  client: MarsAccountNftClient
   msg: {
     spender: string
     tokenId: string
@@ -399,16 +416,19 @@ export interface AccountNftRevokeMutation {
     funds?: Coin[]
   }
 }
-export function useAccountNftRevokeMutation(
-  options?: Omit<UseMutationOptions<ExecuteResult, Error, AccountNftRevokeMutation>, 'mutationFn'>,
+export function useMarsAccountNftRevokeMutation(
+  options?: Omit<
+    UseMutationOptions<ExecuteResult, Error, MarsAccountNftRevokeMutation>,
+    'mutationFn'
+  >,
 ) {
-  return useMutation<ExecuteResult, Error, AccountNftRevokeMutation>(
+  return useMutation<ExecuteResult, Error, MarsAccountNftRevokeMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.revoke(msg, fee, memo, funds),
     options,
   )
 }
-export interface AccountNftApproveMutation {
-  client: AccountNftClient
+export interface MarsAccountNftApproveMutation {
+  client: MarsAccountNftClient
   msg: {
     expires?: Expiration
     spender: string
@@ -420,16 +440,19 @@ export interface AccountNftApproveMutation {
     funds?: Coin[]
   }
 }
-export function useAccountNftApproveMutation(
-  options?: Omit<UseMutationOptions<ExecuteResult, Error, AccountNftApproveMutation>, 'mutationFn'>,
+export function useMarsAccountNftApproveMutation(
+  options?: Omit<
+    UseMutationOptions<ExecuteResult, Error, MarsAccountNftApproveMutation>,
+    'mutationFn'
+  >,
 ) {
-  return useMutation<ExecuteResult, Error, AccountNftApproveMutation>(
+  return useMutation<ExecuteResult, Error, MarsAccountNftApproveMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.approve(msg, fee, memo, funds),
     options,
   )
 }
-export interface AccountNftSendNftMutation {
-  client: AccountNftClient
+export interface MarsAccountNftSendNftMutation {
+  client: MarsAccountNftClient
   msg: {
     contract: string
     msg: Binary
@@ -441,16 +464,19 @@ export interface AccountNftSendNftMutation {
     funds?: Coin[]
   }
 }
-export function useAccountNftSendNftMutation(
-  options?: Omit<UseMutationOptions<ExecuteResult, Error, AccountNftSendNftMutation>, 'mutationFn'>,
+export function useMarsAccountNftSendNftMutation(
+  options?: Omit<
+    UseMutationOptions<ExecuteResult, Error, MarsAccountNftSendNftMutation>,
+    'mutationFn'
+  >,
 ) {
-  return useMutation<ExecuteResult, Error, AccountNftSendNftMutation>(
+  return useMutation<ExecuteResult, Error, MarsAccountNftSendNftMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.sendNft(msg, fee, memo, funds),
     options,
   )
 }
-export interface AccountNftTransferNftMutation {
-  client: AccountNftClient
+export interface MarsAccountNftTransferNftMutation {
+  client: MarsAccountNftClient
   msg: {
     recipient: string
     tokenId: string
@@ -461,19 +487,19 @@ export interface AccountNftTransferNftMutation {
     funds?: Coin[]
   }
 }
-export function useAccountNftTransferNftMutation(
+export function useMarsAccountNftTransferNftMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, AccountNftTransferNftMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsAccountNftTransferNftMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, AccountNftTransferNftMutation>(
+  return useMutation<ExecuteResult, Error, MarsAccountNftTransferNftMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.transferNft(msg, fee, memo, funds),
     options,
   )
 }
-export interface AccountNftMintMutation {
-  client: AccountNftClient
+export interface MarsAccountNftMintMutation {
+  client: MarsAccountNftClient
   msg: {
     user: string
   }
@@ -483,35 +509,38 @@ export interface AccountNftMintMutation {
     funds?: Coin[]
   }
 }
-export function useAccountNftMintMutation(
-  options?: Omit<UseMutationOptions<ExecuteResult, Error, AccountNftMintMutation>, 'mutationFn'>,
+export function useMarsAccountNftMintMutation(
+  options?: Omit<
+    UseMutationOptions<ExecuteResult, Error, MarsAccountNftMintMutation>,
+    'mutationFn'
+  >,
 ) {
-  return useMutation<ExecuteResult, Error, AccountNftMintMutation>(
+  return useMutation<ExecuteResult, Error, MarsAccountNftMintMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.mint(msg, fee, memo, funds),
     options,
   )
 }
-export interface AccountNftAcceptOwnershipMutation {
-  client: AccountNftClient
+export interface MarsAccountNftAcceptOwnershipMutation {
+  client: MarsAccountNftClient
   args?: {
     fee?: number | StdFee | 'auto'
     memo?: string
     funds?: Coin[]
   }
 }
-export function useAccountNftAcceptOwnershipMutation(
+export function useMarsAccountNftAcceptOwnershipMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, AccountNftAcceptOwnershipMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsAccountNftAcceptOwnershipMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, AccountNftAcceptOwnershipMutation>(
+  return useMutation<ExecuteResult, Error, MarsAccountNftAcceptOwnershipMutation>(
     ({ client, args: { fee, memo, funds } = {} }) => client.acceptOwnership(fee, memo, funds),
     options,
   )
 }
-export interface AccountNftProposeNewOwnerMutation {
-  client: AccountNftClient
+export interface MarsAccountNftProposeNewOwnerMutation {
+  client: MarsAccountNftClient
   msg: {
     newOwner: string
   }
@@ -521,13 +550,13 @@ export interface AccountNftProposeNewOwnerMutation {
     funds?: Coin[]
   }
 }
-export function useAccountNftProposeNewOwnerMutation(
+export function useMarsAccountNftProposeNewOwnerMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, AccountNftProposeNewOwnerMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsAccountNftProposeNewOwnerMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, AccountNftProposeNewOwnerMutation>(
+  return useMutation<ExecuteResult, Error, MarsAccountNftProposeNewOwnerMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) =>
       client.proposeNewOwner(msg, fee, memo, funds),
     options,

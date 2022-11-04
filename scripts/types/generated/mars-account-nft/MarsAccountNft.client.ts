@@ -28,8 +28,8 @@ import {
   MinterResponse,
   NumTokensResponse,
   String,
-} from './AccountNft.types'
-export interface AccountNftReadOnlyInterface {
+} from './MarsAccountNft.types'
+export interface MarsAccountNftReadOnlyInterface {
   contractAddress: string
   proposedNewOwner: () => Promise<String>
   ownerOf: ({
@@ -94,7 +94,7 @@ export interface AccountNftReadOnlyInterface {
   }) => Promise<TokensResponse>
   minter: () => Promise<MinterResponse>
 }
-export class AccountNftQueryClient implements AccountNftReadOnlyInterface {
+export class MarsAccountNftQueryClient implements MarsAccountNftReadOnlyInterface {
   client: CosmWasmClient
   contractAddress: string
 
@@ -253,7 +253,7 @@ export class AccountNftQueryClient implements AccountNftReadOnlyInterface {
     })
   }
 }
-export interface AccountNftInterface extends AccountNftReadOnlyInterface {
+export interface MarsAccountNftInterface extends MarsAccountNftReadOnlyInterface {
   contractAddress: string
   sender: string
   proposeNewOwner: (
@@ -366,7 +366,10 @@ export interface AccountNftInterface extends AccountNftReadOnlyInterface {
     funds?: Coin[],
   ) => Promise<ExecuteResult>
 }
-export class AccountNftClient extends AccountNftQueryClient implements AccountNftInterface {
+export class MarsAccountNftClient
+  extends MarsAccountNftQueryClient
+  implements MarsAccountNftInterface
+{
   client: SigningCosmWasmClient
   sender: string
   contractAddress: string

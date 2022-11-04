@@ -15,21 +15,21 @@ import {
   ExecuteMsg,
   QueryMsg,
   PriceResponse,
-} from './MockOracle.types'
-import { MockOracleQueryClient, MockOracleClient } from './MockOracle.client'
-export const mockOracleQueryKeys = {
+} from './MarsMockOracle.types'
+import { MarsMockOracleQueryClient, MarsMockOracleClient } from './MarsMockOracle.client'
+export const marsMockOracleQueryKeys = {
   contract: [
     {
-      contract: 'mockOracle',
+      contract: 'marsMockOracle',
     },
   ] as const,
   address: (contractAddress: string | undefined) =>
-    [{ ...mockOracleQueryKeys.contract[0], address: contractAddress }] as const,
+    [{ ...marsMockOracleQueryKeys.contract[0], address: contractAddress }] as const,
   price: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...mockOracleQueryKeys.address(contractAddress)[0], method: 'price', args }] as const,
+    [{ ...marsMockOracleQueryKeys.address(contractAddress)[0], method: 'price', args }] as const,
 }
-export interface MockOracleReactQuery<TResponse, TData = TResponse> {
-  client: MockOracleQueryClient | undefined
+export interface MarsMockOracleReactQuery<TResponse, TData = TResponse> {
+  client: MarsMockOracleQueryClient | undefined
   options?: Omit<
     UseQueryOptions<TResponse, Error, TData>,
     "'queryKey' | 'queryFn' | 'initialData'"
@@ -37,18 +37,19 @@ export interface MockOracleReactQuery<TResponse, TData = TResponse> {
     initialData?: undefined
   }
 }
-export interface MockOraclePriceQuery<TData> extends MockOracleReactQuery<PriceResponse, TData> {
+export interface MarsMockOraclePriceQuery<TData>
+  extends MarsMockOracleReactQuery<PriceResponse, TData> {
   args: {
     denom: string
   }
 }
-export function useMockOraclePriceQuery<TData = PriceResponse>({
+export function useMarsMockOraclePriceQuery<TData = PriceResponse>({
   client,
   args,
   options,
-}: MockOraclePriceQuery<TData>) {
+}: MarsMockOraclePriceQuery<TData>) {
   return useQuery<PriceResponse, Error, TData>(
-    mockOracleQueryKeys.price(client?.contractAddress, args),
+    marsMockOracleQueryKeys.price(client?.contractAddress, args),
     () =>
       client
         ? client.price({
@@ -58,8 +59,8 @@ export function useMockOraclePriceQuery<TData = PriceResponse>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockOracleChangePriceMutation {
-  client: MockOracleClient
+export interface MarsMockOracleChangePriceMutation {
+  client: MarsMockOracleClient
   msg: CoinPrice
   args?: {
     fee?: number | StdFee | 'auto'
@@ -67,13 +68,13 @@ export interface MockOracleChangePriceMutation {
     funds?: Coin[]
   }
 }
-export function useMockOracleChangePriceMutation(
+export function useMarsMockOracleChangePriceMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, MockOracleChangePriceMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsMockOracleChangePriceMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, MockOracleChangePriceMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockOracleChangePriceMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.changePrice(msg, fee, memo, funds),
     options,
   )

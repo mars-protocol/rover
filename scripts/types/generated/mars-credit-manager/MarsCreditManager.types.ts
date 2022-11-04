@@ -129,6 +129,9 @@ export type Action =
         lp_token: Coin
       }
     }
+  | {
+      refund_all_coin_balances: {}
+    }
 export type CallbackMsg =
   | {
       withdraw: {
@@ -239,6 +242,16 @@ export type CallbackMsg =
       withdraw_liquidity: {
         account_id: string
         lp_token: Coin
+      }
+    }
+  | {
+      assert_one_vault_position_only: {
+        account_id: string
+      }
+    }
+  | {
+      refund_all_coin_balances: {
+        account_id: string
       }
     }
 export type Addr = string

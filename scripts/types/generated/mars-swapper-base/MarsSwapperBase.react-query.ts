@@ -21,33 +21,33 @@ import {
   EstimateExactInSwapResponse,
   RouteResponseForEmpty,
   ArrayOfRouteResponseForEmpty,
-} from './SwapperBase.types'
-import { SwapperBaseQueryClient, SwapperBaseClient } from './SwapperBase.client'
-export const swapperBaseQueryKeys = {
+} from './MarsSwapperBase.types'
+import { MarsSwapperBaseQueryClient, MarsSwapperBaseClient } from './MarsSwapperBase.client'
+export const marsSwapperBaseQueryKeys = {
   contract: [
     {
-      contract: 'swapperBase',
+      contract: 'marsSwapperBase',
     },
   ] as const,
   address: (contractAddress: string | undefined) =>
-    [{ ...swapperBaseQueryKeys.contract[0], address: contractAddress }] as const,
+    [{ ...marsSwapperBaseQueryKeys.contract[0], address: contractAddress }] as const,
   config: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...swapperBaseQueryKeys.address(contractAddress)[0], method: 'config', args }] as const,
+    [{ ...marsSwapperBaseQueryKeys.address(contractAddress)[0], method: 'config', args }] as const,
   route: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...swapperBaseQueryKeys.address(contractAddress)[0], method: 'route', args }] as const,
+    [{ ...marsSwapperBaseQueryKeys.address(contractAddress)[0], method: 'route', args }] as const,
   routes: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...swapperBaseQueryKeys.address(contractAddress)[0], method: 'routes', args }] as const,
+    [{ ...marsSwapperBaseQueryKeys.address(contractAddress)[0], method: 'routes', args }] as const,
   estimateExactInSwap: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
       {
-        ...swapperBaseQueryKeys.address(contractAddress)[0],
+        ...marsSwapperBaseQueryKeys.address(contractAddress)[0],
         method: 'estimate_exact_in_swap',
         args,
       },
     ] as const,
 }
-export interface SwapperBaseReactQuery<TResponse, TData = TResponse> {
-  client: SwapperBaseQueryClient | undefined
+export interface MarsSwapperBaseReactQuery<TResponse, TData = TResponse> {
+  client: MarsSwapperBaseQueryClient | undefined
   options?: Omit<
     UseQueryOptions<TResponse, Error, TData>,
     "'queryKey' | 'queryFn' | 'initialData'"
@@ -55,20 +55,20 @@ export interface SwapperBaseReactQuery<TResponse, TData = TResponse> {
     initialData?: undefined
   }
 }
-export interface SwapperBaseEstimateExactInSwapQuery<TData>
-  extends SwapperBaseReactQuery<EstimateExactInSwapResponse, TData> {
+export interface MarsSwapperBaseEstimateExactInSwapQuery<TData>
+  extends MarsSwapperBaseReactQuery<EstimateExactInSwapResponse, TData> {
   args: {
     coinIn: Coin
     denomOut: string
   }
 }
-export function useSwapperBaseEstimateExactInSwapQuery<TData = EstimateExactInSwapResponse>({
+export function useMarsSwapperBaseEstimateExactInSwapQuery<TData = EstimateExactInSwapResponse>({
   client,
   args,
   options,
-}: SwapperBaseEstimateExactInSwapQuery<TData>) {
+}: MarsSwapperBaseEstimateExactInSwapQuery<TData>) {
   return useQuery<EstimateExactInSwapResponse, Error, TData>(
-    swapperBaseQueryKeys.estimateExactInSwap(client?.contractAddress, args),
+    marsSwapperBaseQueryKeys.estimateExactInSwap(client?.contractAddress, args),
     () =>
       client
         ? client.estimateExactInSwap({
@@ -79,20 +79,20 @@ export function useSwapperBaseEstimateExactInSwapQuery<TData = EstimateExactInSw
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface SwapperBaseRoutesQuery<TData>
-  extends SwapperBaseReactQuery<ArrayOfRouteResponseForEmpty, TData> {
+export interface MarsSwapperBaseRoutesQuery<TData>
+  extends MarsSwapperBaseReactQuery<ArrayOfRouteResponseForEmpty, TData> {
   args: {
     limit?: number
     startAfter?: string[][]
   }
 }
-export function useSwapperBaseRoutesQuery<TData = ArrayOfRouteResponseForEmpty>({
+export function useMarsSwapperBaseRoutesQuery<TData = ArrayOfRouteResponseForEmpty>({
   client,
   args,
   options,
-}: SwapperBaseRoutesQuery<TData>) {
+}: MarsSwapperBaseRoutesQuery<TData>) {
   return useQuery<ArrayOfRouteResponseForEmpty, Error, TData>(
-    swapperBaseQueryKeys.routes(client?.contractAddress, args),
+    marsSwapperBaseQueryKeys.routes(client?.contractAddress, args),
     () =>
       client
         ? client.routes({
@@ -103,20 +103,20 @@ export function useSwapperBaseRoutesQuery<TData = ArrayOfRouteResponseForEmpty>(
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface SwapperBaseRouteQuery<TData>
-  extends SwapperBaseReactQuery<RouteResponseForEmpty, TData> {
+export interface MarsSwapperBaseRouteQuery<TData>
+  extends MarsSwapperBaseReactQuery<RouteResponseForEmpty, TData> {
   args: {
     denomIn: string
     denomOut: string
   }
 }
-export function useSwapperBaseRouteQuery<TData = RouteResponseForEmpty>({
+export function useMarsSwapperBaseRouteQuery<TData = RouteResponseForEmpty>({
   client,
   args,
   options,
-}: SwapperBaseRouteQuery<TData>) {
+}: MarsSwapperBaseRouteQuery<TData>) {
   return useQuery<RouteResponseForEmpty, Error, TData>(
-    swapperBaseQueryKeys.route(client?.contractAddress, args),
+    marsSwapperBaseQueryKeys.route(client?.contractAddress, args),
     () =>
       client
         ? client.route({
@@ -127,20 +127,20 @@ export function useSwapperBaseRouteQuery<TData = RouteResponseForEmpty>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface SwapperBaseConfigQuery<TData>
-  extends SwapperBaseReactQuery<ConfigForString, TData> {}
-export function useSwapperBaseConfigQuery<TData = ConfigForString>({
+export interface MarsSwapperBaseConfigQuery<TData>
+  extends MarsSwapperBaseReactQuery<ConfigForString, TData> {}
+export function useMarsSwapperBaseConfigQuery<TData = ConfigForString>({
   client,
   options,
-}: SwapperBaseConfigQuery<TData>) {
+}: MarsSwapperBaseConfigQuery<TData>) {
   return useQuery<ConfigForString, Error, TData>(
-    swapperBaseQueryKeys.config(client?.contractAddress),
+    marsSwapperBaseQueryKeys.config(client?.contractAddress),
     () => (client ? client.config() : Promise.reject(new Error('Invalid client'))),
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface SwapperBaseTransferResultMutation {
-  client: SwapperBaseClient
+export interface MarsSwapperBaseTransferResultMutation {
+  client: MarsSwapperBaseClient
   msg: {
     denomIn: string
     denomOut: string
@@ -152,20 +152,20 @@ export interface SwapperBaseTransferResultMutation {
     funds?: Coin[]
   }
 }
-export function useSwapperBaseTransferResultMutation(
+export function useMarsSwapperBaseTransferResultMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, SwapperBaseTransferResultMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsSwapperBaseTransferResultMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, SwapperBaseTransferResultMutation>(
+  return useMutation<ExecuteResult, Error, MarsSwapperBaseTransferResultMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) =>
       client.transferResult(msg, fee, memo, funds),
     options,
   )
 }
-export interface SwapperBaseSwapExactInMutation {
-  client: SwapperBaseClient
+export interface MarsSwapperBaseSwapExactInMutation {
+  client: MarsSwapperBaseClient
   msg: {
     coinIn: Coin
     denomOut: string
@@ -177,19 +177,19 @@ export interface SwapperBaseSwapExactInMutation {
     funds?: Coin[]
   }
 }
-export function useSwapperBaseSwapExactInMutation(
+export function useMarsSwapperBaseSwapExactInMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, SwapperBaseSwapExactInMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsSwapperBaseSwapExactInMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, SwapperBaseSwapExactInMutation>(
+  return useMutation<ExecuteResult, Error, MarsSwapperBaseSwapExactInMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.swapExactIn(msg, fee, memo, funds),
     options,
   )
 }
-export interface SwapperBaseSetRouteMutation {
-  client: SwapperBaseClient
+export interface MarsSwapperBaseSetRouteMutation {
+  client: MarsSwapperBaseClient
   msg: {
     denomIn: string
     denomOut: string
@@ -201,19 +201,19 @@ export interface SwapperBaseSetRouteMutation {
     funds?: Coin[]
   }
 }
-export function useSwapperBaseSetRouteMutation(
+export function useMarsSwapperBaseSetRouteMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, SwapperBaseSetRouteMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsSwapperBaseSetRouteMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, SwapperBaseSetRouteMutation>(
+  return useMutation<ExecuteResult, Error, MarsSwapperBaseSetRouteMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.setRoute(msg, fee, memo, funds),
     options,
   )
 }
-export interface SwapperBaseUpdateConfigMutation {
-  client: SwapperBaseClient
+export interface MarsSwapperBaseUpdateConfigMutation {
+  client: MarsSwapperBaseClient
   msg: {
     owner?: string
   }
@@ -223,13 +223,13 @@ export interface SwapperBaseUpdateConfigMutation {
     funds?: Coin[]
   }
 }
-export function useSwapperBaseUpdateConfigMutation(
+export function useMarsSwapperBaseUpdateConfigMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, SwapperBaseUpdateConfigMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsSwapperBaseUpdateConfigMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, SwapperBaseUpdateConfigMutation>(
+  return useMutation<ExecuteResult, Error, MarsSwapperBaseUpdateConfigMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) =>
       client.updateConfig(msg, fee, memo, funds),
     options,

@@ -22,8 +22,8 @@ import {
   VaultInfo,
   Empty,
   VaultStandardInfo,
-} from './MockVault.types'
-export interface MockVaultReadOnlyInterface {
+} from './MarsMockVault.types'
+export interface MarsMockVaultReadOnlyInterface {
   contractAddress: string
   vaultStandardInfo: () => Promise<VaultStandardInfo>
   info: () => Promise<VaultInfo>
@@ -35,7 +35,7 @@ export interface MockVaultReadOnlyInterface {
   convertToAssets: ({ amount }: { amount: Uint128 }) => Promise<Uint128>
   vaultExtension: () => Promise<Empty>
 }
-export class MockVaultQueryClient implements MockVaultReadOnlyInterface {
+export class MarsMockVaultQueryClient implements MarsMockVaultReadOnlyInterface {
   client: CosmWasmClient
   contractAddress: string
 
@@ -107,7 +107,7 @@ export class MockVaultQueryClient implements MockVaultReadOnlyInterface {
     })
   }
 }
-export interface MockVaultInterface extends MockVaultReadOnlyInterface {
+export interface MarsMockVaultInterface extends MarsMockVaultReadOnlyInterface {
   contractAddress: string
   sender: string
   deposit: (
@@ -140,7 +140,10 @@ export interface MockVaultInterface extends MockVaultReadOnlyInterface {
     funds?: Coin[],
   ) => Promise<ExecuteResult>
 }
-export class MockVaultClient extends MockVaultQueryClient implements MockVaultInterface {
+export class MarsMockVaultClient
+  extends MarsMockVaultQueryClient
+  implements MarsMockVaultInterface
+{
   client: SigningCosmWasmClient
   sender: string
   contractAddress: string

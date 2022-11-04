@@ -17,20 +17,20 @@ import {
   QueryMsg,
   Coin,
   ArrayOfCoin,
-} from './MockZapper.types'
-import { MockZapperQueryClient, MockZapperClient } from './MockZapper.client'
-export const mockZapperQueryKeys = {
+} from './MarsMockZapper.types'
+import { MarsMockZapperQueryClient, MarsMockZapperClient } from './MarsMockZapper.client'
+export const marsMockZapperQueryKeys = {
   contract: [
     {
-      contract: 'mockZapper',
+      contract: 'marsMockZapper',
     },
   ] as const,
   address: (contractAddress: string | undefined) =>
-    [{ ...mockZapperQueryKeys.contract[0], address: contractAddress }] as const,
+    [{ ...marsMockZapperQueryKeys.contract[0], address: contractAddress }] as const,
   estimateProvideLiquidity: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [
       {
-        ...mockZapperQueryKeys.address(contractAddress)[0],
+        ...marsMockZapperQueryKeys.address(contractAddress)[0],
         method: 'estimate_provide_liquidity',
         args,
       },
@@ -41,14 +41,14 @@ export const mockZapperQueryKeys = {
   ) =>
     [
       {
-        ...mockZapperQueryKeys.address(contractAddress)[0],
+        ...marsMockZapperQueryKeys.address(contractAddress)[0],
         method: 'estimate_withdraw_liquidity',
         args,
       },
     ] as const,
 }
-export interface MockZapperReactQuery<TResponse, TData = TResponse> {
-  client: MockZapperQueryClient | undefined
+export interface MarsMockZapperReactQuery<TResponse, TData = TResponse> {
+  client: MarsMockZapperQueryClient | undefined
   options?: Omit<
     UseQueryOptions<TResponse, Error, TData>,
     "'queryKey' | 'queryFn' | 'initialData'"
@@ -56,19 +56,19 @@ export interface MockZapperReactQuery<TResponse, TData = TResponse> {
     initialData?: undefined
   }
 }
-export interface MockZapperEstimateWithdrawLiquidityQuery<TData>
-  extends MockZapperReactQuery<ArrayOfCoin, TData> {
+export interface MarsMockZapperEstimateWithdrawLiquidityQuery<TData>
+  extends MarsMockZapperReactQuery<ArrayOfCoin, TData> {
   args: {
     coinIn: Coin
   }
 }
-export function useMockZapperEstimateWithdrawLiquidityQuery<TData = ArrayOfCoin>({
+export function useMarsMockZapperEstimateWithdrawLiquidityQuery<TData = ArrayOfCoin>({
   client,
   args,
   options,
-}: MockZapperEstimateWithdrawLiquidityQuery<TData>) {
+}: MarsMockZapperEstimateWithdrawLiquidityQuery<TData>) {
   return useQuery<ArrayOfCoin, Error, TData>(
-    mockZapperQueryKeys.estimateWithdrawLiquidity(client?.contractAddress, args),
+    marsMockZapperQueryKeys.estimateWithdrawLiquidity(client?.contractAddress, args),
     () =>
       client
         ? client.estimateWithdrawLiquidity({
@@ -78,20 +78,20 @@ export function useMockZapperEstimateWithdrawLiquidityQuery<TData = ArrayOfCoin>
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockZapperEstimateProvideLiquidityQuery<TData>
-  extends MockZapperReactQuery<Uint128, TData> {
+export interface MarsMockZapperEstimateProvideLiquidityQuery<TData>
+  extends MarsMockZapperReactQuery<Uint128, TData> {
   args: {
     coinsIn: Coin[]
     lpTokenOut: string
   }
 }
-export function useMockZapperEstimateProvideLiquidityQuery<TData = Uint128>({
+export function useMarsMockZapperEstimateProvideLiquidityQuery<TData = Uint128>({
   client,
   args,
   options,
-}: MockZapperEstimateProvideLiquidityQuery<TData>) {
+}: MarsMockZapperEstimateProvideLiquidityQuery<TData>) {
   return useQuery<Uint128, Error, TData>(
-    mockZapperQueryKeys.estimateProvideLiquidity(client?.contractAddress, args),
+    marsMockZapperQueryKeys.estimateProvideLiquidity(client?.contractAddress, args),
     () =>
       client
         ? client.estimateProvideLiquidity({
@@ -102,8 +102,8 @@ export function useMockZapperEstimateProvideLiquidityQuery<TData = Uint128>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MockZapperWithdrawLiquidityMutation {
-  client: MockZapperClient
+export interface MarsMockZapperWithdrawLiquidityMutation {
+  client: MarsMockZapperClient
   msg: {
     recipient?: string
   }
@@ -113,20 +113,20 @@ export interface MockZapperWithdrawLiquidityMutation {
     funds?: Coin[]
   }
 }
-export function useMockZapperWithdrawLiquidityMutation(
+export function useMarsMockZapperWithdrawLiquidityMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, MockZapperWithdrawLiquidityMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsMockZapperWithdrawLiquidityMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, MockZapperWithdrawLiquidityMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockZapperWithdrawLiquidityMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) =>
       client.withdrawLiquidity(msg, fee, memo, funds),
     options,
   )
 }
-export interface MockZapperProvideLiquidityMutation {
-  client: MockZapperClient
+export interface MarsMockZapperProvideLiquidityMutation {
+  client: MarsMockZapperClient
   msg: {
     lpTokenOut: string
     minimumReceive: Uint128
@@ -138,13 +138,13 @@ export interface MockZapperProvideLiquidityMutation {
     funds?: Coin[]
   }
 }
-export function useMockZapperProvideLiquidityMutation(
+export function useMarsMockZapperProvideLiquidityMutation(
   options?: Omit<
-    UseMutationOptions<ExecuteResult, Error, MockZapperProvideLiquidityMutation>,
+    UseMutationOptions<ExecuteResult, Error, MarsMockZapperProvideLiquidityMutation>,
     'mutationFn'
   >,
 ) {
-  return useMutation<ExecuteResult, Error, MockZapperProvideLiquidityMutation>(
+  return useMutation<ExecuteResult, Error, MarsMockZapperProvideLiquidityMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) =>
       client.provideLiquidity(msg, fee, memo, funds),
     options,

@@ -50,8 +50,8 @@ import {
   Positions,
   DebtAmount,
   ArrayOfVaultInstantiateConfig,
-} from './CreditManager.types'
-export interface CreditManagerReadOnlyInterface {
+} from './MarsCreditManager.types'
+export interface MarsCreditManagerReadOnlyInterface {
   contractAddress: string
   config: () => Promise<ConfigResponse>
   vaultConfigs: ({
@@ -116,7 +116,7 @@ export interface CreditManagerReadOnlyInterface {
   }) => Promise<Uint128>
   estimateWithdrawLiquidity: ({ lpToken }: { lpToken: Coin }) => Promise<ArrayOfCoin>
 }
-export class CreditManagerQueryClient implements CreditManagerReadOnlyInterface {
+export class MarsCreditManagerQueryClient implements MarsCreditManagerReadOnlyInterface {
   client: CosmWasmClient
   contractAddress: string
 
@@ -290,7 +290,7 @@ export class CreditManagerQueryClient implements CreditManagerReadOnlyInterface 
     })
   }
 }
-export interface CreditManagerInterface extends CreditManagerReadOnlyInterface {
+export interface MarsCreditManagerInterface extends MarsCreditManagerReadOnlyInterface {
   contractAddress: string
   sender: string
   createCreditAccount: (
@@ -326,9 +326,9 @@ export interface CreditManagerInterface extends CreditManagerReadOnlyInterface {
     funds?: Coin[],
   ) => Promise<ExecuteResult>
 }
-export class CreditManagerClient
-  extends CreditManagerQueryClient
-  implements CreditManagerInterface
+export class MarsCreditManagerClient
+  extends MarsCreditManagerQueryClient
+  implements MarsCreditManagerInterface
 {
   client: SigningCosmWasmClient
   sender: string
