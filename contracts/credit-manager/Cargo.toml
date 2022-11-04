@@ -9,7 +9,7 @@ documentation = { workspace = true }
 keywords      = { workspace = true }
 
 [lib]
-doctest = false
+crate-type = ["cdylib", "rlib"]
 
 [features]
 # for quicker tests, cargo test --lib
