@@ -47,7 +47,7 @@ pub fn enter_vault(
     Ok(Response::new()
         .add_message(vault.deposit_msg(&coin_to_enter)?)
         .add_message(update_vault_balance_msg)
-        .add_attribute("action", "rover/credit_manager/vault/deposit"))
+        .add_attribute("action", "rover/credit-manager/vault/deposit"))
 }
 
 fn or_full_balance_default(
@@ -90,7 +90,7 @@ pub fn update_vault_coin_balance(
     )?;
 
     Ok(Response::new()
-        .add_attribute("action", "rover/credit_manager/vault/update_balance")
+        .add_attribute("action", "rover/credit-manager/vault/update_balance")
         .add_attribute(
             "amount_incremented",
             current_balance.checked_sub(previous_total_balance)?,

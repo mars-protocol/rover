@@ -36,7 +36,7 @@ pub fn update_coin_balance(
             },
         )?;
         Ok(Response::new()
-            .add_attribute("action", "rover/credit_manager/update_coin_balance")
+            .add_attribute("action", "rover/credit-manager/update_coin_balance")
             .add_attribute("denom", curr.denom)
             .add_attribute("decremented", amount_to_reduce))
     } else {
@@ -50,7 +50,7 @@ pub fn update_coin_balance(
             },
         )?;
         Ok(Response::new()
-            .add_attribute("action", "rover/credit_manager/update_coin_balance")
+            .add_attribute("action", "rover/credit-manager/update_coin_balance")
             .add_attribute("denom", curr.denom)
             .add_attribute("incremented", amount_to_increment))
     }

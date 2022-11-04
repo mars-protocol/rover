@@ -56,5 +56,5 @@ pub fn exit_vault_unlocked(
     Ok(Response::new()
         .add_message(withdraw_unlocked_msg)
         .add_message(update_coin_balance_msg)
-        .add_attribute("action", "rover/credit_manager/vault/unlock"))
+        .add_attribute("action", "rover/credit-manager/vault/unlock"))
 }

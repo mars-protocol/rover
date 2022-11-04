@@ -21,8 +21,8 @@ pub fn provide_liquidity(
     assert_coins_are_whitelisted(deps.storage, coins_in.to_denoms())?;
 
     // Decrement coin amounts in account for those sent to pool
-    for coin_in in coins_in.clone() {
-        decrement_coin_balance(deps.storage, account_id, &coin_in)?;
+    for coin_in in &coins_in {
+        decrement_coin_balance(deps.storage, account_id, coin_in)?;
     }
 
     // After zap is complete, update account's LP token balance
@@ -38,25 +38,25 @@ pub fn provide_liquidity(
     Ok(Response::new()
         .add_message(zap_msg)
         .add_message(update_balance_msg)
-        .add_attribute("action", "rover/credit_manager/provide_liquidity"))
+        .add_attribute("action", "rover/credit-manager/provide_liquidity"))
 }
 
 pub fn withdraw_liquidity(
     deps: DepsMut,
     env: Env,
     account_id: &str,
-    lp_token_in: Coin,
+    lp_token: Coin,
 ) -> ContractResult<Response> {
-    assert_coin_is_whitelisted(deps.storage, &lp_token_in.denom)?;
+    assert_coin_is_whitelisted(deps.storage, &lp_token.denom)?;
 
     let zapper = ZAPPER.load(deps.storage)?;
-    let coins_out = zapper.estimate_withdraw_liquidity(&deps.querier, &lp_token_in)?;
+    let coins_out = zapper.estimate_withdraw_liquidity(&deps.querier, &lp_token)?;
     assert_coins_are_whitelisted(deps.storage, coins_out.to_denoms())?;
 
-    decrement_coin_balance(deps.storage, account_id, &lp_token_in)?;
+    decrement_coin_balance(deps.storage, account_id, &lp_token)?;
 
     // After unzap is complete, update account's coin balances
-    let zap_msg = zapper.withdraw_liquidity_msg(&lp_token_in)?;
+    let zap_msg = zapper.withdraw_liquidity_msg(&lp_token)?;
     let update_balances_msgs = update_balances_msgs(
         &deps.querier,
         &env.contract.address,
@@ -67,7 +67,7 @@ pub fn withdraw_liquidity(
     Ok(Response::new()
         .add_message(zap_msg)
         .add_messages(update_balances_msgs)
-        .add_attribute("action", "rover/credit_manager/withdraw_liquidity"))
+        .add_attribute("action", "rover/credit-manager/withdraw_liquidity"))
 }
 
 pub fn estimate_provide_liquidity(
@@ -80,8 +80,8 @@ pub fn estimate_provide_liquidity(
     Ok(estimate)
 }
 
-pub fn estimate_withdraw_liquidity(deps: Deps, lp_token_in: Coin) -> ContractResult<Vec<Coin>> {
+pub fn estimate_withdraw_liquidity(deps: Deps, lp_token: Coin) -> ContractResult<Vec<Coin>> {
     let zapper = ZAPPER.load(deps.storage)?;
-    let estimate = zapper.estimate_withdraw_liquidity(&deps.querier, &lp_token_in)?;
+    let estimate = zapper.estimate_withdraw_liquidity(&deps.querier, &lp_token)?;
     Ok(estimate)
 }

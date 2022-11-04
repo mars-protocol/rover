@@ -95,7 +95,7 @@ pub enum Action {
         minimum_receive: Uint128,
     },
     /// Send LP token and withdraw corresponding reserve assets from pool
-    WithdrawLiquidity { lp_token_in: Coin },
+    WithdrawLiquidity { lp_token: Coin },
 }
 
 /// Internal actions made by the contract with pre-validated inputs
@@ -192,10 +192,7 @@ pub enum CallbackMsg {
         minimum_receive: Uint128,
     },
     /// Send LP token and withdraw corresponding reserve assets from pool
-    WithdrawLiquidity {
-        account_id: String,
-        lp_token_in: Coin,
-    },
+    WithdrawLiquidity { account_id: String, lp_token: Coin },
 }
 
 impl CallbackMsg {

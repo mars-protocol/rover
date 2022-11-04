@@ -100,8 +100,8 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
             lp_token_out,
             coins_in,
         } => to_binary(&estimate_provide_liquidity(deps, &lp_token_out, coins_in)?),
-        QueryMsg::EstimateWithdrawLiquidity { lp_token_in } => {
-            to_binary(&estimate_withdraw_liquidity(deps, lp_token_in)?)
+        QueryMsg::EstimateWithdrawLiquidity { lp_token } => {
+            to_binary(&estimate_withdraw_liquidity(deps, lp_token)?)
         }
     };
     res.map_err(Into::into)

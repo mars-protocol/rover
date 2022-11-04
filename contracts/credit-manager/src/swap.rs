@@ -30,5 +30,5 @@ pub fn swap_exact_in(
     Ok(Response::new()
         .add_message(swapper.swap_exact_in_msg(&coin_in, denom_out, slippage)?)
         .add_message(update_coin_balance_msg)
-        .add_attribute("action", "rover/credit_manager/swapper"))
+        .add_attribute("action", "rover/credit-manager/swapper"))
 }

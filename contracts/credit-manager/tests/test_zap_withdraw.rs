@@ -23,7 +23,7 @@ fn test_only_token_owner_can_unzap_for_account() {
         &account_id,
         &another_user,
         vec![WithdrawLiquidity {
-            lp_token_in: Default::default(),
+            lp_token: Default::default(),
         }],
         &[],
     );
@@ -48,7 +48,7 @@ fn test_lp_token_in_must_be_whitelisted() {
         &account_id,
         &user,
         vec![WithdrawLiquidity {
-            lp_token_in: lp_token.to_coin(100),
+            lp_token: lp_token.to_coin(100),
         }],
         &[],
     );
@@ -105,7 +105,7 @@ fn test_coins_out_must_be_whitelisted() {
         &account_id,
         &user,
         vec![WithdrawLiquidity {
-            lp_token_in: lp_token.to_coin(10),
+            lp_token: lp_token.to_coin(10),
         }],
         &[],
     );
@@ -144,7 +144,7 @@ fn test_does_not_have_the_tokens_to_withdraw_liq() {
                 minimum_receive: Uint128::zero(),
             },
             WithdrawLiquidity {
-                lp_token_in: lp_token.to_coin(attempted_unzap_amount),
+                lp_token: lp_token.to_coin(attempted_unzap_amount),
             },
         ],
         &[atom.to_coin(100), osmo.to_coin(50)],
@@ -190,7 +190,7 @@ fn test_successful_unzap() {
                 minimum_receive: Uint128::zero(),
             },
             WithdrawLiquidity {
-                lp_token_in: lp_token.to_coin(STARTING_LP_POOL_TOKENS.u128()),
+                lp_token: lp_token.to_coin(STARTING_LP_POOL_TOKENS.u128()),
             },
         ],
         &[atom.to_coin(100), osmo.to_coin(50)],

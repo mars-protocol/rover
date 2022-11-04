@@ -571,10 +571,10 @@
               "withdraw_liquidity": {
                 "type": "object",
                 "required": [
-                  "lp_token_in"
+                  "lp_token"
                 ],
                 "properties": {
-                  "lp_token_in": {
+                  "lp_token": {
                     "$ref": "#/definitions/Coin"
                   }
                 },
@@ -1075,13 +1075,13 @@
                 "type": "object",
                 "required": [
                   "account_id",
-                  "lp_token_in"
+                  "lp_token"
                 ],
                 "properties": {
                   "account_id": {
                     "type": "string"
                   },
-                  "lp_token_in": {
+                  "lp_token": {
                     "$ref": "#/definitions/Coin"
                   }
                 },
@@ -1674,10 +1674,10 @@
           "estimate_withdraw_liquidity": {
             "type": "object",
             "required": [
-              "lp_token_in"
+              "lp_token"
             ],
             "properties": {
-              "lp_token_in": {
+              "lp_token": {
                 "$ref": "#/definitions/Coin"
               }
             },

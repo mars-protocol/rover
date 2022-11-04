@@ -73,7 +73,7 @@ pub enum QueryMsg {
     },
     /// Estimate coins withdrawn if exchanged for LP tokens
     #[returns(Vec<Coin>)]
-    EstimateWithdrawLiquidity { lp_token_in: Coin },
+    EstimateWithdrawLiquidity { lp_token: Coin },
 }
 
 #[cw_serde]

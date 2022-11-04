@@ -42,7 +42,7 @@ pub fn create_credit_account(deps: DepsMut, user: Addr) -> ContractResult<Respon
 
     Ok(Response::new()
         .add_message(nft_mint_msg)
-        .add_attribute("action", "rover/credit_manager/create_credit_account"))
+        .add_attribute("action", "rover/credit-manager/create_credit_account"))
 }
 
 pub fn update_config(
@@ -60,7 +60,7 @@ pub fn update_config(
     }
 
     let mut response =
-        Response::new().add_attribute("action", "rover/credit_manager/update_config");
+        Response::new().add_attribute("action", "rover/credit-manager/update_config");
 
     if let Some(addr_str) = new_config.account_nft {
         let validated = deps.api.addr_validate(&addr_str)?;
@@ -261,10 +261,10 @@ pub fn dispatch_actions(
                 coins_in: coins_in.clone(),
                 minimum_receive: *minimum_receive,
             }),
-            Action::WithdrawLiquidity { lp_token_in } => {
+            Action::WithdrawLiquidity { lp_token } => {
                 callbacks.push(CallbackMsg::WithdrawLiquidity {
                     account_id: account_id.to_string(),
-                    lp_token_in: lp_token_in.clone(),
+                    lp_token: lp_token.clone(),
                 })
             }
         }
@@ -406,8 +406,8 @@ pub fn execute_callback(
         ),
         CallbackMsg::WithdrawLiquidity {
             account_id,
-            lp_token_in,
-        } => withdraw_liquidity(deps, env, &account_id, lp_token_in),
+            lp_token,
+        } => withdraw_liquidity(deps, env, &account_id, lp_token),
     }
 }
 
