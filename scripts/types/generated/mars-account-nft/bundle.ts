@@ -7,7 +7,8 @@
 
 import * as _0 from './MarsAccountNft.types'
 import * as _1 from './MarsAccountNft.client'
-import * as _2 from './MarsAccountNft.react-query'
+import * as _2 from './MarsAccountNft.message-composer'
+import * as _3 from './MarsAccountNft.react-query'
 export namespace contracts {
-  export const MarsAccountNft = { ..._0, ..._1, ..._2 }
+  export const MarsAccountNft = { ..._0, ..._1, ..._2, ..._3 }
 }

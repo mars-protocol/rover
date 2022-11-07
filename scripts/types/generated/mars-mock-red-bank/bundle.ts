@@ -5,9 +5,10 @@
  * and run the @cosmwasm/ts-codegen generate command to regenerate this file.
  */
 
-import * as _9 from './MarsMockRedBank.types'
-import * as _10 from './MarsMockRedBank.client'
-import * as _11 from './MarsMockRedBank.react-query'
+import * as _12 from './MarsMockRedBank.types'
+import * as _13 from './MarsMockRedBank.client'
+import * as _14 from './MarsMockRedBank.message-composer'
+import * as _15 from './MarsMockRedBank.react-query'
 export namespace contracts {
-  export const MarsMockRedBank = { ..._9, ..._10, ..._11 }
+  export const MarsMockRedBank = { ..._12, ..._13, ..._14, ..._15 }
 }
