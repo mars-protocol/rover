@@ -10,14 +10,14 @@ pub fn refund_coin_balances(deps: DepsMut, env: Env, account_id: &str) -> Contra
     let coins = query_coin_balances(deps.as_ref(), account_id)?;
     let account_nft_owner = query_nft_token_owner(deps.as_ref(), account_id)?;
     let withdraw_msgs = coins
-        .iter()
+        .into_iter()
         .map(|coin| {
             Ok(CosmosMsg::Wasm(WasmMsg::Execute {
                 contract_addr: env.contract.address.to_string(),
                 funds: vec![],
                 msg: to_binary(&ExecuteMsg::Callback(CallbackMsg::Withdraw {
                     account_id: account_id.to_string(),
-                    coin: coin.clone(),
+                    coin,
                     recipient: Addr::unchecked(account_nft_owner.clone()),
                 }))?,
             }))
