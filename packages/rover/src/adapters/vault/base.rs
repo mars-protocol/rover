@@ -1,4 +1,4 @@
-use cosmos_vault_standard::extensions::force_unlock::ForceUnlockExecuteMsg::{
+use cosmwasm_vault_standard::extensions::force_unlock::ForceUnlockExecuteMsg::{
     ForceRedeem, ForceWithdrawUnlocking,
 };
 use std::hash::Hash;
@@ -10,21 +10,20 @@ use cosmwasm_std::{
 };
 use cw_utils::Duration;
 
-use cosmos_vault_standard::extensions::lockup::Lockup;
-use cosmos_vault_standard::extensions::lockup::LockupExecuteMsg::{Unlock, WithdrawUnlocked};
-use cosmos_vault_standard::extensions::lockup::LockupQueryMsg::{
-    Lockup as LockupQueryMsg, LockupDuration,
+use cosmwasm_vault_standard::extensions::lockup::LockupExecuteMsg::{Unlock, WithdrawUnlocked};
+use cosmwasm_vault_standard::extensions::lockup::LockupQueryMsg::LockupDuration;
+use cosmwasm_vault_standard::extensions::lockup::{LockupQueryMsg, UnlockingPosition};
+use cosmwasm_vault_standard::msg::{
+    ExtensionExecuteMsg, ExtensionQueryMsg, VaultStandardExecuteMsg, VaultStandardQueryMsg,
 };
-use cosmos_vault_standard::msg::{
-    ExecuteMsg, ExtensionExecuteMsg, ExtensionQueryMsg, QueryMsg, VaultInfo,
-};
+use cosmwasm_vault_standard::VaultInfoResponse;
 
 use crate::traits::Stringify;
 
 pub const VAULT_REQUEST_REPLY_ID: u64 = 10_001;
 
-type VaultExecuteMsg = ExecuteMsg<ExtensionExecuteMsg>;
-type VaultQueryMsg = QueryMsg<ExtensionQueryMsg>;
+type VaultExecuteMsg = VaultStandardExecuteMsg<ExtensionExecuteMsg>;
+type VaultQueryMsg = VaultStandardQueryMsg<ExtensionQueryMsg>;
 
 #[cw_serde]
 #[derive(Eq, Hash)]
@@ -164,7 +163,7 @@ impl Vault {
         Ok(withdraw_msg)
     }
 
-    pub fn query_info(&self, querier: &QuerierWrapper) -> StdResult<VaultInfo> {
+    pub fn query_info(&self, querier: &QuerierWrapper) -> StdResult<VaultInfoResponse> {
         querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
             contract_addr: self.address.to_string(),
             msg: to_binary(&VaultQueryMsg::Info {})?,
@@ -180,11 +179,15 @@ impl Vault {
         }))
     }
 
-    pub fn query_lockup(&self, querier: &QuerierWrapper, lockup_id: u64) -> StdResult<Lockup> {
+    pub fn query_unlocking_position(
+        &self,
+        querier: &QuerierWrapper,
+        lockup_id: u64,
+    ) -> StdResult<UnlockingPosition> {
         querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
             contract_addr: self.address.to_string(),
             msg: to_binary(&VaultQueryMsg::VaultExtension(ExtensionQueryMsg::Lockup(
-                LockupQueryMsg { lockup_id },
+                LockupQueryMsg::UnlockingPosition { lockup_id },
             )))?,
         }))
     }

@@ -62,7 +62,7 @@ pub fn handle_unlock_request_reply(deps: DepsMut, reply: Reply) -> ContractResul
     let storage = VAULT_REQUEST_TEMP_STORAGE.load(deps.storage)?;
     let unlock_event = reply.parse_unlock_event()?;
     let vault = VaultBase::new(storage.vault_addr.clone());
-    let lockup = vault.query_lockup(&deps.querier, unlock_event.id)?;
+    let lockup = vault.query_unlocking_position(&deps.querier, unlock_event.id)?;
     let info = vault.query_info(&deps.querier)?;
 
     update_vault_position(
