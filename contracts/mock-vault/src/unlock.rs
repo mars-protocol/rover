@@ -29,14 +29,14 @@ pub fn request_unlock(
     };
 
     UNLOCKING_POSITIONS.update(deps.storage, info.sender.clone(), |opt| -> StdResult<_> {
-        let mut lockups = opt.unwrap_or_default();
-        lockups.push(UnlockingPosition {
+        let mut unlocking_positions = opt.unwrap_or_default();
+        unlocking_positions.push(UnlockingPosition {
             owner: info.sender.clone(),
             id: next_lockup_id,
             release_at,
             base_token_amount: lock_amount,
         });
-        Ok(lockups)
+        Ok(unlocking_positions)
     })?;
 
     NEXT_LOCKUP_ID.save(deps.storage, &(next_lockup_id + 1))?;

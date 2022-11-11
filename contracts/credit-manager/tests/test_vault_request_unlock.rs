@@ -256,7 +256,7 @@ fn test_request_unlocked() {
             }
 
             // Assert Rover's position w/ Vault
-            let res = mock.query_lockups(&vault, &mock.rover);
+            let res = mock.query_unlocking_positions(&vault, &mock.rover);
 
             match res.first().unwrap().release_at {
                 Expiration::AtTime(t) => {

@@ -3,9 +3,9 @@ use cosmwasm_std::entry_point;
 use cosmwasm_std::{coin, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, Uint128};
 use cosmwasm_vault_standard::extensions::force_unlock::ForceUnlockExecuteMsg;
 use cosmwasm_vault_standard::extensions::lockup::{LockupExecuteMsg, LockupQueryMsg};
-use cosmwasm_vault_standard::msg::{
-    ExtensionExecuteMsg, ExtensionQueryMsg, VaultStandardExecuteMsg, VaultStandardQueryMsg,
-};
+use cosmwasm_vault_standard::msg::{ExtensionExecuteMsg, ExtensionQueryMsg};
+
+use mars_rover::adapters::vault::{ExecuteMsg, QueryMsg};
 
 use crate::deposit::deposit;
 use crate::error::ContractResult;
@@ -49,12 +49,12 @@ pub fn execute(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
-    msg: VaultStandardExecuteMsg,
+    msg: ExecuteMsg,
 ) -> ContractResult<Response> {
     match msg {
-        VaultStandardExecuteMsg::Deposit { .. } => deposit(deps, info),
-        VaultStandardExecuteMsg::Redeem { .. } => withdraw(deps, info),
-        VaultStandardExecuteMsg::VaultExtension(ext) => match ext {
+        ExecuteMsg::Deposit { .. } => deposit(deps, info),
+        ExecuteMsg::Redeem { .. } => withdraw(deps, info),
+        ExecuteMsg::VaultExtension(ext) => match ext {
             ExtensionExecuteMsg::Lockup(lockup_msg) => match lockup_msg {
                 LockupExecuteMsg::WithdrawUnlocked { lockup_id, .. } => {
                     withdraw_unlocked(deps, env, &info.sender, lockup_id)
@@ -73,16 +73,14 @@ pub fn execute(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps, _env: Env, msg: VaultStandardQueryMsg) -> ContractResult<Binary> {
+pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> ContractResult<Binary> {
     let res = match msg {
-        VaultStandardQueryMsg::TotalVaultTokenSupply {} => {
-            to_binary(&query_vault_token_supply(deps.storage)?)
-        }
-        VaultStandardQueryMsg::Info {} => to_binary(&query_vault_info(deps)?),
-        VaultStandardQueryMsg::PreviewRedeem { amount } => {
+        QueryMsg::TotalVaultTokenSupply {} => to_binary(&query_vault_token_supply(deps.storage)?),
+        QueryMsg::Info {} => to_binary(&query_vault_info(deps)?),
+        QueryMsg::PreviewRedeem { amount } => {
             to_binary(&shares_to_base_denom_amount(deps.storage, amount)?)
         }
-        VaultStandardQueryMsg::VaultExtension(ext) => match ext {
+        QueryMsg::VaultExtension(ext) => match ext {
             ExtensionQueryMsg::Lockup(lockup_msg) => match lockup_msg {
                 LockupQueryMsg::UnlockingPositions { owner, .. } => {
                     to_binary(&query_unlocking_positions(deps, owner)?)

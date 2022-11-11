@@ -1,11 +1,11 @@
 use cosmwasm_schema::write_api;
-use cosmwasm_vault_standard::msg::{VaultStandardExecuteMsg, VaultStandardQueryMsg};
 use mars_mock_vault::msg::InstantiateMsg;
+use mars_rover::adapters::vault::{ExecuteMsg, QueryMsg};
 
 fn main() {
     write_api! {
         instantiate: InstantiateMsg,
-        query: VaultStandardQueryMsg,
-        execute: VaultStandardExecuteMsg,
+        query: QueryMsg,
+        execute: ExecuteMsg,
     }
 }

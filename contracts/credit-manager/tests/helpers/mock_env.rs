@@ -355,7 +355,11 @@ impl MockEnv {
             .unwrap()
     }
 
-    pub fn query_lockups(&self, vault: &VaultUnchecked, addr: &Addr) -> Vec<UnlockingPosition> {
+    pub fn query_unlocking_positions(
+        &self,
+        vault: &VaultUnchecked,
+        addr: &Addr,
+    ) -> Vec<UnlockingPosition> {
         self.app
             .wrap()
             .query_wasm_smart(

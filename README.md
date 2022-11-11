@@ -110,7 +110,7 @@ cargo install --force cargo-make
 
 - Install [Yarn](https://classic.yarnpkg.com/lang/en/docs/install/#mac-stable)
 
-- Also note that Intel/Amd 64-bit processor is required. While there is experimental Arm support for CosmWasm/rust-optimizer, it's discouraged to use in production and LocalOsmosis is likely to have issues.
+- Also note that Intel/Amd 64-bit processor is required. While there is experimental ARM support for CosmWasm/rust-optimizer, it's discouraged to use in production and LocalOsmosis is likely to have issues.
 
 ### Build
 
@@ -133,12 +133,12 @@ docker run --rm -v "$(pwd)":/code \
   cosmwasm/rust-optimizer:0.12.9
 ```
 
-For contract cw-multi tests in rust:
+For Rust cw-multi tests + osmosis-testing suite (requires mars_swapper_osmosis.wasm from previous step):
 ```shell
 cargo test
 ```
 
-For end-to-end testnet deployment & tests against that deployment via Typescript:
+For Typescript end-to-end testnet deployment & tests against that deployment:
 ```shell
 cd scripts
 yarn install
