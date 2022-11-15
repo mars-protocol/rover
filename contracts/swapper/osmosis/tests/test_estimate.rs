@@ -5,7 +5,9 @@ use osmosis_testing::{Gamm, Module, OsmosisTestApp, RunnerResult, Wasm};
 use mars_rover::adapters::swap::{EstimateExactInSwapResponse, ExecuteMsg, QueryMsg};
 use mars_swapper_osmosis::route::OsmosisRoute;
 
-use crate::helpers::{assert_err, instantiate_contract};
+use crate::helpers::{
+    assert_err, instantiate_contract, query_price_from_pool, swap_to_create_twap_records,
+};
 
 pub mod helpers;
 
@@ -57,6 +59,14 @@ fn test_estimate_swap_one_step() {
         .data
         .pool_id;
 
+    swap_to_create_twap_records(
+        &app,
+        &signer,
+        pool_atom_osmo,
+        coin(10u128, "uatom"),
+        "uosmo",
+    );
+
     wasm.execute(
         &contract_addr,
         &ExecuteMsg::SetRoute {
@@ -72,16 +82,19 @@ fn test_estimate_swap_one_step() {
     )
     .unwrap();
 
+    let uosmo_price = query_price_from_pool(&gamm, pool_atom_osmo, "uosmo");
+    let coin_in_amount = Uint128::from(1000u128);
+    let expected_output = coin_in_amount * uosmo_price;
     let res: EstimateExactInSwapResponse = wasm
         .query(
             &contract_addr,
             &QueryMsg::EstimateExactInSwap {
-                coin_in: coin(1000, "uosmo"),
+                coin_in: coin(coin_in_amount.u128(), "uosmo"),
                 denom_out: "uatom".to_string(),
             },
         )
         .unwrap();
-    assert_eq!(res.amount, Uint128::new(250));
+    assert_eq!(res.amount, expected_output);
 }
 
 #[test]

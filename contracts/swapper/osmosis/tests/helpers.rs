@@ -50,19 +50,30 @@ pub fn instantiate_contract(wasm: &Wasm<OsmosisTestApp>, owner: &SigningAccount)
 /// We need to swap n times to pass TWAP_WINDOW_SIZE_SECONDS (10 min). Every swap moves block 5 sec so
 /// n = TWAP_WINDOW_SIZE_SECONDS / 5 sec = 600 sec / 5 sec = 120.
 /// We need to swap at least 120 times to create historical index for TWAP.
-pub fn swap_to_pass_twap_window(
+pub fn swap_to_create_twap_records(
     app: &OsmosisTestApp,
     signer: &SigningAccount,
     pool_id: u64,
     coin_in: Coin,
     denom_out: &str,
 ) {
-    for _ in 0..120 {
+    swap_n_times(app, signer, pool_id, coin_in, denom_out, 120u64);
+}
+
+pub fn swap_n_times(
+    app: &OsmosisTestApp,
+    signer: &SigningAccount,
+    pool_id: u64,
+    coin_in: Coin,
+    denom_out: &str,
+    n: u64,
+) {
+    for _ in 0..n {
         swap(app, signer, pool_id, coin_in.clone(), denom_out);
     }
 }
 
-pub fn swap(
+fn swap(
     app: &OsmosisTestApp,
     signer: &SigningAccount,
     pool_id: u64,
@@ -80,7 +91,7 @@ pub fn swap(
             token_out_min_amount: "1".to_string(),
         },
         MsgSwapExactAmountIn::TYPE_URL,
-        &signer,
+        signer,
     )
     .unwrap()
 }
@@ -90,16 +101,16 @@ pub fn swap(
 /// Example:
 /// pool consists of: 250 uosmo and 100 uatom
 /// query price for uatom so 1 uatom = 2.5 uosmo
-pub fn query_price(gamm: &Gamm<OsmosisTestApp>, pool_id: u64, denom: &str) -> Decimal {
+pub fn query_price_from_pool(gamm: &Gamm<OsmosisTestApp>, pool_id: u64, denom: &str) -> Decimal {
     let pool_assets = &gamm.query_pool(pool_id).unwrap().pool_assets;
     let coin_1 = pool_assets[0].token.as_ref().unwrap();
     let coin_2 = &pool_assets[1].token.as_ref().unwrap();
     let coin_1_amt = Uint128::from_str(&coin_1.amount).unwrap();
     let coin_2_amt = Uint128::from_str(&coin_2.amount).unwrap();
 
-    if &coin_1.denom == denom {
+    if coin_1.denom == denom {
         Decimal::from_ratio(coin_2_amt, coin_1_amt)
-    } else if &coin_2.denom == denom {
+    } else if coin_2.denom == denom {
         Decimal::from_ratio(coin_1_amt, coin_2_amt)
     } else {
         panic!("{} not found in the pool {}", denom, pool_id)
