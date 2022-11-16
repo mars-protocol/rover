@@ -28,15 +28,18 @@ pub fn liquidate_vault(
     )?;
 
     match liquidatee_position {
-        VaultPositionAmount::Unlocked(a) => liquidate_unlocked(
-            deps,
-            env,
-            liquidator_account_id,
-            liquidatee_account_id,
-            debt_coin,
-            request_vault,
-            a.total(),
-        ),
+        VaultPositionAmount::Unlocked(a) => match position_type {
+            VaultPositionType::UNLOCKED => liquidate_unlocked(
+                deps,
+                env,
+                liquidator_account_id,
+                liquidatee_account_id,
+                debt_coin,
+                request_vault,
+                a.total(),
+            ),
+            _ => Err(ContractError::MismatchedVaultType),
+        },
         VaultPositionAmount::Locking(ref a) => match position_type {
             VaultPositionType::LOCKED => liquidate_locked(
                 deps,
@@ -56,7 +59,7 @@ pub fn liquidate_vault(
                 request_vault,
                 liquidatee_position.unlocking(),
             ),
-            VaultPositionType::UNLOCKED => Err(ContractError::MismatchedVaultType),
+            _ => Err(ContractError::MismatchedVaultType),
         },
     }
 }

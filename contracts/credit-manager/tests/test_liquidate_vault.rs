@@ -195,6 +195,124 @@ fn test_liquidator_does_not_have_debt_coin_in_credit_account() {
 }
 
 #[test]
+fn test_wrong_position_type_sent_for_unlocked_vault() {
+    let lp_token = lp_token_info();
+    let leverage_vault = unlocked_vault_info();
+
+    let liquidatee = Addr::unchecked("liquidatee");
+    let mut mock = MockEnv::new()
+        .allowed_coins(&[lp_token.clone()])
+        .allowed_vaults(&[leverage_vault.clone()])
+        .fund_account(AccountToFund {
+            addr: liquidatee.clone(),
+            funds: vec![lp_token.to_coin(300)],
+        })
+        .build()
+        .unwrap();
+
+    let vault = mock.get_vault(&leverage_vault);
+    let liquidatee_account_id = mock.create_credit_account(&liquidatee).unwrap();
+
+    mock.update_credit_account(
+        &liquidatee_account_id,
+        &liquidatee,
+        vec![
+            Deposit(lp_token.to_coin(200)),
+            EnterVault {
+                vault,
+                denom: lp_token.denom.clone(),
+                amount: Some(Uint128::new(200)),
+            },
+        ],
+        &[lp_token.to_coin(200)],
+    )
+    .unwrap();
+
+    let liquidator = Addr::unchecked("liquidator");
+    let liquidator_account_id = mock.create_credit_account(&liquidator).unwrap();
+
+    let res = mock.update_credit_account(
+        &liquidator_account_id,
+        &liquidator,
+        vec![LiquidateVault {
+            liquidatee_account_id: liquidatee_account_id.clone(),
+            debt_coin: lp_token.to_coin(10),
+            request_vault: VaultBase::new(mock.get_vault(&leverage_vault).address),
+            position_type: VaultPositionType::LOCKED,
+        }],
+        &[],
+    );
+
+    assert_err(res, ContractError::MismatchedVaultType);
+
+    let res = mock.update_credit_account(
+        &liquidator_account_id,
+        &liquidator,
+        vec![LiquidateVault {
+            liquidatee_account_id: liquidatee_account_id.clone(),
+            debt_coin: lp_token.to_coin(10),
+            request_vault: VaultBase::new(mock.get_vault(&leverage_vault).address),
+            position_type: VaultPositionType::UNLOCKING,
+        }],
+        &[],
+    );
+
+    assert_err(res, ContractError::MismatchedVaultType)
+}
+
+#[test]
+fn test_wrong_position_type_sent_for_locked_vault() {
+    let lp_token = lp_token_info();
+    let leverage_vault = locked_vault_info();
+
+    let liquidatee = Addr::unchecked("liquidatee");
+    let mut mock = MockEnv::new()
+        .allowed_coins(&[lp_token.clone()])
+        .allowed_vaults(&[leverage_vault.clone()])
+        .fund_account(AccountToFund {
+            addr: liquidatee.clone(),
+            funds: vec![lp_token.to_coin(300)],
+        })
+        .build()
+        .unwrap();
+
+    let vault = mock.get_vault(&leverage_vault);
+    let liquidatee_account_id = mock.create_credit_account(&liquidatee).unwrap();
+
+    mock.update_credit_account(
+        &liquidatee_account_id,
+        &liquidatee,
+        vec![
+            Deposit(lp_token.to_coin(200)),
+            EnterVault {
+                vault,
+                denom: lp_token.denom.clone(),
+                amount: Some(Uint128::new(200)),
+            },
+        ],
+        &[lp_token.to_coin(200)],
+    )
+    .unwrap();
+
+    let liquidator = Addr::unchecked("liquidator");
+    let liquidator_account_id = mock.create_credit_account(&liquidator).unwrap();
+
+    let res = mock.update_credit_account(
+        &liquidator_account_id,
+        &liquidator,
+        vec![LiquidateVault {
+            liquidatee_account_id: liquidatee_account_id.clone(),
+            debt_coin: lp_token.to_coin(10),
+            request_vault: VaultBase::new(mock.get_vault(&leverage_vault).address),
+            position_type: VaultPositionType::UNLOCKED,
+        }],
+        &[],
+    );
+
+    assert_err(res, ContractError::MismatchedVaultType)
+}
+
+#[test]
 fn test_liquidate_unlocked_vault() {
     let lp_token = lp_token_info();
     let ujake = ujake_info();
