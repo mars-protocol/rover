@@ -82,9 +82,10 @@ fn test_estimate_swap_one_step() {
     )
     .unwrap();
 
-    let uosmo_price = query_price_from_pool(&gamm, pool_atom_osmo, "uosmo");
     let coin_in_amount = Uint128::from(1000u128);
+    let uosmo_price = query_price_from_pool(&gamm, pool_atom_osmo, "uosmo");
     let expected_output = coin_in_amount * uosmo_price;
+
     let res: EstimateExactInSwapResponse = wasm
         .query(
             &contract_addr,
@@ -98,7 +99,6 @@ fn test_estimate_swap_one_step() {
 }
 
 #[test]
-#[ignore] // FIXME: TWAP doesn't work on osmosis-testing - fix in progress
 fn test_estimate_swap_multi_step() {
     let app = OsmosisTestApp::new();
     let wasm = Wasm::new(&app);
@@ -133,6 +133,8 @@ fn test_estimate_swap_multi_step() {
         .unwrap()
         .data
         .pool_id;
+
+    swap_to_create_twap_records(&app, &signer, pool_atom_osmo, coin(4u128, "uosmo"), "uatom");
 
     wasm.execute(
         &contract_addr,
@@ -176,6 +178,11 @@ fn test_estimate_swap_multi_step() {
     )
     .unwrap();
 
+    let coin_in_amount = Uint128::from(1000u128);
+    let uatom_price = query_price_from_pool(&gamm, pool_atom_osmo, "uatom");
+    let uosmo_price = query_price_from_pool(&gamm, pool_osmo_usdc, "uosmo");
+    let expected_output = coin_in_amount * uatom_price * uosmo_price;
+
     // atom/usdc = (price for atom/osmo) * (price for osmo/usdc)
     // usdc_out_amount = (atom amount) * (price for atom/usdc)
     //
@@ -188,10 +195,10 @@ fn test_estimate_swap_multi_step() {
         .query(
             &contract_addr,
             &QueryMsg::EstimateExactInSwap {
-                coin_in: coin(1000, "uatom"),
+                coin_in: coin(coin_in_amount.u128(), "uatom"),
                 denom_out: "uusdc".to_string(),
             },
         )
         .unwrap();
-    assert_eq!(res.amount, Uint128::new(2500));
+    assert_eq!(res.amount, expected_output);
 }
