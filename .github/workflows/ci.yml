@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+
+env:
+  RUST_BACKTRACE: 1
+  # Directory with wasm files used by `tests`
+  ARTIFACTS_DIR_PATH: 'target/wasm32-unknown-unknown/release'
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v3
+
+      - name: Install Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '>=1.18.0'
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+          components: rustfmt, clippy
+          profile: minimal
+          override: true
+
+      - name: Install cargo make
+        uses: davidB/rust-cargo-make@v1
+
+      - name: Compile workspace
+        run: cargo make build
+
+      - name: Compile contracts to wasm
+        run: cargo make rust-optimizer
+
+      - name: Lint
+        run: |
+          cargo make fmt
+          cargo make clippy
+
+      - name: Run tests
+        run: cargo make test
+
+      - name: Generate schemas
+        run: cargo make generate-all-schemas
