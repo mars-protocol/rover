@@ -47,6 +47,10 @@ jobs:
 
       #- name: Compile contracts to wasm
       #  run: cargo make rust-optimizer
+      - name: Compile contracts to wasm
+        run: |
+          cd scripts
+          ./build_artifacts.sh
 
       - name: Lint
         run: |
