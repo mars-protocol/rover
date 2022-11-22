@@ -43,18 +43,18 @@ jobs:
         uses: davidB/rust-cargo-make@v1
 
       - name: Compile workspace
-        run: cargo make build
+        run: cargo build
 
       #- name: Compile contracts to wasm
       #  run: cargo make rust-optimizer
 
       - name: Lint
         run: |
-          cargo make fmt
-          cargo make clippy
+          cargo fmt
+          cargo clippy
 
       - name: Run tests
-        run: cargo make test
+        run: cargo test
 
       #- name: Generate schemas
       #  run: cargo make generate-all-schemas
