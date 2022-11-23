@@ -36,21 +36,21 @@ jobs:
           override: true
 
       # selecting a toolchain should happen before the plugin, as the cache uses the current rustc version as its cache key
-      #- name: Cache
-      #  uses: Swatinem/rust-cache@v2
+      - name: Cache
+        uses: Swatinem/rust-cache@v2
 
-      - name: Install cargo make
-        uses: davidB/rust-cargo-make@v1
+      #- name: Install cargo make
+      #  uses: davidB/rust-cargo-make@v1
 
       - name: Compile workspace
         run: cargo build --release --target wasm32-unknown-unknown --locked
 
       #- name: Compile contracts to wasm
       #  run: cargo make rust-optimizer
-      - name: Compile contracts to wasm
-        run: |
-          cd scripts
-          ./build_artifacts.sh
+      #- name: Compile contracts to wasm
+      #  run: |
+      #    cd scripts
+      #    ./build_artifacts.sh
 
       - name: Lint
         run: |
@@ -58,7 +58,7 @@ jobs:
           cargo clippy --tests -- -D warnings
 
       - name: Run tests
-        run: cargo test --locked
+        run: cargo test --release --locked
 
       #- name: Generate schemas
       #  run: cargo make generate-all-schemas
