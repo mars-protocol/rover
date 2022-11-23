@@ -1,9 +1,10 @@
 use cosmwasm_schema::cw_serde;
 use std::convert::TryInto;
 
+use crate::error::ContractError;
 use cosmwasm_std::{Binary, Empty, StdError};
 use cw721::Expiration;
-use cw721_base::{ContractError, ExecuteMsg as ParentExecuteMsg};
+use cw721_base::ExecuteMsg as ParentExecuteMsg;
 
 #[cw_serde]
 pub enum ExecuteMsg {
