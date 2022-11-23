@@ -909,6 +909,7 @@ dependencies = [
  "cw2",
  "cw721",
  "cw721-base",
+ "mars-mock-credit-manager",
  "mars-rover",
  "thiserror",
 ]
