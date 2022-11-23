@@ -1,17 +1,19 @@
 use std::fmt::Error;
 
-use cosmwasm_std::{Addr, Empty};
+use cosmwasm_std::Addr;
 use cw721::OwnerOfResponse;
 use cw721_base::ContractError::Unauthorized;
-use cw721_base::QueryMsg;
-use cw_multi_test::{App, AppResponse, BasicApp, Executor};
+use cw_multi_test::{App, Executor};
 
 use mars_account_nft::error::ContractError;
 use mars_account_nft::error::ContractError::BaseError;
 use mars_account_nft::msg::ExecuteMsg as ExtendedExecuteMsg;
 use mars_account_nft::msg::QueryMsg::OwnerOf;
 
-use crate::helpers::{below_max_for_burn, burn_action, mint_action, mock_env, set_health_response};
+use crate::helpers::{
+    assert_owner_is_correct, below_max_for_burn, burn_action, get_token_id, mint_action, mock_env,
+    set_health_response,
+};
 
 pub mod helpers;
 
@@ -144,33 +146,4 @@ fn test_normal_base_cw721_actions_can_still_be_taken() {
         )
         .unwrap();
     assert_eq!(res.owner, rover_user_b.to_string())
-}
-
-// Double checking ownership by querying NFT account-nft for correct owner
-fn assert_owner_is_correct(app: &mut BasicApp, contract_addr: &Addr, user: &Addr, token_id: &str) {
-    let owner_res: OwnerOfResponse = app
-        .wrap()
-        .query_wasm_smart(
-            contract_addr,
-            &QueryMsg::<Empty>::OwnerOf {
-                token_id: token_id.to_string(),
-                include_expired: None,
-            },
-        )
-        .unwrap();
-
-    assert_eq!(user.to_string(), owner_res.owner)
-}
-
-fn get_token_id(res: AppResponse) -> String {
-    let attr: Vec<&str> = res
-        .events
-        .iter()
-        .flat_map(|event| &event.attributes)
-        .filter(|attr| attr.key == "token_id")
-        .map(|attr| attr.value.as_str())
-        .collect();
-
-    assert_eq!(attr.len(), 1);
-    attr.first().unwrap().to_string()
 }

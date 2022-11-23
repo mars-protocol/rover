@@ -4,7 +4,7 @@ use cw_multi_test::{BasicApp, Executor};
 
 use mars_account_nft::msg::InstantiateMsg;
 
-use crate::helpers::{mock_credit_manager_contract, mock_nft_contract, DEFAULT_MAX_VALUE_FOR_BURN};
+use crate::helpers::{mock_credit_manager_contract, mock_nft_contract, MAX_VALUE_FOR_BURN};
 
 #[cw_serde]
 pub struct MockEnv {
@@ -23,7 +23,7 @@ pub fn mock_env(app: &mut BasicApp, owner: &Addr) -> MockEnv {
             owner.clone(),
             &InstantiateMsg {
                 credit_manager: credit_manager.clone().into(),
-                max_value_for_burn: Decimal::from_atomics(DEFAULT_MAX_VALUE_FOR_BURN, 0).unwrap(),
+                max_value_for_burn: Decimal::from_atomics(MAX_VALUE_FOR_BURN, 0).unwrap(),
                 name: "mock_nft".to_string(),
                 symbol: "MOCK".to_string(),
                 minter: owner.to_string(),
