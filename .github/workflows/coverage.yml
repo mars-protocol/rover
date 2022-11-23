@@ -20,12 +20,19 @@ jobs:
       - name: Install stable
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable-x86_64-unknown-linux-gnu
+          toolchain: stable
+          target: wasm32-unknown-unknown
           profile: minimal
           override: true
 
       - name: Cache
         uses: Swatinem/rust-cache@v2
+
+      - name: Install cargo make
+        uses: davidB/rust-cargo-make@v1
+
+      - name: Compile workspace
+        run: cargo make build
 
       - name: Generate coverage file
         run: |
