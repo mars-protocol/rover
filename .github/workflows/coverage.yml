@@ -9,6 +9,11 @@ on:
       - main
   pull_request:
 
+env:
+  RUST_BACKTRACE: 1
+  # Directory with wasm files used by `tests`
+  ARTIFACTS_DIR_PATH: 'target/wasm32-unknown-unknown/release'
+
 jobs:
   # job currently (1st Feb 2022) segfaults
   coverage:
