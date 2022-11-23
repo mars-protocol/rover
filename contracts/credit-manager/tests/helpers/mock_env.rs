@@ -6,8 +6,8 @@ use cosmwasm_std::{coins, Addr, Coin, Decimal, Empty, Uint128};
 use cosmwasm_vault_standard::extensions::lockup::{LockupQueryMsg, UnlockingPosition};
 use cosmwasm_vault_standard::msg::VaultStandardQueryMsg::{Info as VaultInfoMsg, VaultExtension};
 use cosmwasm_vault_standard::msg::{ExtensionQueryMsg, VaultInfoResponse};
-use cw721_base::InstantiateMsg as NftInstantiateMsg;
 use cw_multi_test::{App, AppResponse, BankSudo, BasicApp, Executor, SudoMsg};
+use mars_account_nft::msg::InstantiateMsg as NftInstantiateMsg;
 
 use mars_account_nft::msg::ExecuteMsg as NftExecuteMsg;
 use mars_mock_oracle::msg::{
@@ -882,15 +882,17 @@ impl MockEnvBuilder {
 // Shared utils between MockBuilder & MockEnv
 //--------------------------------------------------------------------------------------------------
 
-fn deploy_nft_contract(app: &mut App, owner: &Addr) -> Addr {
+fn deploy_nft_contract(app: &mut App, rover: &Addr) -> Addr {
     let nft_contract_code_id = app.store_code(mock_account_nft_contract());
     app.instantiate_contract(
         nft_contract_code_id,
-        owner.clone(),
+        rover.clone(),
         &NftInstantiateMsg {
+            credit_manager: rover.to_string(),
+            max_value_for_burn: Default::default(),
             name: "Rover Credit Account".to_string(),
             symbol: "RCA".to_string(),
-            minter: owner.to_string(),
+            minter: rover.to_string(),
         },
         &[],
         "manager-mock-account-nft",
