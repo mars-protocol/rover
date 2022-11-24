@@ -40,7 +40,7 @@ command = "cargo"
 args = ["audit"]
 
 [tasks.coverage]
-alias="coverage_grcov"
+dependencies = ["coverage_grcov"]
 
 [tasks.all-actions]
 dependencies = [

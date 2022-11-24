@@ -10,8 +10,6 @@ on:
 env:
   RUST_BACKTRACE: 1
   CARGO_TERM_COLOR: always
-  # Directory with wasm files used by `tests`
-  ARTIFACTS_DIR_PATH: 'target/wasm32-unknown-unknown/release'
 
 jobs:
   check:
@@ -43,13 +41,6 @@ jobs:
 
       - name: Clippy
         run: cargo make clippy
-
-      # artifacts used by tests
-      - name: Compile workspace
-        run: cargo make build
-
-      - name: Run tests
-        run: cargo make test
 
       # fails if schemas changes not committed
       - name: Check schemas up-to-date
