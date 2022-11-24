@@ -1,99 +1,68 @@
-on: pull_request
-
 name: Main
 
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+
 env:
+  RUST_BACKTRACE: 1
+  CARGO_TERM_COLOR: always
   # Directory with wasm files used by `tests`
   ARTIFACTS_DIR_PATH: 'target/wasm32-unknown-unknown/release'
 
 jobs:
-
   check:
-    name: Check
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
     steps:
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: '>=1.18.0'
-
       - name: Checkout sources
         uses: actions/checkout@v3
 
-      - name: Install stable toolchain
+      #- name: Install Go
+      #  uses: actions/setup-go@v3
+      #  with:
+      #    go-version: '>=1.18.0'
+
+      - name: Install Rust
         uses: actions-rs/toolchain@v1
         with:
-          profile: minimal
           toolchain: stable
-          override: true
           target: wasm32-unknown-unknown
+          components: rustfmt, clippy
+          profile: minimal
+          override: true
+
+      # selecting a toolchain should happen before the plugin, as the cache uses the current rustc version as its cache key
+      - name: Cache dependencies
+        uses: Swatinem/rust-cache@v2
 
       - name: Install cargo make
         uses: davidB/rust-cargo-make@v1
 
-      - name: Compile workspace
-        run: cargo make build
+      - name: Format
+        run: cargo make fmt
 
-      - name: Compile contracts to wasm
-        run: cargo make rust-optimizer
+      - name: Clippy
+        run: cargo make clippy
 
-      - name: Generate schemas
-        run: cargo make generate-all-schemas
-
-  test:
-    name: Test Suite
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: '>=1.18.0'
-
-      - name: Checkout sources
-        uses: actions/checkout@v3
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          override: true
-          target: wasm32-unknown-unknown
-
-      - name: Install cargo make
-        uses: davidB/rust-cargo-make@v1
-
+      # artifacts used by tests
       - name: Compile workspace
         run: cargo make build
 
       - name: Run tests
         run: cargo make test
 
-  lints:
-    name: Lints
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install Go
-        uses: actions/setup-go@v3
-        with:
-          go-version: '>=1.18.0'
+      # fails if schemas changes not committed
+      - name: Check schemas up-to-date
+        run: |
+          cargo make generate-all-schemas
+          git diff --exit-code schemas
 
-      - name: Checkout sources
-        uses: actions/checkout@v3
-
-      - name: Install stable toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          profile: minimal
-          toolchain: stable
-          components: rustfmt, clippy
-          override: true
-
-      - name: Install cargo make
-        uses: davidB/rust-cargo-make@v1
-
-      - name: Check formatting
-        run: cargo make fmt
-
-      - name: Clippy check
-        run: cargo make clippy
+      - name: Audit dependencies
+        run: |
+          cargo install --locked cargo-audit
+          cargo make audit

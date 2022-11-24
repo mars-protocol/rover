@@ -34,12 +34,17 @@ args = ["fmt", "--all", "--check"]
 command = "cargo"
 args = ["clippy", "--tests", "--", "-D", "warnings"]
 
-[tasks.all-github-actions]
+[tasks.audit]
+command = "cargo"
+args = ["audit"]
+
+[tasks.all-actions]
 dependencies = [
-    "build",
-    "test",
     "fmt",
     "clippy",
+    "build",
+    "test",
     "generate-all-schemas",
+    "audit",
     "rust-optimizer",
 ]
