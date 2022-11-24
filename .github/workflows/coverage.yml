@@ -26,6 +26,7 @@ jobs:
           target: wasm32-unknown-unknown
           profile: minimal
           override: true
+          components: llvm-tools-preview
 
       # selecting a toolchain should happen before the plugin, as the cache uses the current rustc version as its cache key
       - name: Cache dependencies
