@@ -1,5 +1,6 @@
 extend= [
-    { path = "schema.Makefile.toml" }
+    { path = "schema.Makefile.toml" },
+    { path = "coverage_grcov.Makefile.toml" }
 ]
 
 [config]
@@ -37,6 +38,9 @@ args = ["clippy", "--tests", "--", "-D", "warnings"]
 [tasks.audit]
 command = "cargo"
 args = ["audit"]
+
+[tasks.coverage]
+alias="coverage_grcov"
 
 [tasks.all-actions]
 dependencies = [

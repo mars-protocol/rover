@@ -37,12 +37,11 @@ jobs:
       - name: Compile workspace
         run: cargo make build
 
-      - name: Generate coverage
-        run: |
-          cargo install cargo-tarpaulin
-          cargo tarpaulin --workspace --engine llvm --out Lcov --output-dir cov --verbose --skip-clean
-      - name: Upload to Codecov
+      - name: Run test coverage
+        run: cargo make coverage
+
+      - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
-          file: cov/lcov.info
           token: ${{ secrets.CODECOV_TOKEN }}
+          files: target/lcov.info
