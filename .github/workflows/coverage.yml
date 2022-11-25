@@ -41,7 +41,7 @@ jobs:
         run: cargo make build
 
       - name: Run test coverage
-        run: cargo make coverage
+        run: cargo make coverage-lcov
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v3
