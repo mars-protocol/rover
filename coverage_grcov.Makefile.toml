@@ -1,10 +1,19 @@
 # https://crates.io/crates/grcov
 
 [env]
-COVERAGE_TARGET_DIRECTORY = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target/cover"
+COVERAGE_TARGET_DIRECTORY = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target/coverage"
 COVERAGE_BINARIES = "${COVERAGE_TARGET_DIRECTORY}/debug/deps"
-COVERAGE_PROF_OUTPUT = "${COVERAGE_BINARIES}/profraw"
-COVERAGE_OUTPUT_LCOV = "${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target/lcov.info"
+COVERAGE_PROF_OUTPUT = "${COVERAGE_TARGET_DIRECTORY}/profraw"
+
+[tasks.coverage_grcov_prepare_outdir]
+private = true
+script='''
+#!/usr/bin/env bash
+set -eux
+
+rm -rf ${COVERAGE_PROF_OUTPUT}
+mkdir -p ${COVERAGE_PROF_OUTPUT}
+'''
 
 [tasks.coverage_grcov_run_test]
 condition = { rust_version = { min = "1.60.0" } }
@@ -17,32 +26,28 @@ CARGO_INCREMENTAL = "0"
 RUSTFLAGS = "-Cinstrument-coverage"
 LLVM_PROFILE_FILE = "${COVERAGE_PROF_OUTPUT}/coverage-%p-%m.profraw"
 
-[tasks.coverage_grcov_prepare_outdir]
-private = true
-workspace = true
-script='''
-#!/usr/bin/env bash
-set -eux
-
-rm -rf ${COVERAGE_PROF_OUTPUT}
-mkdir -p ${COVERAGE_PROF_OUTPUT}
-'''
-
 [tasks.install_grcov]
 condition = { env_not_set = ["SKIP_INSTALL_GRCOV"] }
 private = true
-workspace = true
 install_crate = { crate_name = "grcov" }
 
 [tasks.coverage_grcov]
 condition = { rust_version = { min = "1.60.0" } }
-workspace = true
+private = true
 script = '''
 #!/usr/bin/env bash
 set -eux
 
 grcov ${COVERAGE_PROF_OUTPUT} \
   -b ${COVERAGE_BINARIES} -s ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY} \
-  -t lcov --llvm --branch --ignore-not-existing --ignore "/*" -o ${CARGO_MAKE_WORKSPACE_WORKING_DIRECTORY}/target/lcov.info
+  -t ${GRCOV_OUTPUT_TYPE} --llvm --branch --ignore-not-existing --ignore "/*" --ignore "*/tests/*" -o ${GRCOV_OUTPUT_PATH}
 '''
 dependencies = ["install_grcov", "coverage_grcov_prepare_outdir", "coverage_grcov_run_test"]
+
+[tasks.coverage_grcov_html]
+env = { GRCOV_OUTPUT_TYPE = "html", GRCOV_OUTPUT_PATH = "${COVERAGE_TARGET_DIRECTORY}/html" }
+run_task = "coverage_grcov"
+
+[tasks.coverage_grcov_lcov]
+env = { GRCOV_OUTPUT_TYPE = "lcov", GRCOV_OUTPUT_PATH = "${COVERAGE_TARGET_DIRECTORY}/lcov.info" }
+run_task = "coverage_grcov"
