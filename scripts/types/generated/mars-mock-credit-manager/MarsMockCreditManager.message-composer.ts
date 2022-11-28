@@ -9,50 +9,73 @@ import { MsgExecuteContractEncodeObject } from 'cosmwasm'
 import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx'
 import { toUtf8 } from '@cosmjs/encoding'
 import {
-  OracleBaseForString,
-  Addr,
-  PricingMethod,
   InstantiateMsg,
-  VaultPricingInfo,
   ExecuteMsg,
-  ConfigUpdates,
+  Decimal,
+  HealthResponse,
   QueryMsg,
   Uint128,
+  VaultBaseForString,
   Coin,
-  ArrayOfVaultPricingInfo,
-  OracleBaseForAddr,
+  ArrayOfCoinBalanceResponseItem,
+  CoinBalanceResponseItem,
+  ArrayOfSharesResponseItem,
+  SharesResponseItem,
+  ArrayOfDebtShares,
+  DebtShares,
+  Addr,
+  ArrayOfVaultWithBalance,
+  VaultWithBalance,
+  VaultBaseForAddr,
+  VaultPositionAmount,
+  VaultAmount,
+  VaultAmount1,
+  UnlockingPositions,
+  ArrayOfVaultPositionResponseItem,
+  VaultPositionResponseItem,
+  VaultPosition,
+  LockingVaultAmount,
+  VaultUnlockingPosition,
+  ArrayOfString,
   ConfigResponse,
-  Decimal,
-  PriceResponse,
   ArrayOfCoin,
-} from './MarsOracleAdapter.types'
-export interface MarsOracleAdapterMessage {
+  Positions,
+  DebtAmount,
+  ArrayOfVaultInstantiateConfig,
+  VaultInstantiateConfig,
+  VaultConfig,
+} from './MarsMockCreditManager.types'
+export interface MarsMockCreditManagerMessage {
   contractAddress: string
   sender: string
-  updateConfig: (
+  setHealthResponse: (
     {
-      newConfig,
+      accountId,
+      response,
     }: {
-      newConfig: ConfigUpdates
+      accountId: string
+      response: HealthResponse
     },
     funds?: Coin[],
   ) => MsgExecuteContractEncodeObject
 }
-export class MarsOracleAdapterMessageComposer implements MarsOracleAdapterMessage {
+export class MarsMockCreditManagerMessageComposer implements MarsMockCreditManagerMessage {
   sender: string
   contractAddress: string
 
   constructor(sender: string, contractAddress: string) {
     this.sender = sender
     this.contractAddress = contractAddress
-    this.updateConfig = this.updateConfig.bind(this)
+    this.setHealthResponse = this.setHealthResponse.bind(this)
   }
 
-  updateConfig = (
+  setHealthResponse = (
     {
-      newConfig,
+      accountId,
+      response,
     }: {
-      newConfig: ConfigUpdates
+      accountId: string
+      response: HealthResponse
     },
     funds?: Coin[],
   ): MsgExecuteContractEncodeObject => {
@@ -63,8 +86,9 @@ export class MarsOracleAdapterMessageComposer implements MarsOracleAdapterMessag
         contract: this.contractAddress,
         msg: toUtf8(
           JSON.stringify({
-            update_config: {
-              new_config: newConfig,
+            set_health_response: {
+              account_id: accountId,
+              response,
             },
           }),
         ),

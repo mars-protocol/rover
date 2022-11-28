@@ -8,33 +8,24 @@
 import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from '@cosmjs/cosmwasm-stargate'
 import { StdFee } from '@cosmjs/amino'
 import {
-  Uint128,
-  Decimal,
-  OracleBaseForString,
-  RedBankBaseForString,
-  SwapperBaseForString,
-  ZapperBaseForString,
   InstantiateMsg,
-  VaultInstantiateConfig,
-  VaultConfig,
-  Coin,
-  VaultBaseForString,
   ExecuteMsg,
-  Action,
-  VaultPositionType,
-  CallbackMsg,
-  Addr,
-  ConfigUpdates,
-  VaultBaseForAddr,
+  Decimal,
+  HealthResponse,
   QueryMsg,
+  Uint128,
+  VaultBaseForString,
+  Coin,
   ArrayOfCoinBalanceResponseItem,
   CoinBalanceResponseItem,
   ArrayOfSharesResponseItem,
   SharesResponseItem,
   ArrayOfDebtShares,
   DebtShares,
+  Addr,
   ArrayOfVaultWithBalance,
   VaultWithBalance,
+  VaultBaseForAddr,
   VaultPositionAmount,
   VaultAmount,
   VaultAmount1,
@@ -47,12 +38,13 @@ import {
   ArrayOfString,
   ConfigResponse,
   ArrayOfCoin,
-  HealthResponse,
   Positions,
   DebtAmount,
   ArrayOfVaultInstantiateConfig,
-} from './MarsCreditManager.types'
-export interface MarsCreditManagerReadOnlyInterface {
+  VaultInstantiateConfig,
+  VaultConfig,
+} from './MarsMockCreditManager.types'
+export interface MarsMockCreditManagerReadOnlyInterface {
   contractAddress: string
   config: () => Promise<ConfigResponse>
   vaultConfigs: ({
@@ -117,7 +109,7 @@ export interface MarsCreditManagerReadOnlyInterface {
   }) => Promise<Uint128>
   estimateWithdrawLiquidity: ({ lpToken }: { lpToken: Coin }) => Promise<ArrayOfCoin>
 }
-export class MarsCreditManagerQueryClient implements MarsCreditManagerReadOnlyInterface {
+export class MarsMockCreditManagerQueryClient implements MarsMockCreditManagerReadOnlyInterface {
   client: CosmWasmClient
   contractAddress: string
 
@@ -291,45 +283,25 @@ export class MarsCreditManagerQueryClient implements MarsCreditManagerReadOnlyIn
     })
   }
 }
-export interface MarsCreditManagerInterface extends MarsCreditManagerReadOnlyInterface {
+export interface MarsMockCreditManagerInterface extends MarsMockCreditManagerReadOnlyInterface {
   contractAddress: string
   sender: string
-  createCreditAccount: (
-    fee?: number | StdFee | 'auto',
-    memo?: string,
-    funds?: Coin[],
-  ) => Promise<ExecuteResult>
-  updateCreditAccount: (
+  setHealthResponse: (
     {
       accountId,
-      actions,
+      response,
     }: {
       accountId: string
-      actions: Action[]
+      response: HealthResponse
     },
-    fee?: number | StdFee | 'auto',
-    memo?: string,
-    funds?: Coin[],
-  ) => Promise<ExecuteResult>
-  updateConfig: (
-    {
-      newConfig,
-    }: {
-      newConfig: ConfigUpdates
-    },
-    fee?: number | StdFee | 'auto',
-    memo?: string,
-    funds?: Coin[],
-  ) => Promise<ExecuteResult>
-  callback: (
     fee?: number | StdFee | 'auto',
     memo?: string,
     funds?: Coin[],
   ) => Promise<ExecuteResult>
 }
-export class MarsCreditManagerClient
-  extends MarsCreditManagerQueryClient
-  implements MarsCreditManagerInterface
+export class MarsMockCreditManagerClient
+  extends MarsMockCreditManagerQueryClient
+  implements MarsMockCreditManagerInterface
 {
   client: SigningCosmWasmClient
   sender: string
@@ -340,35 +312,16 @@ export class MarsCreditManagerClient
     this.client = client
     this.sender = sender
     this.contractAddress = contractAddress
-    this.createCreditAccount = this.createCreditAccount.bind(this)
-    this.updateCreditAccount = this.updateCreditAccount.bind(this)
-    this.updateConfig = this.updateConfig.bind(this)
-    this.callback = this.callback.bind(this)
+    this.setHealthResponse = this.setHealthResponse.bind(this)
   }
 
-  createCreditAccount = async (
-    fee: number | StdFee | 'auto' = 'auto',
-    memo?: string,
-    funds?: Coin[],
-  ): Promise<ExecuteResult> => {
-    return await this.client.execute(
-      this.sender,
-      this.contractAddress,
-      {
-        create_credit_account: {},
-      },
-      fee,
-      memo,
-      funds,
-    )
-  }
-  updateCreditAccount = async (
+  setHealthResponse = async (
     {
       accountId,
-      actions,
+      response,
     }: {
       accountId: string
-      actions: Action[]
+      response: HealthResponse
     },
     fee: number | StdFee | 'auto' = 'auto',
     memo?: string,
@@ -378,49 +331,10 @@ export class MarsCreditManagerClient
       this.sender,
       this.contractAddress,
       {
-        update_credit_account: {
+        set_health_response: {
           account_id: accountId,
-          actions,
+          response,
         },
-      },
-      fee,
-      memo,
-      funds,
-    )
-  }
-  updateConfig = async (
-    {
-      newConfig,
-    }: {
-      newConfig: ConfigUpdates
-    },
-    fee: number | StdFee | 'auto' = 'auto',
-    memo?: string,
-    funds?: Coin[],
-  ): Promise<ExecuteResult> => {
-    return await this.client.execute(
-      this.sender,
-      this.contractAddress,
-      {
-        update_config: {
-          new_config: newConfig,
-        },
-      },
-      fee,
-      memo,
-      funds,
-    )
-  }
-  callback = async (
-    fee: number | StdFee | 'auto' = 'auto',
-    memo?: string,
-    funds?: Coin[],
-  ): Promise<ExecuteResult> => {
-    return await this.client.execute(
-      this.sender,
-      this.contractAddress,
-      {
-        callback: {},
       },
       fee,
       memo,

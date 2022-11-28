@@ -7,11 +7,25 @@
     "title": "InstantiateMsg",
     "type": "object",
     "required": [
+      "credit_manager",
+      "max_value_for_burn",
       "minter",
       "name",
       "symbol"
     ],
     "properties": {
+      "credit_manager": {
+        "description": "Address of credit manager. Used to query account balances before allowing burns.",
+        "type": "string"
+      },
+      "max_value_for_burn": {
+        "description": "The maximum amount of Debts + Collaterals for an account before burns are disallowed for the NFT. Meant to prevent accidental account deletions.",
+        "allOf": [
+          {
+            "$ref": "#/definitions/Decimal"
+          }
+        ]
+      },
       "minter": {
         "description": "The minter is the only one who can create new NFTs. This is designed for a base NFT that is controlled by an external program or contract. You will likely replace this with custom logic in custom NFTs",
         "type": "string"
@@ -25,7 +39,13 @@
         "type": "string"
       }
     },
-    "additionalProperties": false
+    "additionalProperties": false,
+    "definitions": {
+      "Decimal": {
+        "description": "A fixed-point decimal value with 18 fractional digits, i.e. Decimal(1_000_000_000_000_000_000) == 1.0\n\nThe greatest possible value that can be represented is 340282366920938463463.374607431768211455 (which is (2^128 - 1) / 10^18)",
+        "type": "string"
+      }
+    }
   },
   "execute": {
     "$schema": "http://json-schema.org/draft-07/schema#",
