@@ -143,6 +143,13 @@ pub fn update_config(
             .add_attribute("value", cf.to_string());
     }
 
+    if let Some(num) = new_config.max_unlocking_positions {
+        MAX_UNLOCKING_POSITIONS.save(deps.storage, &num)?;
+        response = response
+            .add_attribute("key", "max_unlocking_positions")
+            .add_attribute("value", num.to_string());
+    }
+
     Ok(response)
 }
 
