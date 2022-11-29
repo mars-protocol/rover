@@ -41,7 +41,7 @@ cw-item-set     = { version = "0.6", default-features = false, features = ["iter
 cw-multi-test   = "0.16"
 cw-utils        = "0.16"
 cw-storage-plus = "0.16"
-osmosis-std     = { rev = "b3df85158eb52ad5d99f3580f4a128bbdaeffa17", git = "https://github.com/osmosis-labs/osmosis-rust" }
+osmosis-std     = { branch = "osmosis-v13", git = "https://github.com/osmosis-labs/osmosis-rust" }
 schemars        = "0.8"
 serde           = { version = "1.0", default-features = false, features = ["derive"] }
 thiserror       = "1.0"
