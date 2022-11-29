@@ -9,7 +9,7 @@ use cw721::OwnerOfResponse;
 use cw721_base::QueryMsg;
 
 use mars_rover::error::{ContractError, ContractResult};
-use mars_rover::msg::execute::CallbackMsg;
+use mars_rover::msg::execute::{Action, CallbackMsg};
 use mars_rover::msg::query::CoinValue;
 use mars_rover::msg::ExecuteMsg;
 use mars_rover::traits::IntoDecimal;
@@ -57,6 +57,23 @@ pub fn assert_coins_are_whitelisted(
     denoms
         .iter()
         .try_for_each(|denom| assert_coin_is_whitelisted(storage, denom))
+}
+
+/// With more than one liquidation action per transaction, the max close factor can be circumvented
+pub fn assert_max_one_liquidation_action(actions: &[Action]) -> ContractResult<()> {
+    let liq_coin_count = actions
+        .iter()
+        .filter(|a| {
+            matches!(
+                a,
+                Action::LiquidateCoin { .. } | Action::LiquidateVault { .. }
+            )
+        })
+        .count();
+    if liq_coin_count > 1 {
+        return Err(ContractError::ExceedsMaxLiquidationLimit);
+    }
+    Ok(())
 }
 
 pub fn increment_coin_balance(

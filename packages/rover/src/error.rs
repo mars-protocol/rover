@@ -31,6 +31,9 @@ pub enum ContractError {
     #[error("{0}")]
     DecimalRangeExceeded(#[from] DecimalRangeExceeded),
 
+    #[error("Maximum one liquidation action per transaction")]
+    ExceedsMaxLiquidationLimit,
+
     #[error("Callbacks cannot be invoked externally")]
     ExternalInvocation,
 
