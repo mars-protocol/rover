@@ -7,8 +7,6 @@ pub struct InstantiateMsg {
     //--------------------------------------------------------------------------------------------------
     // Extended and overridden messages
     //--------------------------------------------------------------------------------------------------
-    /// Address of credit manager. Used to query account balances before allowing burns.
-    pub credit_manager: String,
     /// The maximum amount of Debts + Collaterals for an account before burns are disallowed
     /// for the NFT. Meant to prevent accidental account deletions.
     pub max_value_for_burn: Decimal,
@@ -21,8 +19,9 @@ pub struct InstantiateMsg {
     /// Symbol of the NFT contract
     pub symbol: String,
     /// The minter is the only one who can create new NFTs.
-    /// This is designed for a base NFT that is controlled by an external program
-    /// or contract. You will likely replace this with custom logic in custom NFTs
+    /// Initially this likely will be the contract deployer. However, this role should be transferred
+    /// through a config update to the Credit Manager. It is separate because some blockchains
+    /// are permissioned and contracts go through governance and are instantiated separately.
     pub minter: String,
 }
 

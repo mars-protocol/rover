@@ -4,14 +4,16 @@ use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Empty, StdError};
 use cw721_base::QueryMsg as ParentQueryMsg;
 
+use crate::config::UncheckedConfig;
+
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
     //--------------------------------------------------------------------------------------------------
     // Extended messages
     //--------------------------------------------------------------------------------------------------
-    #[returns(String)]
-    ProposedNewOwner {},
+    #[returns(UncheckedConfig)]
+    Config {},
 
     //--------------------------------------------------------------------------------------------------
     // Base cw721 messages

@@ -1,6 +1,3 @@
-use std::convert::TryInto;
-
-use crate::error::ContractError;
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
@@ -8,11 +5,14 @@ use cosmwasm_std::{
 };
 use cw2::set_contract_version;
 use cw721_base::Cw721Contract;
+use std::convert::TryInto;
 
-use crate::execute::{accept_ownership, burn, mint, propose_new_owner};
+use crate::config::Config;
+use crate::error::ContractError;
+use crate::execute::{accept_ownership, burn, mint, update_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
-use crate::query::query_proposed_new_owner;
-use crate::state::{CREDIT_MANAGER, MAX_VALUE_FOR_BURN, NEXT_ID};
+use crate::query::query_config;
+use crate::state::{CONFIG, NEXT_ID};
 
 const CONTRACT_NAME: &str = env!("CARGO_PKG_NAME");
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -34,10 +34,13 @@ pub fn instantiate(
     )?;
     NEXT_ID.save(deps.storage, &1)?;
 
-    let cm_addr = deps.api.addr_validate(&msg.credit_manager)?;
-    CREDIT_MANAGER.save(deps.storage, &cm_addr)?;
-
-    MAX_VALUE_FOR_BURN.save(deps.storage, &msg.max_value_for_burn)?;
+    CONFIG.save(
+        deps.storage,
+        &Config {
+            max_value_for_burn: msg.max_value_for_burn,
+            proposed_new_minter: None,
+        },
+    )?;
 
     Parent::default().instantiate(deps, env, info, msg.into())
 }
@@ -51,8 +54,8 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Mint { user } => mint(deps, env, info, &user),
-        ExecuteMsg::ProposeNewOwner { new_owner } => propose_new_owner(deps, info, &new_owner),
-        ExecuteMsg::AcceptOwnership {} => accept_ownership(deps, info),
+        ExecuteMsg::UpdateConfig { updates } => update_config(deps, info, updates),
+        ExecuteMsg::AcceptMinterRole {} => accept_ownership(deps, info),
         ExecuteMsg::Burn { token_id } => burn(deps, env, info, token_id),
         _ => Parent::default()
             .execute(deps, env, info, msg.try_into()?)
@@ -63,7 +66,7 @@ pub fn execute(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::ProposedNewOwner {} => to_binary(&query_proposed_new_owner(deps)?),
+        QueryMsg::Config {} => to_binary(&query_config(deps)?),
         _ => Parent::default().query(deps, env, msg.try_into()?),
     }
 }

@@ -1,5 +1,5 @@
 use cosmwasm_std::{
-    to_binary, DepsMut, Empty, Env, Event, MessageInfo, QueryRequest, Response, WasmQuery,
+    to_binary, DepsMut, Empty, Env, MessageInfo, QueryRequest, Response, WasmQuery,
 };
 use cw721::Cw721Execute;
 use cw721_base::MintMsg;
@@ -7,10 +7,11 @@ use cw721_base::MintMsg;
 use mars_rover::msg::query::HealthResponse;
 use mars_rover::msg::QueryMsg::Health;
 
+use crate::config::ConfigUpdates;
 use crate::contract::Parent;
 use crate::error::ContractError;
 use crate::error::ContractError::{BaseError, BurnNotAllowed};
-use crate::state::{CREDIT_MANAGER, MAX_VALUE_FOR_BURN, NEXT_ID, PENDING_OWNER};
+use crate::state::{CONFIG, NEXT_ID};
 
 pub fn mint(
     deps: DepsMut,
@@ -40,15 +41,15 @@ pub fn burn(
     info: MessageInfo,
     token_id: String,
 ) -> Result<Response, ContractError> {
-    let credit_manager = CREDIT_MANAGER.load(deps.storage)?;
     let response: HealthResponse = deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
-        contract_addr: credit_manager.into(),
+        // Expects the minter to be the credit manager
+        contract_addr: Parent::default().minter.load(deps.storage)?.into(),
         msg: to_binary(&Health {
             account_id: token_id.clone(),
         })?,
     }))?;
 
-    let max_value_allowed = MAX_VALUE_FOR_BURN.load(deps.storage)?;
+    let max_value_allowed = CONFIG.load(deps.storage)?.max_value_for_burn;
     let current_balances = response
         .total_debt_value
         .checked_add(response.total_collateral_value)?;
@@ -64,39 +65,55 @@ pub fn burn(
         .map_err(Into::into)
 }
 
-pub fn propose_new_owner(
+pub fn update_config(
     deps: DepsMut,
     info: MessageInfo,
-    new_owner: &str,
+    updates: ConfigUpdates,
 ) -> Result<Response, ContractError> {
-    let proposed_owner_addr = deps.api.addr_validate(new_owner)?;
-    let current_owner = Parent::default().minter.load(deps.storage)?;
-
-    if info.sender != current_owner {
+    let current_minter = Parent::default().minter.load(deps.storage)?;
+    if info.sender != current_minter {
         return Err(BaseError(cw721_base::ContractError::Unauthorized {}));
     }
 
-    PENDING_OWNER.save(deps.storage, &proposed_owner_addr)?;
+    let mut response = Response::new().add_attribute("action", "rover/account_nft/update_config");
+    let mut config = CONFIG.load(deps.storage)?;
 
-    Ok(Response::new().add_attribute("action", "rover/account_nft/propose_new_owner"))
+    if let Some(max) = updates.max_value_for_burn {
+        config.max_value_for_burn = max;
+        response = response
+            .add_attribute("key", "max_value_for_burn")
+            .add_attribute("value", max.to_string());
+    }
+
+    if let Some(addr) = updates.proposed_new_minter {
+        let validated = deps.api.addr_validate(&addr)?;
+        config.proposed_new_minter = Some(validated);
+        response = response
+            .add_attribute("key", "pending_minter")
+            .add_attribute("value", addr);
+    }
+
+    CONFIG.save(deps.storage, &config)?;
+
+    Ok(response)
 }
 
 pub fn accept_ownership(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
-    let pending_owner = PENDING_OWNER.load(deps.storage)?;
-    let previous_owner = Parent::default().minter.load(deps.storage)?;
+    let pending_minter = CONFIG.load(deps.storage)?.proposed_new_minter;
+    let previous_minter = Parent::default().minter.load(deps.storage)?;
 
-    if info.sender != pending_owner {
-        return Err(BaseError(cw721_base::ContractError::Unauthorized {}));
+    match pending_minter {
+        Some(addr) if addr == info.sender => {
+            Parent::default().minter.save(deps.storage, &addr)?;
+
+            let mut config = CONFIG.load(deps.storage)?;
+            config.proposed_new_minter = None;
+            CONFIG.save(deps.storage, &config)?;
+
+            Ok(Response::new()
+                .add_attribute("previous_minter", previous_minter)
+                .add_attribute("new_owner", addr))
+        }
+        _ => Err(BaseError(cw721_base::ContractError::Unauthorized {})),
     }
-
-    Parent::default()
-        .minter
-        .save(deps.storage, &pending_owner)?;
-
-    PENDING_OWNER.remove(deps.storage);
-
-    let event = Event::new("rover/account_nft/accept_ownership")
-        .add_attribute("previous_owner", previous_owner)
-        .add_attribute("new_owner", pending_owner);
-    Ok(Response::new().add_event(event))
 }

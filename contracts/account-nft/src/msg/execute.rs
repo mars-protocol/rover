@@ -1,6 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use std::convert::TryInto;
 
+use crate::config::ConfigUpdates;
 use crate::error::ContractError;
 use cosmwasm_std::{Binary, Empty, StdError};
 use cw721::Expiration;
@@ -11,15 +12,18 @@ pub enum ExecuteMsg {
     //--------------------------------------------------------------------------------------------------
     // Extended and overridden messages
     //--------------------------------------------------------------------------------------------------
-    /// Due to some chains being permissioned via governance, we must instantiate this contract first
-    /// and give ownership access to Rover contract with this action after both are independently deployed.
-    ProposeNewOwner { new_owner: String },
+    /// Update config in storage. Only Owner can execute.
+    UpdateConfig { updates: ConfigUpdates },
 
-    /// Accept the proposed ownership transfer
-    AcceptOwnership {},
+    /// Accept the proposed minter role
+    AcceptMinterRole {},
 
     /// Mint a new NFT to the specified user; can only be called by the contract minter
     Mint { user: String },
+
+    /// Burn an NFT the sender has access to. Will attempt to query the Credit Manager first
+    /// to ensure the balance is below the config set threshold.
+    Burn { token_id: String },
 
     //--------------------------------------------------------------------------------------------------
     // Base cw721 messages
@@ -50,9 +54,6 @@ pub enum ExecuteMsg {
     },
     /// Remove previously granted ApproveAll permission
     RevokeAll { operator: String },
-
-    /// Burn an NFT the sender has access to
-    Burn { token_id: String },
 }
 
 impl TryInto<ParentExecuteMsg<Empty, Empty>> for ExecuteMsg {
@@ -92,7 +93,6 @@ impl TryInto<ParentExecuteMsg<Empty, Empty>> for ExecuteMsg {
                 Ok(ParentExecuteMsg::ApproveAll { operator, expires })
             }
             ExecuteMsg::RevokeAll { operator } => Ok(ParentExecuteMsg::RevokeAll { operator }),
-            ExecuteMsg::Burn { token_id } => Ok(ParentExecuteMsg::Burn { token_id }),
             _ => Err(StdError::generic_err(
                 "Attempting to convert to a non-cw721 compatible message",
             )
