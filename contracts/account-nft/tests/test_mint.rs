@@ -36,7 +36,7 @@ fn test_id_incrementer() {
 
 #[test]
 fn test_id_incrementer_works_despite_burns() {
-    let mut mock = MockEnv::new().assign_mint_role_to_cm().build().unwrap();
+    let mut mock = MockEnv::new().assign_minter_to_cm().build().unwrap();
 
     let user = Addr::unchecked("user");
     let token_id_1 = mock.mint(&user).unwrap();
@@ -74,7 +74,7 @@ fn test_only_minter_can_mint() {
 
 #[test]
 fn test_only_token_owner_can_burn() {
-    let mut mock = MockEnv::new().assign_mint_role_to_cm().build().unwrap();
+    let mut mock = MockEnv::new().assign_minter_to_cm().build().unwrap();
 
     let user = Addr::unchecked("user");
     let token_id = mock.mint(&user).unwrap();

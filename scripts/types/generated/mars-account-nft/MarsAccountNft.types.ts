@@ -7,7 +7,6 @@
 
 export type Decimal = string
 export interface InstantiateMsg {
-  credit_manager: string
   max_value_for_burn: Decimal
   minter: string
   name: string
@@ -15,16 +14,21 @@ export interface InstantiateMsg {
 }
 export type ExecuteMsg =
   | {
-      propose_new_owner: {
-        new_owner: string
+      update_config: {
+        updates: ConfigUpdates
       }
     }
   | {
-      accept_ownership: {}
+      accept_minter_role: {}
     }
   | {
       mint: {
         user: string
+      }
+    }
+  | {
+      burn: {
+        token_id: string
       }
     }
   | {
@@ -64,11 +68,6 @@ export type ExecuteMsg =
         operator: string
       }
     }
-  | {
-      burn: {
-        token_id: string
-      }
-    }
 export type Binary = string
 export type Expiration =
   | {
@@ -82,9 +81,13 @@ export type Expiration =
     }
 export type Timestamp = Uint64
 export type Uint64 = string
+export interface ConfigUpdates {
+  max_value_for_burn?: Decimal | null
+  proposed_new_minter?: string | null
+}
 export type QueryMsg =
   | {
-      proposed_new_owner: {}
+      config: {}
     }
   | {
       owner_of: {
@@ -177,6 +180,10 @@ export interface ApprovalResponse {
 export interface ApprovalsResponse {
   approvals: Approval[]
 }
+export interface ConfigBaseForString {
+  max_value_for_burn: Decimal
+  proposed_new_minter?: string | null
+}
 export interface ContractInfoResponse {
   name: string
   symbol: string
@@ -187,4 +194,3 @@ export interface MinterResponse {
 export interface NumTokensResponse {
   count: number
 }
-export type String = string

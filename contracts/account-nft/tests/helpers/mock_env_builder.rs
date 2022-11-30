@@ -69,7 +69,7 @@ impl MockEnvBuilder {
         self.nft_contract = Some(addr);
     }
 
-    pub fn assign_mint_role_to_cm(&mut self) -> &mut Self {
+    pub fn assign_minter_to_cm(&mut self) -> &mut Self {
         let contract = mock_credit_manager_contract();
         let code_id = self.app.store_code(contract);
 
@@ -106,12 +106,7 @@ impl MockEnvBuilder {
 
         // Accept new role
         self.app
-            .execute_contract(
-                cm_addr.clone(),
-                nft_contract.clone(),
-                &AcceptMinterRole {},
-                &[],
-            )
+            .execute_contract(cm_addr.clone(), nft_contract, &AcceptMinterRole {}, &[])
             .unwrap();
 
         self.minter = Some(cm_addr);

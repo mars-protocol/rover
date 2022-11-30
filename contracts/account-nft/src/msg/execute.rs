@@ -12,10 +12,10 @@ pub enum ExecuteMsg {
     //--------------------------------------------------------------------------------------------------
     // Extended and overridden messages
     //--------------------------------------------------------------------------------------------------
-    /// Update config in storage. Only Owner can execute.
+    /// Update config in storage. Only minter can execute.
     UpdateConfig { updates: ConfigUpdates },
 
-    /// Accept the proposed minter role
+    /// Accept the proposed minter role. Only the proposed new minter can execute.
     AcceptMinterRole {},
 
     /// Mint a new NFT to the specified user; can only be called by the contract minter

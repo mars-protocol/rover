@@ -8,19 +8,19 @@ use crate::helpers::MockEnv;
 pub mod helpers;
 
 #[test]
-fn test_only_owner_can_propose_ownership_transfer() {
+fn test_only_minter_can_propose_new_minter() {
     let mut mock = MockEnv::new().build().unwrap();
 
     let bad_guy = Addr::unchecked("bad_guy");
     let res = mock.propose_new_minter(&bad_guy, &bad_guy);
 
     if res.is_ok() {
-        panic!("Non-owner should not be able to propose ownership transfer");
+        panic!("Non-minter should not be able to propose new minter");
     }
 }
 
 #[test]
-fn test_propose_ownership_stores() {
+fn test_propose_minter_stores() {
     let mut mock = MockEnv::new().build().unwrap();
 
     let new_minter = Addr::unchecked("new_minter");
@@ -32,7 +32,7 @@ fn test_propose_ownership_stores() {
 }
 
 #[test]
-fn test_proposed_owner_can_accept_ownership() {
+fn test_proposed_minter_can_accept_role() {
     let mut mock = MockEnv::new().build().unwrap();
 
     let new_minter = Addr::unchecked("new_minter");
@@ -43,7 +43,7 @@ fn test_proposed_owner_can_accept_ownership() {
 
     let config = mock.query_config();
     if config.proposed_new_minter.is_some() {
-        panic!("Proposed owner should have been removed from storage");
+        panic!("Proposed minter should have been removed from storage");
     }
 
     let res: MinterResponse = mock
@@ -56,7 +56,7 @@ fn test_proposed_owner_can_accept_ownership() {
 }
 
 #[test]
-fn test_only_proposed_owner_can_accept() {
+fn test_only_proposed_minter_can_accept() {
     let mut mock = MockEnv::new().build().unwrap();
 
     let new_minter = Addr::unchecked("new_minter");
@@ -67,6 +67,6 @@ fn test_only_proposed_owner_can_accept() {
     let res = mock.accept_proposed_minter(&bad_guy);
 
     if res.is_ok() {
-        panic!("Only proposed owner can accept ownership");
+        panic!("Only proposed minter can accept role");
     }
 }

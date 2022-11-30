@@ -99,20 +99,18 @@ pub fn update_config(
 }
 
 pub fn accept_ownership(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
-    let pending_minter = CONFIG.load(deps.storage)?.proposed_new_minter;
+    let mut config = CONFIG.load(deps.storage)?;
     let previous_minter = Parent::default().minter.load(deps.storage)?;
 
-    match pending_minter {
+    match config.proposed_new_minter {
         Some(addr) if addr == info.sender => {
             Parent::default().minter.save(deps.storage, &addr)?;
-
-            let mut config = CONFIG.load(deps.storage)?;
             config.proposed_new_minter = None;
             CONFIG.save(deps.storage, &config)?;
 
             Ok(Response::new()
                 .add_attribute("previous_minter", previous_minter)
-                .add_attribute("new_owner", addr))
+                .add_attribute("new_minter", addr))
         }
         _ => Err(BaseError(cw721_base::ContractError::Unauthorized {})),
     }
