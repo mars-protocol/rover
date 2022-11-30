@@ -8,11 +8,11 @@ use crate::helpers::{
 pub mod helpers;
 
 #[test]
-fn test_owner_set_on_instantiate() {
-    let owner = "owner_addr";
-    let mock = MockEnv::new().admin(owner).build().unwrap();
+fn test_admin_set_on_instantiate() {
+    let admin = "admin_addr";
+    let mock = MockEnv::new().admin(admin).build().unwrap();
     let res = mock.query_config();
-    assert_eq!(owner, res.admin.unwrap());
+    assert_eq!(admin, res.admin.unwrap());
 }
 
 #[test]

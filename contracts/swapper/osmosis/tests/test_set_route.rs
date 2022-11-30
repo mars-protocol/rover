@@ -1,10 +1,10 @@
 use cosmwasm_std::coin;
 use cosmwasm_std::StdError::GenericErr;
+use cw_controllers::AdminError;
 use osmosis_std::types::osmosis::gamm::v1beta1::SwapAmountInRoute;
-use osmosis_testing::{Account, Gamm, Module, OsmosisTestApp, Wasm};
+use osmosis_testing::{Gamm, Module, OsmosisTestApp, Wasm};
 
 use mars_rover::adapters::swap::{ExecuteMsg, QueryMsg, RouteResponse};
-use mars_rover::error::ContractError as RoverError;
 use mars_swapper_base::ContractError;
 use mars_swapper_osmosis::route::OsmosisRoute;
 
@@ -47,13 +47,7 @@ fn test_only_owner_can_set_routes() {
         )
         .unwrap_err();
 
-    assert_err(
-        res_err,
-        ContractError::Rover(RoverError::Unauthorized {
-            user: bad_guy.address(),
-            action: "set route".to_string(),
-        }),
-    );
+    assert_err(res_err, AdminError::NotAdmin {});
 }
 
 #[test]
