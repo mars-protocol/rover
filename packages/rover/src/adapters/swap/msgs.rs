@@ -1,6 +1,5 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
-use cw_controllers::AdminResponse;
 
 #[cw_serde]
 pub struct InstantiateMsg {
@@ -39,7 +38,7 @@ pub enum ExecuteMsg<Route> {
 #[derive(QueryResponses)]
 pub enum QueryMsg {
     /// Query contract config
-    #[returns(AdminResponse)]
+    #[returns(cw_controllers::AdminResponse)]
     Admin {},
     /// Get route for swapping an input denom into an output denom
     #[returns(RouteResponse<cosmwasm_std::Empty>)]

@@ -1,7 +1,8 @@
 use cosmwasm_std::Addr;
+use cw_controllers::AdminError::NotAdmin;
 use cw_multi_test::{App, Executor};
 
-use mars_oracle_adapter::error::ContractError;
+use mars_oracle_adapter::error::ContractError::AdminError;
 use mars_oracle_adapter::msg::{
     ConfigResponse, ConfigUpdates, ExecuteMsg, QueryMsg, VaultPricingInfo,
 };
@@ -12,13 +13,13 @@ use crate::helpers::{assert_err, instantiate_oracle_adapter};
 pub mod helpers;
 
 #[test]
-fn test_only_owner_can_update_config() {
+fn test_only_admin_can_update_config() {
     let mut app = App::default();
     let contract_addr = instantiate_oracle_adapter(&mut app);
 
     let bad_guy = Addr::unchecked("bad_guy");
     let res = app.execute_contract(
-        bad_guy.clone(),
+        bad_guy,
         contract_addr,
         &ExecuteMsg::UpdateConfig {
             new_config: Default::default(),
@@ -26,13 +27,7 @@ fn test_only_owner_can_update_config() {
         &[],
     );
 
-    assert_err(
-        res,
-        ContractError::Unauthorized {
-            user: bad_guy.to_string(),
-            action: "update config".to_string(),
-        },
-    );
+    assert_err(res, AdminError(NotAdmin {}));
 }
 
 #[test]
@@ -53,7 +48,7 @@ fn test_update_config_works_with_full_config() {
         contract_addr.clone(),
         &ExecuteMsg::UpdateConfig {
             new_config: ConfigUpdates {
-                owner: Some(new_owner.to_string()),
+                admin: Some(new_owner.to_string()),
                 oracle: Some(new_oracle),
                 vault_pricing: Some(new_vault_pricing),
             },
@@ -115,7 +110,7 @@ fn test_update_config_does_nothing_when_nothing_is_passed() {
         contract_addr.clone(),
         &ExecuteMsg::UpdateConfig {
             new_config: ConfigUpdates {
-                owner: None,
+                admin: None,
                 oracle: None,
                 vault_pricing: None,
             },

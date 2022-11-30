@@ -181,7 +181,7 @@ pub fn update_config(
             .add_attribute("value", value_str);
     }
 
-    if let Some(addr_str) = new_config.owner {
+    if let Some(addr_str) = new_config.admin {
         let validated = deps.api.addr_validate(&addr_str)?;
         ADMIN.set(deps, Some(validated))?;
         response = response

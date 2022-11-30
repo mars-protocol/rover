@@ -50,7 +50,7 @@ pub struct ConfigResponse {
 #[cw_serde]
 #[derive(Default)]
 pub struct ConfigUpdates {
-    pub owner: Option<String>,
+    pub admin: Option<String>,
     pub oracle: Option<OracleUnchecked>,
     pub vault_pricing: Option<Vec<VaultPricingInfo>>,
 }

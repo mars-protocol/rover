@@ -3,8 +3,6 @@ use cw_controllers::{AdminError, AdminResponse};
 use osmosis_testing::{Account, Module, OsmosisTestApp, Wasm};
 
 use mars_rover::adapters::swap::{ExecuteMsg, QueryMsg};
-use mars_rover::error::ContractError as RoverError;
-use mars_swapper_base::ContractError;
 use mars_swapper_osmosis::route::OsmosisRoute;
 
 use crate::helpers::{assert_err, instantiate_contract};
@@ -12,7 +10,7 @@ use crate::helpers::{assert_err, instantiate_contract};
 pub mod helpers;
 
 #[test]
-fn test_only_owner_can_update_admin() {
+fn test_only_admin_can_update_admin() {
     let app = OsmosisTestApp::new();
     let wasm = Wasm::new(&app);
 
@@ -35,10 +33,7 @@ fn test_only_owner_can_update_admin() {
         )
         .unwrap_err();
 
-    assert_err(
-        res_err,
-        ContractError::Rover(RoverError::AdminError(AdminError::NotAdmin {})),
-    );
+    assert_err(res_err, AdminError::NotAdmin {});
 }
 
 #[test]
