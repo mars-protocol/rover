@@ -1,4 +1,5 @@
 use cosmwasm_std::{Addr, Decimal, Uint128};
+use cw_controllers::Admin;
 use cw_item_set::Set;
 use cw_storage_plus::{Item, Map};
 
@@ -10,6 +11,7 @@ use crate::vault::RequestTempStorage;
 
 // Contract dependencies
 // NOTE: Ensure assert_not_contract_in_config() is updated when an external contract is added here
+pub const ADMIN: Admin = Admin::new("admin");
 pub const ACCOUNT_NFT: Item<Addr> = Item::new("account_nft");
 pub const ORACLE: Item<Oracle> = Item::new("oracle");
 pub const RED_BANK: Item<RedBank> = Item::new("red_bank");

@@ -8,7 +8,7 @@ use crate::helpers::{instantiate_contract, wasm_file};
 pub mod helpers;
 
 #[test]
-fn test_owner_set_on_instantiate() {
+fn test_admin_set_on_instantiate() {
     let app = OsmosisTestApp::new();
     let wasm = Wasm::new(&app);
     let signer = app
@@ -18,11 +18,11 @@ fn test_owner_set_on_instantiate() {
     let contract_addr = instantiate_contract(&wasm, &signer);
 
     let config: Config<String> = wasm.query(&contract_addr, &QueryMsg::Config {}).unwrap();
-    assert_eq!(config.owner, signer.address());
+    assert_eq!(config.admin, signer.address());
 }
 
 #[test]
-fn test_raises_on_invalid_owner_addr() {
+fn test_raises_on_invalid_admin_addr() {
     let app = OsmosisTestApp::new();
     let wasm = Wasm::new(&app);
     let signer = app
@@ -36,11 +36,11 @@ fn test_raises_on_invalid_owner_addr() {
         .data
         .code_id;
 
-    let owner = "%%%INVALID%%%";
+    let admin = "%%%INVALID%%%";
     let res = wasm.instantiate(
         code_id,
         &InstantiateMsg {
-            owner: owner.to_string(),
+            admin: admin.to_string(),
         },
         None,
         Some("swapper-osmosis-contract"),

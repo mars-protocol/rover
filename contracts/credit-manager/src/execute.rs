@@ -53,14 +53,7 @@ pub fn update_config(
     info: MessageInfo,
     new_config: ConfigUpdates,
 ) -> ContractResult<Response> {
-    let owner = OWNER.load(deps.storage)?;
-
-    if info.sender != owner {
-        return Err(ContractError::Unauthorized {
-            user: info.sender.into(),
-            action: "update config".to_string(),
-        });
-    }
+    ADMIN.assert_admin(deps.as_ref(), &info.sender)?;
 
     let mut response =
         Response::new().add_attribute("action", "rover/credit-manager/update_config");
@@ -79,14 +72,6 @@ pub fn update_config(
         response = response
             .add_message(accept_minter_role_msg)
             .add_attribute("key", "account_nft")
-            .add_attribute("value", addr_str);
-    }
-
-    if let Some(addr_str) = new_config.owner {
-        let validated = deps.api.addr_validate(&addr_str)?;
-        OWNER.save(deps.storage, &validated)?;
-        response = response
-            .add_attribute("key", "owner")
             .add_attribute("value", addr_str);
     }
 
@@ -149,6 +134,14 @@ pub fn update_config(
         response = response
             .add_attribute("key", "max_unlocking_positions")
             .add_attribute("value", num.to_string());
+    }
+
+    if let Some(addr_str) = new_config.admin {
+        let validated = deps.api.addr_validate(&addr_str)?;
+        ADMIN.set(deps, Some(validated))?;
+        response = response
+            .add_attribute("key", "admin")
+            .add_attribute("value", addr_str);
     }
 
     Ok(response)

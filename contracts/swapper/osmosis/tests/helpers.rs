@@ -32,7 +32,7 @@ pub fn instantiate_contract(wasm: &Wasm<OsmosisTestApp>, owner: &SigningAccount)
     wasm.instantiate(
         code_id,
         &InstantiateMsg {
-            owner: owner.address(),
+            admin: owner.address(),
         },
         None,
         Some("swapper-osmosis-contract"),

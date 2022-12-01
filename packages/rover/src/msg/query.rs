@@ -1,5 +1,7 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
+use cosmwasm_std::Addr;
 use cosmwasm_std::{Coin, Decimal, Uint128};
+
 use mars_health::health::Health;
 
 use crate::adapters::vault::{Vault, VaultPosition, VaultUnchecked};
@@ -152,7 +154,7 @@ pub struct VaultPositionValue {
 
 #[cw_serde]
 pub struct ConfigResponse {
-    pub owner: String,
+    pub admin: Option<Addr>,
     pub account_nft: Option<String>,
     pub red_bank: String,
     pub oracle: String,

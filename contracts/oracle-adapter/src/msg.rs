@@ -13,7 +13,7 @@ pub struct CoinPrice {
 pub struct InstantiateMsg {
     pub oracle: OracleUnchecked,
     pub vault_pricing: Vec<VaultPricingInfo>,
-    pub owner: String,
+    pub admin: String,
 }
 
 #[cw_serde]
@@ -43,7 +43,7 @@ pub enum QueryMsg {
 
 #[cw_serde]
 pub struct ConfigResponse {
-    pub owner: Addr,
+    pub admin: Option<Addr>,
     pub oracle: Oracle,
 }
 

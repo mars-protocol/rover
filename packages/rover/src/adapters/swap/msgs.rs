@@ -3,8 +3,8 @@ use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
 
 #[cw_serde]
 pub struct Config<T> {
-    /// The contract's owner, who can update config
-    pub owner: T,
+    /// The contract's admin, who can update config
+    pub admin: T,
 }
 
 pub type InstantiateMsg = Config<String>;
@@ -12,7 +12,7 @@ pub type InstantiateMsg = Config<String>;
 #[cw_serde]
 pub enum ExecuteMsg<Route> {
     /// Update contract config
-    UpdateConfig { owner: Option<String> },
+    UpdateConfig { admin: Option<String> },
     /// Configure the route for swapping an asset
     ///
     /// This is chain-specific, and can include parameters such as slippage tolerance and the routes

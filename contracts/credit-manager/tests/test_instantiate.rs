@@ -10,15 +10,15 @@ pub mod helpers;
 #[test]
 fn test_owner_set_on_instantiate() {
     let owner = "owner_addr";
-    let mock = MockEnv::new().owner(owner).build().unwrap();
+    let mock = MockEnv::new().admin(owner).build().unwrap();
     let res = mock.query_config();
-    assert_eq!(owner, res.owner);
+    assert_eq!(owner, res.admin.unwrap().to_string());
 }
 
 #[test]
 fn test_raises_on_invalid_owner_addr() {
     let owner = "%%%INVALID%%%";
-    let res = MockEnv::new().owner(owner).build();
+    let res = MockEnv::new().admin(owner).build();
     if res.is_ok() {
         panic!("Should have thrown an error");
     }

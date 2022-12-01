@@ -1,4 +1,5 @@
 use cosmwasm_std::coin;
+use cw_controllers::AdminError;
 use osmosis_testing::{Account, Module, OsmosisTestApp, Wasm};
 
 use mars_rover::adapters::swap::{Config, ExecuteMsg, QueryMsg};
@@ -27,7 +28,7 @@ fn test_only_owner_can_update_config() {
         .execute(
             &contract_addr,
             &ExecuteMsg::<OsmosisRoute>::UpdateConfig {
-                owner: Some(bad_guy.address()),
+                admin: Some(bad_guy.address()),
             },
             &[],
             bad_guy,
@@ -36,10 +37,7 @@ fn test_only_owner_can_update_config() {
 
     assert_err(
         res_err,
-        ContractError::Rover(RoverError::Unauthorized {
-            user: bad_guy.address(),
-            action: "update owner".to_string(),
-        }),
+        ContractError::Rover(RoverError::AdminError(AdminError::NotAdmin {})),
     );
 }
 
@@ -59,7 +57,7 @@ fn test_update_config_works_with_full_config() {
     wasm.execute(
         &contract_addr,
         &ExecuteMsg::<OsmosisRoute>::UpdateConfig {
-            owner: Some(new_owner.address()),
+            admin: Some(new_owner.address()),
         },
         &[],
         owner,
@@ -67,7 +65,7 @@ fn test_update_config_works_with_full_config() {
     .unwrap();
 
     let config: Config<String> = wasm.query(&contract_addr, &QueryMsg::Config {}).unwrap();
-    assert_eq!(config.owner, new_owner.address());
+    assert_eq!(config.admin, new_owner.address());
 }
 
 #[test]
@@ -82,12 +80,12 @@ fn test_update_config_does_nothing_when_nothing_is_passed() {
 
     wasm.execute(
         &contract_addr,
-        &ExecuteMsg::<OsmosisRoute>::UpdateConfig { owner: None },
+        &ExecuteMsg::<OsmosisRoute>::UpdateConfig { admin: None },
         &[],
         &owner,
     )
     .unwrap();
 
     let config: Config<String> = wasm.query(&contract_addr, &QueryMsg::Config {}).unwrap();
-    assert_eq!(config.owner, owner.address());
+    assert_eq!(config.admin, owner.address());
 }

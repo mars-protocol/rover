@@ -62,7 +62,7 @@ where
         self.config.save(
             deps.storage,
             &Config {
-                owner: deps.api.addr_validate(&msg.owner)?,
+                admin: deps.api.addr_validate(&msg.admin)?,
             },
         )?;
 
@@ -77,7 +77,7 @@ where
         msg: ExecuteMsg<R>,
     ) -> ContractResult<Response<M>> {
         match msg {
-            ExecuteMsg::UpdateConfig { owner } => self.update_config(deps, info.sender, owner),
+            ExecuteMsg::UpdateConfig { admin } => self.update_config(deps, info.sender, admin),
             ExecuteMsg::SetRoute {
                 denom_in,
                 denom_out,
@@ -116,7 +116,7 @@ where
     fn query_config(&self, deps: Deps<Q>) -> ContractResult<Config<String>> {
         let cfg = self.config.load(deps.storage)?;
         Ok(Config {
-            owner: cfg.owner.to_string(),
+            admin: cfg.admin.to_string(),
         })
     }
 
@@ -253,7 +253,7 @@ where
     ) -> ContractResult<Response<M>> {
         let cfg = self.config.load(deps.storage)?;
 
-        if sender != cfg.owner {
+        if sender != cfg.admin {
             return Err(RoverError::Unauthorized {
                 user: sender.to_string(),
                 action: "set route".to_string(),
@@ -280,7 +280,7 @@ where
         owner: Option<String>,
     ) -> ContractResult<Response<M>> {
         let mut cfg = self.config.load(deps.storage)?;
-        if sender != cfg.owner {
+        if sender != cfg.admin {
             return Err(RoverError::Unauthorized {
                 user: sender.to_string(),
                 action: "update owner".to_string(),
@@ -292,7 +292,7 @@ where
             Response::new().add_attribute("action", "rover/swapper-base/update_config");
 
         if let Some(addr_str) = owner {
-            cfg.owner = deps.api.addr_validate(&addr_str)?;
+            cfg.admin = deps.api.addr_validate(&addr_str)?;
             response = response
                 .add_attribute("key", "owner")
                 .add_attribute("value", addr_str);

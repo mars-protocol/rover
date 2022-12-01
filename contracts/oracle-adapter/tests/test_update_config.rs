@@ -49,7 +49,7 @@ fn test_update_config_works_with_full_config() {
     let new_vault_pricing = vec![];
 
     app.execute_contract(
-        original_config.owner.clone(),
+        original_config.admin.clone().unwrap(),
         contract_addr.clone(),
         &ExecuteMsg::UpdateConfig {
             new_config: ConfigUpdates {
@@ -67,8 +67,8 @@ fn test_update_config_works_with_full_config() {
         .query_wasm_smart(contract_addr.to_string(), &QueryMsg::Config {})
         .unwrap();
 
-    assert_ne!(new_config.owner, original_config.owner);
-    assert_eq!(new_config.owner, new_owner.to_string());
+    assert_ne!(new_config.admin, original_config.admin);
+    assert_eq!(new_config.admin, Some(new_owner));
 
     assert_ne!(new_config.oracle, original_config.oracle);
     assert_eq!(
@@ -111,7 +111,7 @@ fn test_update_config_does_nothing_when_nothing_is_passed() {
         .unwrap();
 
     app.execute_contract(
-        original_config.owner.clone(),
+        original_config.admin.clone().unwrap(),
         contract_addr.clone(),
         &ExecuteMsg::UpdateConfig {
             new_config: ConfigUpdates {
@@ -129,7 +129,7 @@ fn test_update_config_does_nothing_when_nothing_is_passed() {
         .query_wasm_smart(contract_addr.to_string(), &QueryMsg::Config {})
         .unwrap();
 
-    assert_eq!(new_config.owner, original_config.owner);
+    assert_eq!(new_config.admin, original_config.admin);
     assert_eq!(new_config.oracle, original_config.oracle);
 
     let new_pricing_infos: Vec<VaultPricingInfo> = app

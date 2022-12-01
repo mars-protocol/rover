@@ -21,7 +21,7 @@ const DEFAULT_LIMIT: u32 = 10;
 
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     Ok(ConfigResponse {
-        owner: OWNER.load(deps.storage)?.into(),
+        admin: ADMIN.get(deps)?,
         account_nft: ACCOUNT_NFT
             .may_load(deps.storage)?
             .map(|addr| addr.to_string()),
