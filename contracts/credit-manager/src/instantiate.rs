@@ -7,8 +7,9 @@ use mars_rover::error::ContractResult;
 use mars_rover::msg::instantiate::VaultInstantiateConfig;
 use mars_rover::msg::InstantiateMsg;
 
+use crate::state::ADMIN;
 use crate::state::{
-    ALLOWED_COINS, MAX_CLOSE_FACTOR, MAX_UNLOCKING_POSITIONS, ORACLE, OWNER, RED_BANK, SWAPPER,
+    ALLOWED_COINS, MAX_CLOSE_FACTOR, MAX_UNLOCKING_POSITIONS, ORACLE, RED_BANK, SWAPPER,
     VAULT_CONFIGS, ZAPPER,
 };
 

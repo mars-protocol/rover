@@ -11,7 +11,6 @@ use crate::vault::RequestTempStorage;
 
 // Contract dependencies
 // NOTE: Ensure assert_not_contract_in_config() is updated when an external contract is added here
-pub const ADMIN: Admin = Admin::new("admin");
 pub const ACCOUNT_NFT: Item<Addr> = Item::new("account_nft");
 pub const ORACLE: Item<Oracle> = Item::new("oracle");
 pub const RED_BANK: Item<RedBank> = Item::new("red_bank");
@@ -20,7 +19,7 @@ pub const VAULT_CONFIGS: Map<&Addr, VaultConfig> = Map::new("vault_configs");
 pub const ZAPPER: Item<Zapper> = Item::new("zapper");
 
 // Config
-pub const OWNER: Item<Addr> = Item::new("owner");
+pub const ADMIN: Admin = Admin::new("admin");
 pub const ALLOWED_COINS: Set<&str> = Set::new("allowed_coins");
 pub const MAX_CLOSE_FACTOR: Item<Decimal> = Item::new("max_close_factor");
 pub const MAX_UNLOCKING_POSITIONS: Item<Uint128> = Item::new("max_unlocking_positions");

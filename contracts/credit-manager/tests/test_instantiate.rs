@@ -16,9 +16,9 @@ fn test_admin_set_on_instantiate() {
 }
 
 #[test]
-fn test_raises_on_invalid_owner_addr() {
-    let owner = "%%%INVALID%%%";
-    let res = MockEnv::new().admin(owner).build();
+fn test_raises_on_invalid_admin_addr() {
+    let admin = "%%%INVALID%%%";
+    let res = MockEnv::new().admin(admin).build();
     if res.is_ok() {
         panic!("Should have thrown an error");
     }

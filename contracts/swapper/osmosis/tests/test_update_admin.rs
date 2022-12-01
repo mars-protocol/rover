@@ -17,10 +17,10 @@ fn test_only_admin_can_update_admin() {
     let accs = app
         .init_accounts(&[coin(1_000_000_000_000, "uosmo")], 2)
         .unwrap();
-    let owner = &accs[0];
+    let admin = &accs[0];
     let bad_guy = &accs[1];
 
-    let contract_addr = instantiate_contract(&wasm, owner);
+    let contract_addr = instantiate_contract(&wasm, admin);
 
     let res_err = wasm
         .execute(
@@ -44,21 +44,21 @@ fn test_update_admin_works_with_full_config() {
     let accs = app
         .init_accounts(&[coin(1_000_000_000_000, "uosmo")], 2)
         .unwrap();
-    let owner = &accs[0];
-    let new_owner = &accs[1];
+    let admin = &accs[0];
+    let new_admin = &accs[1];
 
-    let contract_addr = instantiate_contract(&wasm, owner);
+    let contract_addr = instantiate_contract(&wasm, admin);
 
     wasm.execute(
         &contract_addr,
         &ExecuteMsg::<OsmosisRoute>::UpdateAdmin {
-            admin: new_owner.address(),
+            admin: new_admin.address(),
         },
         &[],
-        owner,
+        admin,
     )
     .unwrap();
 
     let res: AdminResponse = wasm.query(&contract_addr, &QueryMsg::Admin {}).unwrap();
-    assert_eq!(res.admin, Some(new_owner.address()));
+    assert_eq!(res.admin, Some(new_admin.address()));
 }

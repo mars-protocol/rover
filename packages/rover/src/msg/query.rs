@@ -9,7 +9,7 @@ use crate::traits::Coins;
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
-    /// Owner & account nft address
+    /// Rover contract-level config
     #[returns(ConfigResponse)]
     Config {},
     /// Configs on vaults

@@ -13,17 +13,17 @@ use crate::helpers::{assert_err, instantiate_contract};
 pub mod helpers;
 
 #[test]
-fn test_only_owner_can_set_routes() {
+fn test_only_admin_can_set_routes() {
     let app = OsmosisTestApp::new();
     let wasm = Wasm::new(&app);
 
     let accs = app
         .init_accounts(&[coin(1_000_000_000_000, "uosmo")], 2)
         .unwrap();
-    let owner = &accs[0];
+    let admin = &accs[0];
     let bad_guy = &accs[1];
 
-    let contract_addr = instantiate_contract(&wasm, owner);
+    let contract_addr = instantiate_contract(&wasm, admin);
 
     let res_err = wasm
         .execute(

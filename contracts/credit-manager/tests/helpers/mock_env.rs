@@ -484,7 +484,7 @@ impl MockEnvBuilder {
 
         if self.deploy_nft_contract {
             let nft_contract = deploy_nft_contract(&mut self.app, &nft_minter);
-            if self.set_nft_contract_owner {
+            if self.set_nft_contract_minter {
                 propose_new_nft_minter(&mut self.app, nft_contract.clone(), &nft_minter, rover);
                 self.update_config(
                     rover,

@@ -18,8 +18,9 @@ use crate::instantiate::{
 use crate::liquidate_coin::liquidate_coin;
 use crate::refund::refund_coin_balances;
 use crate::repay::repay;
+use crate::state::ADMIN;
 use crate::state::{
-    ACCOUNT_NFT, ALLOWED_COINS, MAX_CLOSE_FACTOR, MAX_UNLOCKING_POSITIONS, ORACLE, OWNER, SWAPPER,
+    ACCOUNT_NFT, ALLOWED_COINS, MAX_CLOSE_FACTOR, MAX_UNLOCKING_POSITIONS, ORACLE, SWAPPER,
     VAULT_CONFIGS, ZAPPER,
 };
 use crate::swap::swap_exact_in;

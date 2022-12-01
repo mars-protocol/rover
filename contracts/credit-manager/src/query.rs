@@ -9,9 +9,10 @@ use mars_rover::msg::query::{
     VaultPositionResponseItem, VaultWithBalance,
 };
 
+use crate::state::ADMIN;
 use crate::state::{
     ACCOUNT_NFT, ALLOWED_COINS, COIN_BALANCES, DEBT_SHARES, MAX_CLOSE_FACTOR,
-    MAX_UNLOCKING_POSITIONS, ORACLE, OWNER, RED_BANK, SWAPPER, TOTAL_DEBT_SHARES, VAULT_CONFIGS,
+    MAX_UNLOCKING_POSITIONS, ORACLE, RED_BANK, SWAPPER, TOTAL_DEBT_SHARES, VAULT_CONFIGS,
     VAULT_POSITIONS, ZAPPER,
 };
 use crate::utils::debt_shares_to_amount;
