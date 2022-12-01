@@ -332,7 +332,7 @@ fn test_cannot_request_more_than_max() {
         &account_id,
         &user,
         vec![RequestVaultUnlock {
-            vault: vault.clone(),
+            vault,
             amount: Uint128::new(100),
         }],
         &[],

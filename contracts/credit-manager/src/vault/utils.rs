@@ -25,7 +25,7 @@ pub fn assert_under_max_unlocking_limit(
     let new_amount = VAULT_POSITIONS
         .may_load(storage, (account_id, vault.address.clone()))?
         .map(|p| p.unlocking().positions().len())
-        .map(|len| Uint128::new(len as u128))
+        .map(|len| Uint128::from(len as u128))
         .unwrap_or(Uint128::zero())
         .checked_add(Uint128::one())?;
 

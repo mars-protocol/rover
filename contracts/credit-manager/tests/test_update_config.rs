@@ -323,6 +323,7 @@ fn test_raises_on_duplicate_vault_configs() {
             allowed_coins: None,
             oracle: None,
             max_close_factor: None,
+            max_unlocking_positions: None,
             swapper: None,
             vault_configs: Some(vec![
                 VaultInstantiateConfig {
@@ -372,6 +373,7 @@ fn test_raises_on_duplicate_coin_configs() {
             ]),
             oracle: None,
             max_close_factor: None,
+            max_unlocking_positions: None,
             swapper: None,
             vault_configs: None,
             zapper: None,
