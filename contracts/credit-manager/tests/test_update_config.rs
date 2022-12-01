@@ -40,7 +40,7 @@ fn test_raises_on_invalid_vaults_config() {
     let mut mock = MockEnv::new().build().unwrap();
     let original_config = mock.query_config();
     let res = mock.update_config(
-        &original_config.admin.clone().unwrap(),
+        &Addr::unchecked(original_config.admin.clone().unwrap()),
         ConfigUpdates {
             account_nft: None,
             admin: None,
@@ -70,7 +70,7 @@ fn test_raises_on_invalid_vaults_config() {
     );
 
     let res = mock.update_config(
-        &original_config.admin.unwrap(),
+        &Addr::unchecked(original_config.admin.unwrap()),
         ConfigUpdates {
             account_nft: None,
             admin: None,
@@ -126,7 +126,7 @@ fn test_update_config_works_with_full_config() {
     let new_swapper = SwapperBase::new("new_swapper".to_string());
 
     mock.update_config(
-        &original_config.admin.clone().unwrap(),
+        &Addr::unchecked(original_config.admin.clone().unwrap()),
         ConfigUpdates {
             account_nft: Some(new_nft_contract.to_string()),
             admin: Some(new_owner.to_string()),
@@ -198,7 +198,7 @@ fn test_update_config_works_with_some_config() {
     }];
 
     mock.update_config(
-        &original_config.admin.clone().unwrap(),
+        &Addr::unchecked(original_config.admin.clone().unwrap()),
         ConfigUpdates {
             account_nft: Some(new_nft_contract.to_string()),
             vault_configs: Some(new_vault_configs.clone()),
@@ -243,7 +243,7 @@ fn test_update_config_removes_properly() {
     assert_eq!(vault_configs.len(), 1);
 
     mock.update_config(
-        &mock.query_config().admin.unwrap(),
+        &Addr::unchecked(mock.query_config().admin.unwrap()),
         ConfigUpdates {
             allowed_coins: Some(vec![]),
             vault_configs: Some(vec![]),
@@ -267,8 +267,11 @@ fn test_update_config_does_nothing_when_nothing_is_passed() {
     let original_vault_configs = mock.query_vault_configs(None, None);
     let original_allowed_coins = mock.query_allowed_coins(None, None);
 
-    mock.update_config(&original_config.admin.clone().unwrap(), Default::default())
-        .unwrap();
+    mock.update_config(
+        &Addr::unchecked(original_config.admin.clone().unwrap()),
+        Default::default(),
+    )
+    .unwrap();
 
     let new_config = mock.query_config();
     let new_queried_vault_configs = mock.query_vault_configs(None, None);

@@ -1,8 +1,8 @@
 use cosmwasm_std::coin;
-use cw_controllers::AdminError;
+use cw_controllers::{AdminError, AdminResponse};
 use osmosis_testing::{Account, Module, OsmosisTestApp, Wasm};
 
-use mars_rover::adapters::swap::{Config, ExecuteMsg, QueryMsg};
+use mars_rover::adapters::swap::{ExecuteMsg, QueryMsg};
 use mars_rover::error::ContractError as RoverError;
 use mars_swapper_base::ContractError;
 use mars_swapper_osmosis::route::OsmosisRoute;
@@ -12,7 +12,7 @@ use crate::helpers::{assert_err, instantiate_contract};
 pub mod helpers;
 
 #[test]
-fn test_only_owner_can_update_config() {
+fn test_only_owner_can_update_admin() {
     let app = OsmosisTestApp::new();
     let wasm = Wasm::new(&app);
 
@@ -27,8 +27,8 @@ fn test_only_owner_can_update_config() {
     let res_err = wasm
         .execute(
             &contract_addr,
-            &ExecuteMsg::<OsmosisRoute>::UpdateConfig {
-                admin: Some(bad_guy.address()),
+            &ExecuteMsg::<OsmosisRoute>::UpdateAdmin {
+                admin: bad_guy.address(),
             },
             &[],
             bad_guy,
@@ -42,7 +42,7 @@ fn test_only_owner_can_update_config() {
 }
 
 #[test]
-fn test_update_config_works_with_full_config() {
+fn test_update_admin_works_with_full_config() {
     let app = OsmosisTestApp::new();
     let wasm = Wasm::new(&app);
 
@@ -56,36 +56,14 @@ fn test_update_config_works_with_full_config() {
 
     wasm.execute(
         &contract_addr,
-        &ExecuteMsg::<OsmosisRoute>::UpdateConfig {
-            admin: Some(new_owner.address()),
+        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin {
+            admin: new_owner.address(),
         },
         &[],
         owner,
     )
     .unwrap();
 
-    let config: Config<String> = wasm.query(&contract_addr, &QueryMsg::Config {}).unwrap();
-    assert_eq!(config.admin, new_owner.address());
-}
-
-#[test]
-fn test_update_config_does_nothing_when_nothing_is_passed() {
-    let app = OsmosisTestApp::new();
-    let wasm = Wasm::new(&app);
-    let owner = app
-        .init_account(&[coin(1_000_000_000_000, "uosmo")])
-        .unwrap();
-
-    let contract_addr = instantiate_contract(&wasm, &owner);
-
-    wasm.execute(
-        &contract_addr,
-        &ExecuteMsg::<OsmosisRoute>::UpdateConfig { admin: None },
-        &[],
-        &owner,
-    )
-    .unwrap();
-
-    let config: Config<String> = wasm.query(&contract_addr, &QueryMsg::Config {}).unwrap();
-    assert_eq!(config.admin, owner.address());
+    let res: AdminResponse = wasm.query(&contract_addr, &QueryMsg::Admin {}).unwrap();
+    assert_eq!(res.admin, Some(new_owner.address()));
 }
