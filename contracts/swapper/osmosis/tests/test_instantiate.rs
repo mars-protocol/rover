@@ -1,5 +1,5 @@
 use cosmwasm_std::coin;
-use cw_controllers::AdminResponse;
+use cw_controllers_admin_fork::AdminResponse;
 use osmosis_testing::{Account, Module, OsmosisTestApp, Wasm};
 
 use mars_rover::adapters::swap::{InstantiateMsg, QueryMsg};
@@ -18,7 +18,7 @@ fn test_admin_set_on_instantiate() {
 
     let contract_addr = instantiate_contract(&wasm, &signer);
 
-    let res: AdminResponse = wasm.query(&contract_addr, &QueryMsg::Admin {}).unwrap();
+    let res: AdminResponse = wasm.query(&contract_addr, &QueryMsg::Config {}).unwrap();
     assert_eq!(res.admin, Some(signer.address()));
 }
 
