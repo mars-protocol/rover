@@ -11,6 +11,7 @@ import { StdFee } from '@cosmjs/amino'
 import {
   InstantiateMsg,
   ExecuteMsg,
+  AdminExecuteUpdate,
   Uint128,
   Decimal,
   Addr,
@@ -31,8 +32,8 @@ export const marsSwapperBaseQueryKeys = {
   ] as const,
   address: (contractAddress: string | undefined) =>
     [{ ...marsSwapperBaseQueryKeys.contract[0], address: contractAddress }] as const,
-  admin: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...marsSwapperBaseQueryKeys.address(contractAddress)[0], method: 'admin', args }] as const,
+  config: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
+    [{ ...marsSwapperBaseQueryKeys.address(contractAddress)[0], method: 'config', args }] as const,
   route: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [{ ...marsSwapperBaseQueryKeys.address(contractAddress)[0], method: 'route', args }] as const,
   routes: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
@@ -127,15 +128,15 @@ export function useMarsSwapperBaseRouteQuery<TData = RouteResponseForEmpty>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MarsSwapperBaseAdminQuery<TData>
+export interface MarsSwapperBaseConfigQuery<TData>
   extends MarsSwapperBaseReactQuery<AdminResponse, TData> {}
-export function useMarsSwapperBaseAdminQuery<TData = AdminResponse>({
+export function useMarsSwapperBaseConfigQuery<TData = AdminResponse>({
   client,
   options,
-}: MarsSwapperBaseAdminQuery<TData>) {
+}: MarsSwapperBaseConfigQuery<TData>) {
   return useQuery<AdminResponse, Error, TData>(
-    marsSwapperBaseQueryKeys.admin(client?.contractAddress),
-    () => (client ? client.admin() : Promise.reject(new Error('Invalid client'))),
+    marsSwapperBaseQueryKeys.config(client?.contractAddress),
+    () => (client ? client.config() : Promise.reject(new Error('Invalid client'))),
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
@@ -214,9 +215,6 @@ export function useMarsSwapperBaseSetRouteMutation(
 }
 export interface MarsSwapperBaseUpdateAdminMutation {
   client: MarsSwapperBaseClient
-  msg: {
-    admin: string
-  }
   args?: {
     fee?: number | StdFee | 'auto'
     memo?: string

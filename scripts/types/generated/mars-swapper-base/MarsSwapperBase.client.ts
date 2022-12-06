@@ -10,6 +10,7 @@ import { StdFee } from '@cosmjs/amino'
 import {
   InstantiateMsg,
   ExecuteMsg,
+  AdminExecuteUpdate,
   Uint128,
   Decimal,
   Addr,
@@ -23,7 +24,7 @@ import {
 } from './MarsSwapperBase.types'
 export interface MarsSwapperBaseReadOnlyInterface {
   contractAddress: string
-  admin: () => Promise<AdminResponse>
+  config: () => Promise<AdminResponse>
   route: ({
     denomIn,
     denomOut,
@@ -53,15 +54,15 @@ export class MarsSwapperBaseQueryClient implements MarsSwapperBaseReadOnlyInterf
   constructor(client: CosmWasmClient, contractAddress: string) {
     this.client = client
     this.contractAddress = contractAddress
-    this.admin = this.admin.bind(this)
+    this.config = this.config.bind(this)
     this.route = this.route.bind(this)
     this.routes = this.routes.bind(this)
     this.estimateExactInSwap = this.estimateExactInSwap.bind(this)
   }
 
-  admin = async (): Promise<AdminResponse> => {
+  config = async (): Promise<AdminResponse> => {
     return this.client.queryContractSmart(this.contractAddress, {
-      admin: {},
+      config: {},
     })
   }
   route = async ({
@@ -111,11 +112,6 @@ export interface MarsSwapperBaseInterface extends MarsSwapperBaseReadOnlyInterfa
   contractAddress: string
   sender: string
   updateAdmin: (
-    {
-      admin,
-    }: {
-      admin: string
-    },
     fee?: number | StdFee | 'auto',
     memo?: string,
     funds?: Coin[],
@@ -183,11 +179,6 @@ export class MarsSwapperBaseClient
   }
 
   updateAdmin = async (
-    {
-      admin,
-    }: {
-      admin: string
-    },
     fee: number | StdFee | 'auto' = 'auto',
     memo?: string,
     funds?: Coin[],
@@ -196,9 +187,7 @@ export class MarsSwapperBaseClient
       this.sender,
       this.contractAddress,
       {
-        update_admin: {
-          admin,
-        },
+        update_admin: {},
       },
       fee,
       memo,
