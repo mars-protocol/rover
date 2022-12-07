@@ -55,6 +55,7 @@ export interface TestActions {
   defaultCreditLine: string
   startingAmountForTestUser: string
   depositAmount: string
+  lendAmount: string
   borrowAmount: string
   repayAmount: string
   swap: {

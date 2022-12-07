@@ -123,6 +123,7 @@ export const osmosisTestnetConfig: DeploymentConfig = {
     repayAmount: '11',
     defaultCreditLine: '100000000000',
     depositAmount: '100',
+    lendAmount: '10',
     secondaryDenom: uatom,
     startingAmountForTestUser: '2500000',
     swap: {
