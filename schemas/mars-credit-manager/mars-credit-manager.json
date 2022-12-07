@@ -1252,12 +1252,6 @@
               }
             ]
           },
-          "owner": {
-            "type": [
-              "string",
-              "null"
-            ]
-          },
           "swapper": {
             "anyOf": [
               {
