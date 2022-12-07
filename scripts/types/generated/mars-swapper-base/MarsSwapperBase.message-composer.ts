@@ -11,7 +11,7 @@ import { toUtf8 } from '@cosmjs/encoding'
 import {
   InstantiateMsg,
   ExecuteMsg,
-  AdminExecuteUpdate,
+  AdminUpdate,
   Uint128,
   Decimal,
   Addr,

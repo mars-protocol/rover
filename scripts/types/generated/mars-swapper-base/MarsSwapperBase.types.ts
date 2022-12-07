@@ -10,7 +10,7 @@ export interface InstantiateMsg {
 }
 export type ExecuteMsg =
   | {
-      update_admin: AdminExecuteUpdate
+      update_admin: AdminUpdate
     }
   | {
       set_route: {
@@ -33,18 +33,15 @@ export type ExecuteMsg =
         recipient: Addr
       }
     }
-export type AdminExecuteUpdate =
-  | ('clear_proposed' | 'accept_proposed' | 'abolish_admin_role')
-  | {
-      initialize_admin: {
-        admin: string
-      }
-    }
+export type AdminUpdate =
   | {
       propose_new_admin: {
         proposed: string
       }
     }
+  | 'clear_proposed'
+  | 'accept_proposed'
+  | 'abolish_admin_role'
 export type Uint128 = string
 export type Decimal = string
 export type Addr = string
@@ -58,7 +55,7 @@ export interface Coin {
 }
 export type QueryMsg =
   | {
-      config: {}
+      admin: {}
     }
   | {
       route: {

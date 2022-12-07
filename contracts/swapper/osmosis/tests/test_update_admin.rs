@@ -1,7 +1,7 @@
 use cosmwasm_std::coin;
 use osmosis_testing::{Account, Module, OsmosisTestApp, Wasm};
 
-use cw_controllers_admin_fork::{AdminExecuteUpdate, AdminResponse};
+use cw_controllers_admin_fork::{AdminResponse, AdminUpdate};
 use mars_rover::adapters::swap::{ExecuteMsg, QueryMsg};
 use mars_swapper_osmosis::route::OsmosisRoute;
 
@@ -41,7 +41,7 @@ fn test_only_admin_can_propose() {
 
     wasm.execute(
         &contract_addr,
-        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminExecuteUpdate::ProposeNewAdmin {
+        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminUpdate::ProposeNewAdmin {
             proposed: bad_guy.address(),
         }),
         &[],
@@ -65,7 +65,7 @@ fn test_propose_new_admin() {
 
     wasm.execute(
         &contract_addr,
-        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminExecuteUpdate::ProposeNewAdmin {
+        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminUpdate::ProposeNewAdmin {
             proposed: new_admin.address(),
         }),
         &[],
@@ -94,7 +94,7 @@ fn test_only_admin_can_clear_proposed() {
 
     wasm.execute(
         &contract_addr,
-        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminExecuteUpdate::ProposeNewAdmin {
+        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminUpdate::ProposeNewAdmin {
             proposed: new_admin.address(),
         }),
         &[],
@@ -104,7 +104,7 @@ fn test_only_admin_can_clear_proposed() {
 
     wasm.execute(
         &contract_addr,
-        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminExecuteUpdate::ClearProposed),
+        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminUpdate::ClearProposed),
         &[],
         bad_guy,
     )
@@ -126,7 +126,7 @@ fn test_clear_proposed() {
 
     wasm.execute(
         &contract_addr,
-        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminExecuteUpdate::ProposeNewAdmin {
+        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminUpdate::ProposeNewAdmin {
             proposed: new_admin.address(),
         }),
         &[],
@@ -136,7 +136,7 @@ fn test_clear_proposed() {
 
     wasm.execute(
         &contract_addr,
-        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminExecuteUpdate::ClearProposed),
+        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminUpdate::ClearProposed),
         &[],
         admin,
     )
@@ -162,7 +162,7 @@ fn test_only_proposed_admin_can_accept_role() {
 
     wasm.execute(
         &contract_addr,
-        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminExecuteUpdate::ProposeNewAdmin {
+        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminUpdate::ProposeNewAdmin {
             proposed: new_admin.address(),
         }),
         &[],
@@ -172,7 +172,7 @@ fn test_only_proposed_admin_can_accept_role() {
 
     wasm.execute(
         &contract_addr,
-        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminExecuteUpdate::AcceptProposed),
+        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminUpdate::AcceptProposed),
         &[],
         admin,
     )
@@ -194,7 +194,7 @@ fn test_accept_admin_role() {
 
     wasm.execute(
         &contract_addr,
-        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminExecuteUpdate::ProposeNewAdmin {
+        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminUpdate::ProposeNewAdmin {
             proposed: new_admin.address(),
         }),
         &[],
@@ -204,7 +204,7 @@ fn test_accept_admin_role() {
 
     wasm.execute(
         &contract_addr,
-        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminExecuteUpdate::AcceptProposed),
+        &ExecuteMsg::<OsmosisRoute>::UpdateAdmin(AdminUpdate::AcceptProposed),
         &[],
         new_admin,
     )

@@ -11,7 +11,7 @@ import { StdFee } from '@cosmjs/amino'
 import {
   InstantiateMsg,
   ExecuteMsg,
-  AdminExecuteUpdate,
+  AdminUpdate,
   Uint128,
   Decimal,
   Addr,
@@ -32,8 +32,8 @@ export const marsSwapperBaseQueryKeys = {
   ] as const,
   address: (contractAddress: string | undefined) =>
     [{ ...marsSwapperBaseQueryKeys.contract[0], address: contractAddress }] as const,
-  config: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
-    [{ ...marsSwapperBaseQueryKeys.address(contractAddress)[0], method: 'config', args }] as const,
+  admin: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
+    [{ ...marsSwapperBaseQueryKeys.address(contractAddress)[0], method: 'admin', args }] as const,
   route: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
     [{ ...marsSwapperBaseQueryKeys.address(contractAddress)[0], method: 'route', args }] as const,
   routes: (contractAddress: string | undefined, args?: Record<string, unknown>) =>
@@ -128,15 +128,15 @@ export function useMarsSwapperBaseRouteQuery<TData = RouteResponseForEmpty>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
-export interface MarsSwapperBaseConfigQuery<TData>
+export interface MarsSwapperBaseAdminQuery<TData>
   extends MarsSwapperBaseReactQuery<AdminResponse, TData> {}
-export function useMarsSwapperBaseConfigQuery<TData = AdminResponse>({
+export function useMarsSwapperBaseAdminQuery<TData = AdminResponse>({
   client,
   options,
-}: MarsSwapperBaseConfigQuery<TData>) {
+}: MarsSwapperBaseAdminQuery<TData>) {
   return useQuery<AdminResponse, Error, TData>(
-    marsSwapperBaseQueryKeys.config(client?.contractAddress),
-    () => (client ? client.config() : Promise.reject(new Error('Invalid client'))),
+    marsSwapperBaseQueryKeys.admin(client?.contractAddress),
+    () => (client ? client.admin() : Promise.reject(new Error('Invalid client'))),
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }

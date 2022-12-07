@@ -6,8 +6,8 @@ use cosmwasm_std::{
 };
 use cw_storage_plus::{Bound, Map};
 
-use cw_controllers_admin_fork::AdminUpdate::InitializeAdmin;
-use cw_controllers_admin_fork::{Admin, AdminExecuteUpdate};
+use cw_controllers_admin_fork::AdminInit::SetInitialAdmin;
+use cw_controllers_admin_fork::{Admin, AdminUpdate};
 use mars_rover::adapters::swap::{
     EstimateExactInSwapResponse, ExecuteMsg, InstantiateMsg, QueryMsg, RouteResponse,
     RoutesResponse,
@@ -61,9 +61,8 @@ where
         deps: DepsMut<Q>,
         msg: InstantiateMsg,
     ) -> ContractResult<Response<M>> {
-        let validated = deps.api.addr_validate(&msg.admin)?;
         self.admin
-            .update(deps.storage, InitializeAdmin { admin: validated })?;
+            .initialize(deps.storage, deps.api, SetInitialAdmin { admin: msg.admin })?;
         Ok(Response::default())
     }
 
@@ -260,8 +259,8 @@ where
         &self,
         deps: DepsMut<Q>,
         info: MessageInfo,
-        update: AdminExecuteUpdate,
+        update: AdminUpdate,
     ) -> ContractResult<Response<M>> {
-        Ok(self.admin.execute_update(deps, info, update)?)
+        Ok(self.admin.update(deps, info, update)?)
     }
 }
