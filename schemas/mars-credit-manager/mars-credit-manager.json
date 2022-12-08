@@ -516,7 +516,7 @@
             "additionalProperties": false
           },
           {
-            "description": "Perform a swapper with an exact-in amount. Requires slippage allowance %.",
+            "description": "Perform a swapper with an exact-in amount. Requires slippage allowance %. If `coin_in_amount: None`, the accounts entire balance of `coin_in_denom` will be used.",
             "type": "object",
             "required": [
               "swap_exact_in"
@@ -525,13 +525,23 @@
               "swap_exact_in": {
                 "type": "object",
                 "required": [
-                  "coin_in",
+                  "coin_in_denom",
                   "denom_out",
                   "slippage"
                 ],
                 "properties": {
-                  "coin_in": {
-                    "$ref": "#/definitions/Coin"
+                  "coin_in_amount": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/definitions/Uint128"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "coin_in_denom": {
+                    "type": "string"
                   },
                   "denom_out": {
                     "type": "string"
@@ -1014,7 +1024,7 @@
             "additionalProperties": false
           },
           {
-            "description": "Perform a swapper with an exact-in amount. Requires slippage allowance %.",
+            "description": "Perform a swapper with an exact-in amount. Requires slippage allowance %. If `coin_in_amount: None`, the accounts entire balance of `coin_in_denom` will be used.",
             "type": "object",
             "required": [
               "swap_exact_in"
@@ -1024,7 +1034,7 @@
                 "type": "object",
                 "required": [
                   "account_id",
-                  "coin_in",
+                  "coin_in_denom",
                   "denom_out",
                   "slippage"
                 ],
@@ -1032,8 +1042,18 @@
                   "account_id": {
                     "type": "string"
                   },
-                  "coin_in": {
-                    "$ref": "#/definitions/Coin"
+                  "coin_in_amount": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/definitions/Uint128"
+                      },
+                      {
+                        "type": "null"
+                      }
+                    ]
+                  },
+                  "coin_in_denom": {
+                    "type": "string"
                   },
                   "denom_out": {
                     "type": "string"
