@@ -4,6 +4,7 @@ members = [
     "contracts/credit-manager",
     "contracts/swapper/*",
     "contracts/oracle-adapter",
+    "contracts/liquidity-helper",
     "packages/chains/*",
     "packages/health",
     "packages/outpost",
