@@ -53,3 +53,4 @@ cw-asset = { git = "https://github.com/apollodao/cw-asset.git", rev = "5e51773da
 
 [dev-dependencies]
 cw-multi-test = "0.15.1"
+osmosis-testing = "0.13.2"
