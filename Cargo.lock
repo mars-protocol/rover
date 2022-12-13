@@ -1060,23 +1060,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "liquidity-helper"
-version = "0.1.0"
-dependencies = [
- "cosmwasm-schema",
- "cosmwasm-std",
- "cosmwasm-storage",
- "cw-asset",
- "cw-dex",
- "cw-multi-test 0.15.1",
- "cw-storage-plus 0.15.1",
- "cw2 0.15.1",
- "schemars",
- "serde",
- "thiserror",
-]
-
-[[package]]
 name = "log"
 version = "0.4.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1296,6 +1279,23 @@ dependencies = [
  "osmosis-std 0.13.2",
  "osmosis-testing",
  "schemars",
+ "thiserror",
+]
+
+[[package]]
+name = "mars-zapper"
+version = "0.1.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cosmwasm-storage",
+ "cw-asset",
+ "cw-dex",
+ "cw-multi-test 0.15.1",
+ "cw-storage-plus 0.15.1",
+ "cw2 0.15.1",
+ "schemars",
+ "serde",
  "thiserror",
 ]
 

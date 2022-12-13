@@ -6,9 +6,9 @@ use cosmwasm_std::{to_binary, Addr, Coin, CosmosMsg, QuerierWrapper, StdResult, 
 use crate::msg::{ExecuteMsg, QueryMsg};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, Eq, JsonSchema)]
-pub struct LiquidityHelper(pub Addr);
+pub struct Zapper(pub Addr);
 
-impl LiquidityHelper {
+impl Zapper {
     pub fn addr(&self) -> Addr {
         self.0.clone()
     }

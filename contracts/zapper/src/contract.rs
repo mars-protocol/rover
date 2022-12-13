@@ -13,7 +13,7 @@ use crate::error::ContractError;
 use crate::msg::{CallbackMsg, ExecuteMsg, InstantiateMsg, QueryMsg};
 
 // version info for migration info
-const CONTRACT_NAME: &str = "crates.io:liquidity-helper";
+const CONTRACT_NAME: &str = env!("CARGO_PKG_NAME");
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[cfg_attr(not(feature = "library"), entry_point)]
@@ -23,7 +23,11 @@ pub fn instantiate(
     _info: MessageInfo,
     _msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+    set_contract_version(
+        deps.storage,
+        &format!("crates.io:{}", CONTRACT_NAME),
+        CONTRACT_VERSION,
+    )?;
     Ok(Response::default())
 }
 
@@ -90,7 +94,7 @@ pub fn execute_provide_liquidity(
     }
     .into_cosmos_msg(&env)?;
 
-    let event = Event::new("apollo/liquidity-helper/execute_provide_liquidity")
+    let event = Event::new("rover/zapper/execute_provide_liquidity")
         .add_attribute("lp_token_out", lp_token_out)
         .add_attribute("minimum_receive", minimum_receive);
 
@@ -124,7 +128,7 @@ pub fn execute_withdraw_liquidity(
     // Send LP tokens to recipient
     let send_msgs = assets_returned.transfer_msgs(&recipient)?;
 
-    let event = Event::new("apollo/liquidity-helper/execute_withdraw_liquidity")
+    let event = Event::new("rover/zapper/execute_withdraw_liquidity")
         .add_attribute("lp_token", lp_token.info.to_string())
         .add_attribute("assets_returned", assets_returned.to_string())
         .add_attribute("recipient", recipient);
@@ -149,7 +153,7 @@ pub fn execute_return_tokens(
     };
     let send_msg = asset.transfer_msg(&recipient)?;
 
-    let event = Event::new("apollo/liquidity-helper/execute_return_tokens")
+    let event = Event::new("rover/zapper/execute_return_tokens")
         .add_attribute("assets", asset.to_string())
         .add_attribute("recipient", recipient);
 
@@ -206,6 +210,3 @@ pub fn query_estimate_withdraw_liquidity(
 
     to_binary(&native_assets_returned)
 }
-
-#[cfg(test)]
-mod tests {}
