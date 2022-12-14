@@ -2,9 +2,7 @@ use std::fmt::Display;
 use std::str::FromStr;
 
 use osmosis_testing::cosmrs::proto::cosmos::bank::v1beta1::QueryBalanceRequest;
-use osmosis_testing::{
-    Bank, OsmosisTestApp, RunnerError, SigningAccount, Wasm,
-};
+use osmosis_testing::{Bank, OsmosisTestApp, RunnerError, SigningAccount, Wasm};
 
 use mars_zapper::msg::InstantiateMsg;
 
@@ -56,9 +54,11 @@ pub fn query_balance(bank: &Bank<OsmosisTestApp>, addr: &str, denom: &str) -> u1
 pub fn assert_err(actual: RunnerError, expected: impl Display) {
     match actual {
         RunnerError::ExecuteError { msg } => {
+            println!("ExecuteError, msg: {}", msg);
             assert!(msg.contains(&format!("{}", expected)))
         }
         RunnerError::QueryError { msg } => {
+            println!("QueryError, msg: {}", msg);
             assert!(msg.contains(&format!("{}", expected)))
         }
         _ => panic!("Unhandled error"),

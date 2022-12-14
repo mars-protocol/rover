@@ -61,6 +61,7 @@ fn test_estimate_provide_liquidity_with_invalid_coins() {
 
     let contract_addr = instantiate_contract(&wasm, &signer);
 
+    // Generic error: Querier contract error: codespace: undefined, code: 1: execute wasm contract failed
     wasm.query::<QueryMsg, Uint128>(
         &contract_addr,
         &QueryMsg::EstimateProvideLiquidity {
