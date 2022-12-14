@@ -26,9 +26,6 @@ pub fn instantiate_contract(wasm: &Wasm<OsmosisTestApp>, admin: &SigningAccount)
 
     wasm.instantiate(
         code_id,
-        // &InstantiateMsg {
-        //     admin: admin.address(),
-        // },
         &InstantiateMsg {},
         None,
         Some("zapper-osmosis-contract"),
