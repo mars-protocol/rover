@@ -1,56 +1,34 @@
 [package]
-name = "mars-zapper"
-version = "0.1.0"
-authors = ["Sturdy <sturdy@apollo.farm>"]
-edition = "2021"
-
-exclude = [
-  # Those files are rust-optimizer artifacts. You might want to commit them for convenience but they should not be part of the source code publication.
-  "contract.wasm",
-  "hash.txt",
-]
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+name          = "mars-zapper"
+version       = { workspace = true }
+authors       = { workspace = true }
+edition       = { workspace = true }
+repository    = { workspace = true }
+homepage      = { workspace = true }
+documentation = { workspace = true }
+keywords      = { workspace = true }
 
 [lib]
 crate-type = ["cdylib", "rlib"]
 
-[profile.release]
-opt-level = 3
-debug = false
-rpath = false
-lto = true
-debug-assertions = false
-codegen-units = 1
-panic = 'abort'
-incremental = false
-overflow-checks = true
-
 [features]
+# for quicker tests, cargo test --lib
 # for more explicit tests, cargo test --features=backtraces
 backtraces = ["cosmwasm-std/backtraces"]
-# use library feature to disable all instantiate/execute/query exports
-library = []
-
-[package.metadata.scripts]
-optimize = """docker run --rm -v "$(pwd)":/code \
-  --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
-  --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
-  cosmwasm/rust-optimizer:0.12.8
-"""
+library    = []
 
 [dependencies]
-cosmwasm-schema = "1.1.3"
-cosmwasm-std = "1.1.3"
-cosmwasm-storage = "1.1.3"
-cw-storage-plus = "0.15.1"
-cw2 = "0.15.1"
-schemars = "0.8.10"
-serde = { version = "1.0.145", default-features = false, features = ["derive"] }
-thiserror = { version = "1.0.31" }
-cw-dex = { git = "https://github.com/apollodao/cw-dex", rev = "b9d18cfbba8aa09ae4ee9459d308cda87ae5ffb3", features = ["osmosis"] }
+cosmwasm-schema  = { workspace = true }
+cosmwasm-std     = { workspace = true }
+cw2              = { workspace = true }
+cw-storage-plus  = { workspace = true }
+schemars         = { workspace = true }
+serde            = { workspace = true }
+thiserror        = { workspace = true }
+
 cw-asset = { git = "https://github.com/apollodao/cw-asset.git", rev = "057fb193013ad4adfc25063b99960972d1d208bc", features = ["astroport"] }
+# FIXME: develop branch dependency?
+cw-dex   = { git = "https://github.com/apollodao/cw-dex", rev = "b9d18cfbba8aa09ae4ee9459d308cda87ae5ffb3", features = ["osmosis"] }
 
 [dev-dependencies]
-cw-multi-test = "0.15.1"
-osmosis-testing = "0.13.2"
+osmosis-testing = { workspace = true }
