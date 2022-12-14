@@ -2,6 +2,7 @@
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
     to_binary, Addr, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Order, Response, StdResult,
+    Uint128,
 };
 use cw2::set_contract_version;
 use cw_controllers_admin_fork::AdminInit::SetInitialAdmin;
@@ -25,6 +26,8 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 const MAX_LIMIT: u32 = 30;
 const DEFAULT_LIMIT: u32 = 10;
+
+const BASE_AMOUNT: Uint128 = Uint128::new(1_000_000);
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
@@ -124,14 +127,13 @@ fn calculate_preview_redeem(
     vault: &VaultBase<Addr>,
 ) -> ContractResult<PriceResponse> {
     let total_issued = vault.query_total_vault_coins_issued(&deps.querier)?;
-    let amount = vault.query_preview_redeem(&deps.querier, total_issued)?;
-    let price_res = oracle.query_price(&deps.querier, &info.base_denom)?;
-    let value = price_res.price.checked_mul(amount.to_dec()?)?;
-
-    let price = if value.is_zero() || total_issued.is_zero() {
+    let price = if total_issued.is_zero() {
         Decimal::zero()
     } else {
-        value.checked_div(total_issued.to_dec()?)?
+        let amount = vault.query_preview_redeem(&deps.querier, BASE_AMOUNT)?;
+        let price_res = oracle.query_price(&deps.querier, &info.base_denom)?;
+        let value = price_res.price.checked_mul(amount.to_dec()?)?;
+        value.checked_div(BASE_AMOUNT.to_dec()?)?
     };
 
     Ok(PriceResponse {
