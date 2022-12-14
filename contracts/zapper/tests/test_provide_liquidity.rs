@@ -119,24 +119,24 @@ fn test_provide_liquidity_with_min_not_received() {
         )
         .unwrap();
 
+    let min_receive = estimate_amount + Uint128::one();
     let res_err = wasm
         .execute(
             &contract_addr,
             &ExecuteMsg::ProvideLiquidity {
                 lp_token_out: pool_denom.clone(),
                 recipient: None,
-                minimum_receive: estimate_amount,
+                minimum_receive: min_receive,
             },
             &coins_in,
             user,
         )
         .unwrap_err();
-    // FIXME: not equal because of fees?
     assert_err(
         res_err,
         CwDexError::MinOutNotReceived {
-            min_out: estimate_amount,
-            received: Uint128::from(24999975000000000000u128),
+            min_out: min_receive,
+            received: Uint128::from(25000000000000000000u128),
         },
     );
 
@@ -198,7 +198,7 @@ fn test_provide_liquidity_successfully() {
     let contract_balance = query_balance(&bank, &contract_addr, &pool_denom);
     assert_eq!(contract_balance, 0u128);
     let user_balance = query_balance(&bank, &user.address(), &pool_denom);
-    assert_eq!(user_balance, 24999975000000000000u128);
+    assert_eq!(user_balance, 25000000000000000000u128);
 }
 
 #[test]
@@ -258,5 +258,5 @@ fn test_provide_liquidity_with_different_recipient_successfully() {
     let user_balance = query_balance(&bank, &user.address(), &pool_denom);
     assert_eq!(user_balance, 0u128);
     let recipient_balance = query_balance(&bank, &recipient.address(), &pool_denom);
-    assert_eq!(recipient_balance, 24999975000000000000u128);
+    assert_eq!(recipient_balance, 25000000000000000000u128);
 }

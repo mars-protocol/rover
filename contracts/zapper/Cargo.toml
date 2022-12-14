@@ -48,8 +48,8 @@ cw2 = "0.15.1"
 schemars = "0.8.10"
 serde = { version = "1.0.145", default-features = false, features = ["derive"] }
 thiserror = { version = "1.0.31" }
-cw-dex = { git = "https://github.com/apollodao/cw-dex", rev = "de7394fdbc74a3401f4227f81389413991b309e3", features = ["osmosis"] }
-cw-asset = { git = "https://github.com/apollodao/cw-asset.git", rev = "5e51773da42ef82faa67576454e8c4b0971097f2", features = ["astroport"] }
+cw-dex = { git = "https://github.com/apollodao/cw-dex", rev = "b9d18cfbba8aa09ae4ee9459d308cda87ae5ffb3", features = ["osmosis"] }
+cw-asset = { git = "https://github.com/apollodao/cw-asset.git", rev = "057fb193013ad4adfc25063b99960972d1d208bc", features = ["astroport"] }
 
 [dev-dependencies]
 cw-multi-test = "0.15.1"

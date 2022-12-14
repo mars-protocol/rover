@@ -1,8 +1,8 @@
-use cosmwasm_std::{coin, Uint128};
+use cosmwasm_std::{coin, Coin, Uint128};
 use cw_dex::CwDexError;
 use osmosis_testing::{Account, Bank, Gamm, Module, OsmosisTestApp, Wasm};
 
-use mars_zapper::msg::ExecuteMsg;
+use mars_zapper::msg::{ExecuteMsg, QueryMsg};
 
 use crate::helpers::{assert_err, instantiate_contract, query_balance};
 
@@ -108,32 +108,39 @@ fn test_withdraw_liquidity_successfully() {
 
     let contract_pool_balance = query_balance(&bank, &contract_addr, &pool_denom);
     assert_eq!(contract_pool_balance, 0u128);
-    // FIXME: should be zeros?
     let contract_uatom_balance = query_balance(&bank, &contract_addr, "uatom");
-    assert_eq!(contract_uatom_balance, 5u128);
+    assert_eq!(contract_uatom_balance, 0u128);
     let contract_uosmo_balance = query_balance(&bank, &contract_addr, "uosmo");
-    assert_eq!(contract_uosmo_balance, 10u128);
+    assert_eq!(contract_uosmo_balance, 0u128);
 
     let user_pool_balance = query_balance(&bank, &user.address(), &pool_denom);
-    assert_eq!(user_pool_balance, 24999975000000000000u128);
+    assert_eq!(user_pool_balance, 25000000000000000000u128);
     let user_uatom_balance = query_balance(&bank, &user.address(), "uatom");
     assert_eq!(user_uatom_balance, 999995000000u128);
     let user_uosmo_balance = query_balance(&bank, &user.address(), "uosmo");
     assert_eq!(user_uosmo_balance, 999990000000u128);
 
     // FIXME: lack of Vec<Coin> in response
-    /*let estimate_coins: Vec<Coin> = wasm
+    let estimate_coins: Vec<Coin> = wasm
         .query(
             &contract_addr,
             &QueryMsg::EstimateWithdrawLiquidity {
-                coin_in: coin(100_000u128, &pool_denom),
+                coin_in: coin(25000000000000000000u128, &pool_denom),
             },
         )
         .unwrap();
-    println!("coins: {:?}", estimate_coins);
-    let uatom_amount = estimate_coins.iter().find(|c| c.denom.as_ref() == "uatom").unwrap().amount;
-    let uosmo_amount = estimate_coins.iter().find(|c| c.denom.as_ref() == "uosmo").unwrap().amount;
-    assert_eq!(uatom_amount, uosmo_amount);*/
+    let uatom_amount = estimate_coins
+        .iter()
+        .find(|c| c.denom == "uatom")
+        .unwrap()
+        .amount;
+    let uosmo_amount = estimate_coins
+        .iter()
+        .find(|c| c.denom == "uosmo")
+        .unwrap()
+        .amount;
+    assert_eq!(uatom_amount.u128(), 4950000u128);
+    assert_eq!(uosmo_amount.u128(), 9900000u128);
 
     wasm.execute(
         &contract_addr,
@@ -146,16 +153,16 @@ fn test_withdraw_liquidity_successfully() {
     let contract_pool_balance = query_balance(&bank, &contract_addr, &pool_denom);
     assert_eq!(contract_pool_balance, 0u128);
     let contract_uatom_balance = query_balance(&bank, &contract_addr, "uatom");
-    assert_eq!(contract_uatom_balance, 5u128);
+    assert_eq!(contract_uatom_balance, 0u128);
     let contract_uosmo_balance = query_balance(&bank, &contract_addr, "uosmo");
-    assert_eq!(contract_uosmo_balance, 10u128);
+    assert_eq!(contract_uosmo_balance, 0u128);
 
     let user_pool_balance = query_balance(&bank, &user.address(), &pool_denom);
     assert_eq!(user_pool_balance, 0u128);
     let user_uatom_balance = query_balance(&bank, &user.address(), "uatom");
-    assert_eq!(user_uatom_balance, 999999949995u128);
+    assert_eq!(user_uatom_balance, 999999950000u128);
     let user_uosmo_balance = query_balance(&bank, &user.address(), "uosmo");
-    assert_eq!(user_uosmo_balance, 999999899990u128);
+    assert_eq!(user_uosmo_balance, 999999900000u128);
 }
 
 /*#[test]
