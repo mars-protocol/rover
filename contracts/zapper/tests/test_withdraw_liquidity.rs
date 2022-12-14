@@ -60,11 +60,13 @@ fn test_withdraw_liquidity_successfully() {
     let app = OsmosisTestApp::new();
     let wasm = Wasm::new(&app);
 
+    let uatom_acc_balance = 1_000_000_000_000u128;
+    let uosmo_acc_balance = 1_000_000_000_000u128;
     let accs = app
         .init_accounts(
             &[
-                coin(1_000_000_000_000, "uatom"),
-                coin(1_000_000_000_000, "uosmo"),
+                coin(uatom_acc_balance, "uatom"),
+                coin(uosmo_acc_balance, "uosmo"),
             ],
             2,
         )
@@ -87,13 +89,11 @@ fn test_withdraw_liquidity_successfully() {
 
     let bank = Bank::new(&app);
 
-    let contract_pool_balance = query_balance(&bank, &contract_addr, &pool_denom);
-    assert_eq!(contract_pool_balance, 0u128);
-    let contract_uatom_balance = query_balance(&bank, &contract_addr, "uatom");
-    assert_eq!(contract_uatom_balance, 0u128);
-    let contract_uosmo_balance = query_balance(&bank, &contract_addr, "uosmo");
-    assert_eq!(contract_uosmo_balance, 0u128);
+    let user_pool_balance = query_balance(&bank, &user.address(), &pool_denom);
+    assert_eq!(user_pool_balance, 0u128);
 
+    let uatom_liquidity_amount = 5_000_000u128;
+    let uosmo_liquidity_amount = 10_000_000u128;
     wasm.execute(
         &contract_addr,
         &ExecuteMsg::ProvideLiquidity {
@@ -101,46 +101,41 @@ fn test_withdraw_liquidity_successfully() {
             recipient: None,
             minimum_receive: Uint128::one(),
         },
-        &[coin(5_000_000, "uatom"), coin(10_000_000, "uosmo")],
+        &[
+            coin(uatom_liquidity_amount, "uatom"),
+            coin(uosmo_liquidity_amount, "uosmo"),
+        ],
         user,
     )
     .unwrap();
 
-    let contract_pool_balance = query_balance(&bank, &contract_addr, &pool_denom);
-    assert_eq!(contract_pool_balance, 0u128);
-    let contract_uatom_balance = query_balance(&bank, &contract_addr, "uatom");
-    assert_eq!(contract_uatom_balance, 0u128);
-    let contract_uosmo_balance = query_balance(&bank, &contract_addr, "uosmo");
-    assert_eq!(contract_uosmo_balance, 0u128);
-
     let user_pool_balance = query_balance(&bank, &user.address(), &pool_denom);
     assert_eq!(user_pool_balance, 25000000000000000000u128);
-    let user_uatom_balance = query_balance(&bank, &user.address(), "uatom");
-    assert_eq!(user_uatom_balance, 999995000000u128);
-    let user_uosmo_balance = query_balance(&bank, &user.address(), "uosmo");
-    assert_eq!(user_uosmo_balance, 999990000000u128);
+    let user_uatom_balance_before = query_balance(&bank, &user.address(), "uatom");
+    let user_uosmo_balance_before = query_balance(&bank, &user.address(), "uosmo");
 
-    // FIXME: lack of Vec<Coin> in response
     let estimate_coins: Vec<Coin> = wasm
         .query(
             &contract_addr,
             &QueryMsg::EstimateWithdrawLiquidity {
-                coin_in: coin(25000000000000000000u128, &pool_denom),
+                coin_in: coin(user_pool_balance, &pool_denom),
             },
         )
         .unwrap();
-    let uatom_amount = estimate_coins
+    let uatom_estimate_amount = estimate_coins
         .iter()
         .find(|c| c.denom == "uatom")
         .unwrap()
-        .amount;
-    let uosmo_amount = estimate_coins
+        .amount
+        .u128();
+    let uosmo_estimate_amount = estimate_coins
         .iter()
         .find(|c| c.denom == "uosmo")
         .unwrap()
-        .amount;
-    assert_eq!(uatom_amount.u128(), 4950000u128);
-    assert_eq!(uosmo_amount.u128(), 9900000u128);
+        .amount
+        .u128();
+    assert_eq!(uatom_estimate_amount, 4950000u128);
+    assert_eq!(uosmo_estimate_amount, 9900000u128);
 
     wasm.execute(
         &contract_addr,
@@ -160,21 +155,29 @@ fn test_withdraw_liquidity_successfully() {
     let user_pool_balance = query_balance(&bank, &user.address(), &pool_denom);
     assert_eq!(user_pool_balance, 0u128);
     let user_uatom_balance = query_balance(&bank, &user.address(), "uatom");
-    assert_eq!(user_uatom_balance, 999999950000u128);
+    assert_eq!(
+        user_uatom_balance,
+        user_uatom_balance_before + uatom_estimate_amount
+    );
     let user_uosmo_balance = query_balance(&bank, &user.address(), "uosmo");
-    assert_eq!(user_uosmo_balance, 999999900000u128);
+    assert_eq!(
+        user_uosmo_balance,
+        user_uosmo_balance_before + uosmo_estimate_amount
+    );
 }
 
-/*#[test]
+#[test]
 fn test_withdraw_liquidity_with_different_recipient_successfully() {
     let app = OsmosisTestApp::new();
     let wasm = Wasm::new(&app);
 
+    let uatom_acc_balance = 1_000_000_000_000u128;
+    let uosmo_acc_balance = 1_000_000_000_000u128;
     let accs = app
         .init_accounts(
             &[
-                coin(1_000_000_000_000, "uatom"),
-                coin(1_000_000_000_000, "uosmo"),
+                coin(uatom_acc_balance, "uatom"),
+                coin(uosmo_acc_balance, "uosmo"),
             ],
             3,
         )
@@ -198,29 +201,93 @@ fn test_withdraw_liquidity_with_different_recipient_successfully() {
 
     let bank = Bank::new(&app);
 
-    let contract_balance = query_balance(&bank, &contract_addr, &pool_denom);
-    assert_eq!(contract_balance, 0u128);
-    let user_balance = query_balance(&bank, &user.address(), &pool_denom);
-    assert_eq!(user_balance, 0u128);
-    let recipient_balance = query_balance(&bank, &recipient.address(), &pool_denom);
-    assert_eq!(recipient_balance, 0u128);
+    let user_pool_balance = query_balance(&bank, &user.address(), &pool_denom);
+    assert_eq!(user_pool_balance, 0u128);
 
+    let uatom_liquidity_amount = 5_000_000u128;
+    let uosmo_liquidity_amount = 10_000_000u128;
     wasm.execute(
         &contract_addr,
         &ExecuteMsg::ProvideLiquidity {
             lp_token_out: pool_denom.clone(),
-            recipient: Some(recipient.address()),
+            recipient: None,
             minimum_receive: Uint128::one(),
         },
-        &[coin(5_000_000, "uatom"), coin(10_000_000, "uosmo")],
+        &[
+            coin(uatom_liquidity_amount, "uatom"),
+            coin(uosmo_liquidity_amount, "uosmo"),
+        ],
         user,
     )
     .unwrap();
 
-    let contract_balance = query_balance(&bank, &contract_addr, &pool_denom);
-    assert_eq!(contract_balance, 0u128);
-    let user_balance = query_balance(&bank, &user.address(), &pool_denom);
-    assert_eq!(user_balance, 0u128);
-    let recipient_balance = query_balance(&bank, &recipient.address(), &pool_denom);
-    assert_eq!(recipient_balance, 24999975000000000000u128);
-}*/
+    let user_pool_balance = query_balance(&bank, &user.address(), &pool_denom);
+    assert_eq!(user_pool_balance, 25000000000000000000u128);
+    let user_uatom_balance_before = query_balance(&bank, &user.address(), "uatom");
+    let user_uosmo_balance_before = query_balance(&bank, &user.address(), "uosmo");
+
+    let recipient_pool_balance = query_balance(&bank, &recipient.address(), &pool_denom);
+    assert_eq!(recipient_pool_balance, 0u128);
+    let recipient_uatom_balance_before = query_balance(&bank, &recipient.address(), "uatom");
+    let recipient_uosmo_balance_before = query_balance(&bank, &recipient.address(), "uosmo");
+
+    let estimate_coins: Vec<Coin> = wasm
+        .query(
+            &contract_addr,
+            &QueryMsg::EstimateWithdrawLiquidity {
+                coin_in: coin(user_pool_balance, &pool_denom),
+            },
+        )
+        .unwrap();
+    let uatom_estimate_amount = estimate_coins
+        .iter()
+        .find(|c| c.denom == "uatom")
+        .unwrap()
+        .amount
+        .u128();
+    let uosmo_estimate_amount = estimate_coins
+        .iter()
+        .find(|c| c.denom == "uosmo")
+        .unwrap()
+        .amount
+        .u128();
+    assert_eq!(uatom_estimate_amount, 4950000u128);
+    assert_eq!(uosmo_estimate_amount, 9900000u128);
+
+    wasm.execute(
+        &contract_addr,
+        &ExecuteMsg::WithdrawLiquidity {
+            recipient: Some(recipient.address()),
+        },
+        &[coin(user_pool_balance, &pool_denom)],
+        user,
+    )
+    .unwrap();
+
+    let contract_pool_balance = query_balance(&bank, &contract_addr, &pool_denom);
+    assert_eq!(contract_pool_balance, 0u128);
+    let contract_uatom_balance = query_balance(&bank, &contract_addr, "uatom");
+    assert_eq!(contract_uatom_balance, 0u128);
+    let contract_uosmo_balance = query_balance(&bank, &contract_addr, "uosmo");
+    assert_eq!(contract_uosmo_balance, 0u128);
+
+    let user_pool_balance = query_balance(&bank, &user.address(), &pool_denom);
+    assert_eq!(user_pool_balance, 0u128);
+    let user_uatom_balance = query_balance(&bank, &user.address(), "uatom");
+    assert_eq!(user_uatom_balance, user_uatom_balance_before);
+    let user_uosmo_balance = query_balance(&bank, &user.address(), "uosmo");
+    assert_eq!(user_uosmo_balance, user_uosmo_balance_before);
+
+    let recipient_pool_balance = query_balance(&bank, &recipient.address(), &pool_denom);
+    assert_eq!(recipient_pool_balance, 0u128);
+    let recipient_uatom_balance = query_balance(&bank, &recipient.address(), "uatom");
+    assert_eq!(
+        recipient_uatom_balance,
+        recipient_uatom_balance_before + uatom_estimate_amount
+    );
+    let recipient_uosmo_balance = query_balance(&bank, &recipient.address(), "uosmo");
+    assert_eq!(
+        recipient_uosmo_balance,
+        recipient_uosmo_balance_before + uosmo_estimate_amount
+    );
+}
