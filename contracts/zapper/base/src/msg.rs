@@ -20,17 +20,22 @@ pub enum ExecuteMsg {
 
 #[cw_serde]
 pub enum CallbackMsg {
-    ReturnTokens {
+    SingleSidedJoin {
+        asset: Asset,
+        lp_token: String,
+    },
+    ReturnLpTokens {
         balance_before: Asset,
         recipient: Addr,
+        minimum_receive: Uint128,
     },
 }
 
 impl CallbackMsg {
-    pub fn into_cosmos_msg(&self, env: &Env) -> StdResult<CosmosMsg> {
+    pub fn into_cosmos_msg(self, env: &Env) -> StdResult<CosmosMsg> {
         Ok(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: env.contract.address.to_string(),
-            msg: to_binary(&ExecuteMsg::Callback(self.clone()))?,
+            msg: to_binary(&ExecuteMsg::Callback(self))?,
             funds: vec![],
         }))
     }

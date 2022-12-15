@@ -1,8 +1,8 @@
 use std::marker::PhantomData;
 
 use cosmwasm_std::{
-    to_binary, Addr, Binary, Coin, Deps, DepsMut, Env, Event, MessageInfo, Response, StdResult,
-    Uint128,
+    attr, to_binary, Addr, Binary, Coin, Deps, DepsMut, Env, Event, MessageInfo, Response,
+    StdResult, Uint128,
 };
 use cw_asset::{Asset, AssetInfo, AssetList};
 use cw_utils::one_coin;
@@ -69,10 +69,21 @@ where
                     return Err(ContractError::Unauthorized {});
                 }
                 match msg {
-                    CallbackMsg::ReturnTokens {
+                    CallbackMsg::SingleSidedJoin { asset, lp_token } => {
+                        Self::execute_callback_single_sided_join(deps, env, info, asset, lp_token)
+                    }
+                    CallbackMsg::ReturnLpTokens {
                         balance_before,
                         recipient,
-                    } => Self::execute_return_tokens(deps, env, info, balance_before, recipient),
+                        minimum_receive,
+                    } => Self::execute_return_tokens(
+                        deps,
+                        env,
+                        info,
+                        balance_before,
+                        recipient,
+                        minimum_receive,
+                    ),
                 }
             }
         }
@@ -100,35 +111,69 @@ where
     ) -> Result<Response, ContractError> {
         let lp_token = AssetInfo::Native(lp_token_out.clone());
         let pool = P::get_pool_for_lp_token(deps.as_ref(), &lp_token)?;
-        let assets: AssetList = info.funds.clone().into();
+        let mut assets: AssetList = info.funds.clone().into();
 
-        // Unwrap recipient or use caller
-        let recipient =
-            recipient.map_or_else(|| Ok(info.sender.clone()), |x| deps.api.addr_validate(&x))?;
+        // Unwrap recipient or use caller's address
+        let recipient = recipient.map_or(Ok(info.sender), |x| deps.api.addr_validate(&x))?;
 
-        // Query contracts balance before providing liquidity
-        let balance_before = lp_token.query_balance(&deps.querier, &env.contract.address)?;
+        let mut event_attrs = vec![attr("assets", assets.to_string())];
 
-        let provide_liquidity_res =
-            pool.provide_liquidity(deps.as_ref(), &env, assets, minimum_receive)?;
+        let response = if assets.len() == 1 {
+            event_attrs.push(attr("action", "single_sided_provide_liquidity"));
 
-        // Send LP tokens to recipient
-        let callback_msg = CallbackMsg::ReturnTokens {
+            // Provide single sided
+            pool.provide_liquidity(deps.as_ref(), &env, assets.clone(), minimum_receive)?
+        } else {
+            event_attrs.push(attr("action", "double_sided_provide_liquidity"));
+
+            // Provide as much as possible double sided, and then issue callbacks to
+            // provide the remainder single sided
+            let (lp_tokens_received, tokens_used) =
+                P::simulate_noswap_join(deps.as_ref(), &lp_token, &assets)?;
+
+            // Get response with msg to provide double sided
+            let mut provide_res =
+                pool.provide_liquidity(deps.as_ref(), &env, assets.clone(), lp_tokens_received)?;
+
+            // Deduct tokens used to get remaining tokens
+            assets.deduct_many(&tokens_used)?;
+
+            // For each of the remaining tokens, issue a callback to provide
+            // liquidity single sided. These must be done as a callbacks, because
+            // the simulation inside pool.provide_liquidity will use the current
+            // reserves, which will be altered by each of the single sided joins,
+            // so the simulations will be incorrect unless we do them one at a time.
+            for asset in assets.into_iter() {
+                if asset.amount > Uint128::zero() {
+                    let msg = CallbackMsg::SingleSidedJoin {
+                        asset: asset.clone(),
+                        lp_token: lp_token_out.clone(),
+                    }
+                    .into_cosmos_msg(&env)?;
+                    provide_res = provide_res.add_message(msg);
+                }
+            }
+
+            provide_res
+        };
+
+        // Query current contract LP token balance
+        let lp_token_balance = lp_token.query_balance(&deps.querier, &env.contract.address)?;
+
+        // Callback to return LP tokens
+        let callback_msg = CallbackMsg::ReturnLpTokens {
             balance_before: Asset {
                 info: lp_token,
-                amount: balance_before,
+                amount: lp_token_balance,
             },
             recipient,
+            minimum_receive,
         }
         .into_cosmos_msg(&env)?;
 
-        let event = Event::new("rover/zapper/execute_provide_liquidity")
-            .add_attribute("lp_token_out", lp_token_out)
-            .add_attribute("minimum_receive", minimum_receive);
-
-        Ok(provide_liquidity_res
-            .add_message(callback_msg)
-            .add_event(event))
+        let event =
+            Event::new("rover/zapper/execute_provide_liquidity").add_attributes(event_attrs);
+        Ok(response.add_message(callback_msg).add_event(event))
     }
 
     fn execute_withdraw_liquidity(
@@ -165,22 +210,56 @@ where
             .add_event(event))
     }
 
+    /// CallbackMsg handler to provide liquidity with the given assets. This needs
+    /// to be a callback, rather than doing in the first ExecuteMsg, because
+    /// pool.provide_liquidity does a simulation with current reserves, and our
+    /// actions in the top level ExecuteMsg will alter the reserves, which means the
+    /// reserves would be wrong in the provide liquidity simulation.
+    pub fn execute_callback_single_sided_join(
+        deps: DepsMut,
+        env: Env,
+        _info: MessageInfo,
+        asset: Asset,
+        lp_token: String,
+    ) -> Result<Response, ContractError> {
+        let assets = AssetList::from(vec![asset.clone()]);
+
+        let lp_token = AssetInfo::Native(lp_token);
+        let pool = P::get_pool_for_lp_token(deps.as_ref(), &lp_token)?;
+        let res = pool.provide_liquidity(deps.as_ref(), &env, assets, Uint128::one())?;
+
+        let event = Event::new("rover/zapper/execute_callback_single_sided_join")
+            .add_attribute("asset", asset.to_string());
+
+        Ok(res.add_event(event))
+    }
+
     fn execute_return_tokens(
         deps: DepsMut,
         env: Env,
         _info: MessageInfo,
         balance_before: Asset,
         recipient: Addr,
+        minimum_receive: Uint128,
     ) -> Result<Response, ContractError> {
         let balance_after = balance_before.query_balance(&deps.querier, &env.contract.address)?;
-        let amount = balance_after.checked_sub(balance_before.amount)?;
+        let return_amount = balance_after.checked_sub(balance_before.amount)?;
+
+        // Assert return_amount is greater than minimum_receive
+        if return_amount < minimum_receive {
+            return Err(ContractError::InsufficientLpTokens {
+                expected: minimum_receive,
+                received: return_amount,
+            });
+        }
+
         let asset = Asset {
             info: balance_before.info,
-            amount,
+            amount: return_amount,
         };
         let send_msg = asset.transfer_msg(&recipient)?;
 
-        let event = Event::new("rover/zapper/execute_return_tokens")
+        let event = Event::new("rover/zapper/execute_callback_return_lp_tokens")
             .add_attribute("assets", asset.to_string())
             .add_attribute("recipient", recipient);
 
@@ -196,9 +275,30 @@ where
         let lp_token = AssetInfo::Native(lp_token_out);
         let pool = P::get_pool_for_lp_token(deps, &lp_token)?;
 
-        let lp_tokens_returned = pool.simulate_provide_liquidity(deps, &env, coins_in.into())?;
+        let mut assets: AssetList = coins_in.into();
 
-        to_binary(&lp_tokens_returned.amount)
+        let lp_tokens_returned = if assets.len() == 1 {
+            let lp_tokens_returned = pool.simulate_provide_liquidity(deps, &env, assets)?;
+            lp_tokens_returned.amount
+        } else {
+            let (mut lp_tokens_received, tokens_used) =
+                P::simulate_noswap_join(deps, &lp_token, &assets)?;
+
+            // Deduct tokens used to get remaining tokens
+            assets.deduct_many(&tokens_used)?;
+
+            for asset in assets.into_iter() {
+                if asset.amount > Uint128::zero() {
+                    let assets = AssetList::from(vec![asset.clone()]);
+                    let returned = pool.simulate_provide_liquidity(deps, &env, assets)?;
+                    lp_tokens_received += returned.amount;
+                }
+            }
+
+            lp_tokens_received
+        };
+
+        to_binary(&lp_tokens_returned)
     }
 
     fn query_estimate_withdraw_liquidity(

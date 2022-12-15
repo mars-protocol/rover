@@ -30,12 +30,13 @@ fn test_only_contract_itself_can_callback() {
     let res_err = wasm
         .execute(
             &contract_addr,
-            &ExecuteMsg::Callback(CallbackMsg::ReturnTokens {
+            &ExecuteMsg::Callback(CallbackMsg::ReturnLpTokens {
                 balance_before: AssetBase {
                     info: AssetInfoBase::Native("gamm/pool/1".to_string()),
                     amount: Uint128::one(),
                 },
                 recipient: Addr::unchecked(user.address()),
+                minimum_receive: Uint128::one(),
             }),
             &[],
             user,

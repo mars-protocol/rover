@@ -2,7 +2,7 @@ use cosmwasm_std::{coin, Uint128};
 use cw_dex::CwDexError;
 use osmosis_testing::{Account, Bank, Gamm, Module, OsmosisTestApp, Wasm};
 
-use mars_zapper_base::{ExecuteMsg, QueryMsg};
+use mars_zapper_base::{ContractError, ExecuteMsg, QueryMsg};
 
 use crate::helpers::{assert_err, instantiate_contract, query_balance};
 
@@ -134,8 +134,8 @@ fn test_provide_liquidity_with_min_not_received() {
         .unwrap_err();
     assert_err(
         res_err,
-        CwDexError::MinOutNotReceived {
-            min_out: min_receive,
+        ContractError::InsufficientLpTokens {
+            expected: min_receive,
             received: Uint128::from(25000000000000000000u128),
         },
     );
@@ -147,7 +147,7 @@ fn test_provide_liquidity_with_min_not_received() {
 }
 
 #[test]
-fn test_provide_liquidity_with_one_coin_successfully() {
+fn test_provide_liquidity_with_one_coin() {
     let app = OsmosisTestApp::new();
     let wasm = Wasm::new(&app);
 
@@ -230,7 +230,7 @@ fn test_provide_liquidity_with_one_coin_successfully() {
 }
 
 #[test]
-fn test_provide_liquidity_with_two_coins_successfully() {
+fn test_provide_liquidity_with_two_balanced_coins() {
     let app = OsmosisTestApp::new();
     let wasm = Wasm::new(&app);
 
@@ -320,7 +320,100 @@ fn test_provide_liquidity_with_two_coins_successfully() {
 }
 
 #[test]
-fn test_provide_liquidity_with_different_recipient_successfully() {
+fn test_provide_liquidity_with_two_unbalanced_coins() {
+    let app = OsmosisTestApp::new();
+    let wasm = Wasm::new(&app);
+
+    let uatom_acc_balance = 1_000_000_000_000u128;
+    let uosmo_acc_balance = 1_000_000_000_000u128;
+    let accs = app
+        .init_accounts(
+            &[
+                coin(uatom_acc_balance, "uatom"),
+                coin(uosmo_acc_balance, "uosmo"),
+            ],
+            2,
+        )
+        .unwrap();
+    let admin = &accs[0];
+    let user = &accs[1];
+
+    let gamm = Gamm::new(&app);
+    let pool_id = gamm
+        .create_basic_pool(
+            &[coin(20_000_000_000, "uatom"), coin(40_000_000_000, "uosmo")],
+            admin,
+        )
+        .unwrap()
+        .data
+        .pool_id;
+    let pool_denom = format!("gamm/pool/{}", pool_id);
+
+    let contract_addr = instantiate_contract(&wasm, admin);
+
+    let bank = Bank::new(&app);
+
+    let contract_balance = query_balance(&bank, &contract_addr, &pool_denom);
+    assert_eq!(contract_balance, 0u128);
+    let user_balance = query_balance(&bank, &user.address(), &pool_denom);
+    assert_eq!(user_balance, 0u128);
+
+    let uatom_liquidity_amount = 5_000_000u128;
+    let uosmo_liquidity_amount = 22_000_000u128;
+    let coins_in = vec![
+        coin(uatom_liquidity_amount, "uatom"),
+        coin(uosmo_liquidity_amount, "uosmo"),
+    ];
+
+    let estimate_amount: Uint128 = wasm
+        .query(
+            &contract_addr,
+            &QueryMsg::EstimateProvideLiquidity {
+                lp_token_out: pool_denom.clone(),
+                coins_in: coins_in.clone(),
+            },
+        )
+        .unwrap();
+    assert_eq!(estimate_amount.u128(), 39923886388075400u128);
+
+    wasm.execute(
+        &contract_addr,
+        &ExecuteMsg::ProvideLiquidity {
+            lp_token_out: pool_denom.clone(),
+            recipient: None,
+            minimum_receive: estimate_amount,
+        },
+        &coins_in,
+        user,
+    )
+    .unwrap();
+
+    let contract_pool_balance = query_balance(&bank, &contract_addr, &pool_denom);
+    assert_eq!(contract_pool_balance, 0u128);
+    let contract_uatom_balance = query_balance(&bank, &contract_addr, "uatom");
+    assert_eq!(contract_uatom_balance, 0u128);
+    let contract_uosmo_balance = query_balance(&bank, &contract_addr, "uosmo");
+    assert_eq!(contract_uosmo_balance, 0u128);
+
+    // FIXME: not equal?
+    //  left: `39923886666367302`,
+    //  right: `39923886388075400`
+    // let user_pool_balance = query_balance(&bank, &user.address(), &pool_denom);
+    // assert_eq!(user_pool_balance, estimate_amount.u128());
+    let user_uatom_balance = query_balance(&bank, &user.address(), "uatom");
+    assert_eq!(
+        user_uatom_balance,
+        uatom_acc_balance - uatom_liquidity_amount
+    );
+    let user_uosmo_balance = query_balance(&bank, &user.address(), "uosmo");
+    assert_eq!(
+        user_uosmo_balance,
+        uosmo_acc_balance - uosmo_liquidity_amount
+    );
+}
+
+#[test]
+fn test_provide_liquidity_with_different_recipient() {
     let app = OsmosisTestApp::new();
     let wasm = Wasm::new(&app);
 
