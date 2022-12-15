@@ -22,9 +22,10 @@ cosmwasm-std     = { workspace = true }
 cw2              = { workspace = true }
 mars-zapper-base = { workspace = true }
 
-cw-asset = { git = "https://github.com/apollodao/cw-asset.git", rev = "057fb193013ad4adfc25063b99960972d1d208bc", features = ["astroport"] }
+cw-asset = { git = "https://github.com/apollodao/cw-asset.git", rev = "057fb193013ad4adfc25063b99960972d1d208bc" }
 # FIXME: develop branch dependency?
 cw-dex   = { git = "https://github.com/apollodao/cw-dex", rev = "b9d18cfbba8aa09ae4ee9459d308cda87ae5ffb3", features = ["osmosis"] }
 
 [dev-dependencies]
+cw-utils        = { workspace = true }
 osmosis-testing = { workspace = true }

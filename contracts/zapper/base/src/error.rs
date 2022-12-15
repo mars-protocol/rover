@@ -1,5 +1,6 @@
 use cosmwasm_std::{OverflowError, StdError};
 use cw_dex::CwDexError;
+use cw_utils::PaymentError;
 use thiserror::Error;
 
 #[derive(Error, Debug)]
@@ -17,17 +18,5 @@ pub enum ContractError {
     Unauthorized {},
 
     #[error("{0}")]
-    Generic(String),
-}
-
-impl From<&str> for ContractError {
-    fn from(msg: &str) -> Self {
-        ContractError::Generic(msg.to_string())
-    }
-}
-
-impl From<String> for ContractError {
-    fn from(msg: String) -> Self {
-        ContractError::Generic(msg)
-    }
+    PaymentError(#[from] PaymentError),
 }

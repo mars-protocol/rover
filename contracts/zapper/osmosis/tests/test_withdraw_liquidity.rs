@@ -1,12 +1,41 @@
 use cosmwasm_std::{coin, Coin, Uint128};
 use cw_dex::CwDexError;
+use cw_utils::PaymentError;
 use osmosis_testing::{Account, Bank, Gamm, Module, OsmosisTestApp, Wasm};
 
-use mars_zapper_base::{ExecuteMsg, QueryMsg};
+use mars_zapper_base::{ContractError, ExecuteMsg, QueryMsg};
 
 use crate::helpers::{assert_err, instantiate_contract, query_balance};
 
 pub mod helpers;
+
+#[test]
+fn test_withdraw_liquidity_without_funds() {
+    let app = OsmosisTestApp::new();
+    let wasm = Wasm::new(&app);
+
+    let signer = app
+        .init_account(&[
+            coin(1_000_000_000_000, "gamm/pool/1"),
+            coin(1_000_000_000_000, "uosmo"),
+        ])
+        .unwrap();
+
+    let contract_addr = instantiate_contract(&wasm, &signer);
+
+    let res_err = wasm
+        .execute(
+            &contract_addr,
+            &ExecuteMsg::WithdrawLiquidity { recipient: None },
+            &[],
+            &signer,
+        )
+        .unwrap_err();
+    assert_err(
+        res_err,
+        ContractError::PaymentError(PaymentError::NoFunds {}),
+    );
+}
 
 #[test]
 fn test_withdraw_liquidity_with_more_than_one_coin_sent() {
@@ -30,7 +59,10 @@ fn test_withdraw_liquidity_with_more_than_one_coin_sent() {
             &signer,
         )
         .unwrap_err();
-    assert_err(res_err, "More than one coin sent to Withdraw Liquidity");
+    assert_err(
+        res_err,
+        ContractError::PaymentError(PaymentError::MultipleDenoms {}),
+    );
 }
 
 #[test]

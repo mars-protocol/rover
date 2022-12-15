@@ -5,6 +5,7 @@ use cosmwasm_std::{
     Uint128,
 };
 use cw_asset::{Asset, AssetInfo, AssetList};
+use cw_utils::one_coin;
 
 use crate::{CallbackMsg, ContractError, ExecuteMsg, InstantiateMsg, LpPool, QueryMsg};
 
@@ -137,9 +138,7 @@ where
         recipient: Option<String>,
     ) -> Result<Response, ContractError> {
         // Make sure only one coin is sent
-        if info.funds.len() != 1 {
-            return Err("More than one coin sent to Withdraw Liquidity".into());
-        }
+        one_coin(&info)?;
         let lp_token: Asset = info.funds[0].clone().into();
 
         let pool = P::get_pool_for_lp_token(deps.as_ref(), &lp_token.info)?;
