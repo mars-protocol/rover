@@ -108,9 +108,11 @@ fn test_vault_coin_preview_redeem() {
         )
         .unwrap();
 
-    // vault token price =
-    //      total lp tokens in vault * price of lp token / total vault tokens issued
-    // This formula can't be used in production because the integers are too high
-    // but for this test it's a good check on our current formula
+    // vault token price = total lp tokens in vault * price of lp token / total vault tokens issued
+    //    This formula can't be used in production because the first multiplication results in an
+    //    integer that exceeds the memory allocated to u128's. But for this test it's a good check
+    //    on our current formula where we use:
+    // Decimal::from_ratio(total_underlying, vault_coin_supply) * price of lp token
+    //    This method does not cause an overflow given Decimal::from_ratio casts to u256
     assert_eq!(oracle_adapter_res.price, price_per_vault_coin)
 }
