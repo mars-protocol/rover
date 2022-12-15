@@ -4,7 +4,7 @@ use osmosis_testing::{Gamm, Module, OsmosisTestApp, Wasm};
 use std::ops::Div;
 use std::str::FromStr;
 
-use mars_zapper::msg::QueryMsg;
+use mars_zapper_base::QueryMsg;
 
 use crate::helpers::{assert_err, instantiate_contract};
 

@@ -1216,7 +1216,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mars-zapper"
+name = "mars-zapper-base"
 version = "1.0.0"
 dependencies = [
  "cosmwasm-schema",
@@ -1225,10 +1225,21 @@ dependencies = [
  "cw-dex",
  "cw-storage-plus 1.0.1",
  "cw2 1.0.0",
- "osmosis-testing",
  "schemars",
  "serde",
  "thiserror",
+]
+
+[[package]]
+name = "mars-zapper-osmosis"
+version = "1.0.0"
+dependencies = [
+ "cosmwasm-std",
+ "cw-asset",
+ "cw-dex",
+ "cw2 1.0.0",
+ "mars-zapper-base",
+ "osmosis-testing",
 ]
 
 [[package]]

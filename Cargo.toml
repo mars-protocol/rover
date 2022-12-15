@@ -4,7 +4,7 @@ members = [
     "contracts/credit-manager",
     "contracts/swapper/*",
     "contracts/oracle-adapter",
-    "contracts/zapper",
+    "contracts/zapper/*",
     "packages/chains/*",
     "packages/health",
     "packages/outpost",
@@ -62,6 +62,7 @@ mars-rover                = { version = "1.0.0", path = "./packages/rover" }
 mars-account-nft    = { version = "1.0.0", path = "./contracts/account-nft", features = ["library"] }
 mars-oracle-adapter = { version = "1.0.0", path = "contracts/oracle-adapter", features = ["library"] }
 mars-swapper-base   = { version = "1.0.0", path = "./contracts/swapper/base" }
+mars-zapper-base    = { version = "1.0.0", path = "./contracts/zapper/base" }
 
 # mocks
 mars-mock-credit-manager  = { version = "1.0.0", path = "./contracts/mock-credit-manager", features = ["library"] }

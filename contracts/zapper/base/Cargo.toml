@@ -1,0 +1,31 @@
+[package]
+name          = "mars-zapper-base"
+version       = { workspace = true }
+authors       = { workspace = true }
+edition       = { workspace = true }
+repository    = { workspace = true }
+homepage      = { workspace = true }
+documentation = { workspace = true }
+keywords      = { workspace = true }
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[features]
+# for quicker tests, cargo test --lib
+# for more explicit tests, cargo test --features=backtraces
+backtraces = ["cosmwasm-std/backtraces"]
+library    = []
+
+[dependencies]
+cosmwasm-schema  = { workspace = true }
+cosmwasm-std     = { workspace = true }
+cw2              = { workspace = true }
+cw-storage-plus  = { workspace = true }
+schemars         = { workspace = true }
+serde            = { workspace = true }
+thiserror        = { workspace = true }
+
+cw-asset = { git = "https://github.com/apollodao/cw-asset.git", rev = "057fb193013ad4adfc25063b99960972d1d208bc", features = ["astroport"] }
+# FIXME: develop branch dependency?
+cw-dex   = { git = "https://github.com/apollodao/cw-dex", rev = "b9d18cfbba8aa09ae4ee9459d308cda87ae5ffb3" }

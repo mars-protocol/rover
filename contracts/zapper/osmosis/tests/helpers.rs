@@ -4,7 +4,7 @@ use std::str::FromStr;
 use osmosis_testing::cosmrs::proto::cosmos::bank::v1beta1::QueryBalanceRequest;
 use osmosis_testing::{Bank, OsmosisTestApp, RunnerError, SigningAccount, Wasm};
 
-use mars_zapper::msg::InstantiateMsg;
+use mars_zapper_base::InstantiateMsg;
 
 const CONTRACT_NAME: &str = env!("CARGO_PKG_NAME");
 
@@ -12,7 +12,7 @@ pub fn wasm_file() -> String {
     let artifacts_dir =
         std::env::var("ARTIFACTS_DIR_PATH").unwrap_or_else(|_| "artifacts".to_string());
     let snaked_name = CONTRACT_NAME.replace('-', "_");
-    format!("../../{}/{}.wasm", artifacts_dir, snaked_name)
+    format!("../../../{}/{}.wasm", artifacts_dir, snaked_name)
 }
 
 pub fn instantiate_contract(wasm: &Wasm<OsmosisTestApp>, admin: &SigningAccount) -> String {

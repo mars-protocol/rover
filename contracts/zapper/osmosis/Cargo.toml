@@ -1,5 +1,5 @@
 [package]
-name          = "mars-zapper"
+name          = "mars-zapper-osmosis"
 version       = { workspace = true }
 authors       = { workspace = true }
 edition       = { workspace = true }
@@ -18,13 +18,9 @@ backtraces = ["cosmwasm-std/backtraces"]
 library    = []
 
 [dependencies]
-cosmwasm-schema  = { workspace = true }
 cosmwasm-std     = { workspace = true }
 cw2              = { workspace = true }
-cw-storage-plus  = { workspace = true }
-schemars         = { workspace = true }
-serde            = { workspace = true }
-thiserror        = { workspace = true }
+mars-zapper-base = { workspace = true }
 
 cw-asset = { git = "https://github.com/apollodao/cw-asset.git", rev = "057fb193013ad4adfc25063b99960972d1d208bc", features = ["astroport"] }
 # FIXME: develop branch dependency?

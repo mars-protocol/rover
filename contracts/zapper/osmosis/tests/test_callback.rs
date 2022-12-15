@@ -1,9 +1,8 @@
 use cosmwasm_std::{coin, Addr, Uint128};
 use cw_asset::{AssetBase, AssetInfoBase};
-use mars_zapper::ContractError;
 use osmosis_testing::{Account, Module, OsmosisTestApp, Wasm};
 
-use mars_zapper::msg::{CallbackMsg, ExecuteMsg};
+use mars_zapper_base::{CallbackMsg, ContractError, ExecuteMsg};
 
 use crate::helpers::{assert_err, instantiate_contract};
 
