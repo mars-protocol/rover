@@ -1,5 +1,4 @@
-use cosmwasm_std::{coin, Addr, Uint128};
-use cw_asset::{AssetBase, AssetInfoBase};
+use cosmwasm_std::{coin, Addr, Coin, Uint128};
 use osmosis_testing::{Account, Module, OsmosisTestApp, Wasm};
 
 use mars_zapper_base::{CallbackMsg, ContractError, ExecuteMsg};
@@ -31,10 +30,7 @@ fn test_only_contract_itself_can_callback() {
         .execute(
             &contract_addr,
             &ExecuteMsg::Callback(CallbackMsg::ReturnLpTokens {
-                balance_before: AssetBase {
-                    info: AssetInfoBase::Native("gamm/pool/1".to_string()),
-                    amount: Uint128::one(),
-                },
+                balance_before: Coin::new(1u128, "gamm/pool/1"),
                 recipient: Addr::unchecked(user.address()),
                 minimum_receive: Uint128::one(),
             }),

@@ -1,6 +1,5 @@
 use crate::ContractError;
 use cosmwasm_std::{Binary, Coin, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128};
-use cw_asset::Asset;
 use cw_dex::traits::Pool;
 use cw_dex::CwDexError;
 
@@ -24,8 +23,8 @@ pub trait LpPool {
         deps: DepsMut,
         env: Env,
         info: MessageInfo,
-        asset: Asset,
-        lp_token: String,
+        lp_token_out: String,
+        coin_in: Coin,
     ) -> Result<Response, ContractError>;
 
     fn query_estimate_provide_liquidity(

@@ -2,7 +2,7 @@ use cosmwasm_std::{
     attr, to_binary, Binary, Coin, Deps, DepsMut, Env, Event, MessageInfo, Response, StdResult,
     Uint128,
 };
-use cw_asset::{Asset, AssetInfo, AssetList};
+use cw_asset::AssetList;
 use cw_dex::osmosis::OsmosisPool;
 use cw_dex::traits::Pool;
 use cw_dex::CwDexError;
@@ -53,7 +53,6 @@ impl LpPool for OsmosisLpPool {
         recipient: Option<String>,
         minimum_receive: Uint128,
     ) -> Result<Response, ContractError> {
-        let lp_token = AssetInfo::Native(lp_token_out.clone());
         let pool = Self::get_pool_for_lp_token(deps.as_ref(), &lp_token_out)?;
         let mut assets: AssetList = info.funds.clone().into();
 
@@ -87,11 +86,11 @@ impl LpPool for OsmosisLpPool {
             // the simulation inside pool.provide_liquidity will use the current
             // reserves, which will be altered by each of the single sided joins,
             // so the simulations will be incorrect unless we do them one at a time.
-            for asset in assets.into_iter() {
+            for asset in assets.to_vec() {
                 if asset.amount > Uint128::zero() {
                     let msg = CallbackMsg::SingleSidedJoin {
-                        asset: asset.clone(),
-                        lp_token: lp_token_out.clone(),
+                        lp_token_out: lp_token_out.clone(),
+                        coin_in: asset.try_into()?,
                     }
                     .into_cosmos_msg(&env)?;
                     provide_res = provide_res.add_message(msg);
@@ -102,14 +101,13 @@ impl LpPool for OsmosisLpPool {
         };
 
         // Query current contract LP token balance
-        let lp_token_balance = lp_token.query_balance(&deps.querier, &env.contract.address)?;
+        let lp_token_balance = deps
+            .querier
+            .query_balance(&env.contract.address, &lp_token_out)?;
 
         // Callback to return LP tokens
         let callback_msg = CallbackMsg::ReturnLpTokens {
-            balance_before: Asset {
-                info: lp_token,
-                amount: lp_token_balance,
-            },
+            balance_before: lp_token_balance,
             recipient,
             minimum_receive,
         }
@@ -129,16 +127,19 @@ impl LpPool for OsmosisLpPool {
         deps: DepsMut,
         env: Env,
         _info: MessageInfo,
-        asset: Asset,
-        lp_token: String,
+        lp_token_out: String,
+        coin_in: Coin,
     ) -> Result<Response, ContractError> {
-        let assets = AssetList::from(vec![asset.clone()]);
-
-        let pool = Self::get_pool_for_lp_token(deps.as_ref(), &lp_token)?;
-        let res = pool.provide_liquidity(deps.as_ref(), &env, assets, Uint128::one())?;
+        let pool = Self::get_pool_for_lp_token(deps.as_ref(), &lp_token_out)?;
+        let res = pool.provide_liquidity(
+            deps.as_ref(),
+            &env,
+            vec![coin_in.clone()].into(),
+            Uint128::one(),
+        )?;
 
         let event = Event::new("rover/zapper/execute_callback_single_sided_join")
-            .add_attribute("asset", asset.to_string());
+            .add_attribute("coin_in", coin_in.to_string());
 
         Ok(res.add_event(event))
     }
@@ -162,7 +163,7 @@ impl LpPool for OsmosisLpPool {
             // Deduct tokens used to get remaining tokens
             assets.deduct_many(&tokens_used)?;
 
-            for asset in assets.into_iter() {
+            for asset in assets.to_vec() {
                 if asset.amount > Uint128::zero() {
                     let assets = AssetList::from(vec![asset.clone()]);
                     let returned = pool.simulate_provide_liquidity(deps, &env, assets)?;

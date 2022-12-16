@@ -1221,11 +1221,9 @@ version = "1.0.0"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
- "cw-asset",
  "cw-dex",
  "cw-storage-plus 1.0.1",
  "cw-utils 0.16.0",
- "cw2 1.0.0",
  "schemars",
  "serde",
  "thiserror",

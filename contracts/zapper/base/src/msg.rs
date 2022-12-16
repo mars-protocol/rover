@@ -1,6 +1,5 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{to_binary, Addr, Coin, CosmosMsg, Env, StdResult, Uint128, WasmMsg};
-use cw_asset::Asset;
 
 #[cw_serde]
 pub struct InstantiateMsg {}
@@ -21,11 +20,11 @@ pub enum ExecuteMsg {
 #[cw_serde]
 pub enum CallbackMsg {
     SingleSidedJoin {
-        asset: Asset,
-        lp_token: String,
+        lp_token_out: String,
+        coin_in: Coin,
     },
     ReturnLpTokens {
-        balance_before: Asset,
+        balance_before: Coin,
         recipient: Addr,
         minimum_receive: Uint128,
     },
