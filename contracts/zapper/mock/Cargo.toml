@@ -1,5 +1,5 @@
 [package]
-name          = "mars-mock-zapper"
+name          = "mars-zapper-mock"
 version       = { workspace = true }
 authors       = { workspace = true }
 edition       = { workspace = true }

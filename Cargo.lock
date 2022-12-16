@@ -457,14 +457,14 @@ dependencies = [
 
 [[package]]
 name = "cw-multi-test"
-version = "0.16.1"
+version = "0.16.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2dc50fde3ad87ef4e3a3e57c73d11326333318761c7655cc8cae67c40382ac91"
+checksum = "c2eb84554bbfa6b66736abcd6a9bfdf237ee0ecb83910f746dff7f799093c80a"
 dependencies = [
  "anyhow",
  "cosmwasm-std",
- "cw-storage-plus 0.16.0",
- "cw-utils 0.16.0",
+ "cw-storage-plus 1.0.1",
+ "cw-utils 1.0.1",
  "derivative",
  "itertools",
  "k256",
@@ -517,6 +517,21 @@ dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw2 0.16.0",
+ "schemars",
+ "semver",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "cw-utils"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c80e93d1deccb8588db03945016a292c3c631e6325d349ebb35d2db6f4f946f7"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw2 1.0.0",
  "schemars",
  "semver",
  "serde",
@@ -1040,11 +1055,11 @@ dependencies = [
  "mars-mock-oracle",
  "mars-mock-red-bank",
  "mars-mock-vault",
- "mars-mock-zapper",
  "mars-oracle-adapter",
  "mars-outpost",
  "mars-rover",
  "mars-swapper-mock",
+ "mars-zapper-mock",
 ]
 
 [[package]]
@@ -1094,18 +1109,6 @@ dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "cosmwasm-vault-standard",
- "cw-storage-plus 1.0.1",
- "cw-utils 0.16.0",
- "mars-rover",
- "thiserror",
-]
-
-[[package]]
-name = "mars-mock-zapper"
-version = "1.0.0"
-dependencies = [
- "cosmwasm-schema",
- "cosmwasm-std",
  "cw-storage-plus 1.0.1",
  "cw-utils 0.16.0",
  "mars-rover",
@@ -1226,6 +1229,18 @@ dependencies = [
  "cw-utils 0.16.0",
  "schemars",
  "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "mars-zapper-mock"
+version = "1.0.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-storage-plus 1.0.1",
+ "cw-utils 0.16.0",
+ "mars-rover",
  "thiserror",
 ]
 

@@ -19,7 +19,6 @@ fn main() -> std::io::Result<()> {
         "mars-mock-red-bank",
         "mars-mock-vault",
         "mars-mock-oracle",
-        "mars-mock-zapper",
         "mars-mock-credit-manager",
     ];
 

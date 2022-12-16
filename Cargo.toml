@@ -15,7 +15,6 @@ members = [
     "contracts/mock-oracle",
     "contracts/mock-red-bank",
     "contracts/mock-vault",
-    "contracts/mock-zapper",
     "contracts/mock-credit-manager",
 ]
 
@@ -69,8 +68,8 @@ mars-mock-credit-manager  = { version = "1.0.0", path = "./contracts/mock-credit
 mars-mock-oracle          = { version = "1.0.0", path = "./contracts/mock-oracle", features = ["library"] }
 mars-mock-red-bank        = { version = "1.0.0", path = "./contracts/mock-red-bank", features = ["library"] }
 mars-mock-vault           = { version = "1.0.0", path = "./contracts/mock-vault", features = ["library"] }
-mars-mock-zapper          = { version = "1.0.0", path = "./contracts/mock-zapper", features = ["library"] }
 mars-swapper-mock         = { version = "1.0.0", path = "./contracts/swapper/mock", features = ["library"] }
+mars-zapper-mock          = { version = "1.0.0", path = "./contracts/zapper/mock", features = ["library"] }
 
 [profile.release]
 opt-level = 3
