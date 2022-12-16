@@ -152,7 +152,7 @@ where
     ) -> Result<Response, ContractError> {
         let balance_after = deps
             .querier
-            .query_balance(&env.contract.address, &balance_before.denom)?;
+            .query_balance(env.contract.address, &balance_before.denom)?;
         let return_amount = balance_after.amount.checked_sub(balance_before.amount)?;
 
         // Assert return_amount is greater than minimum_receive
