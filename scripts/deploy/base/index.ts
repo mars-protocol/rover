@@ -6,9 +6,14 @@ import { wasmFile } from '../../utils/environment'
 export interface TaskRunnerProps {
   config: DeploymentConfig
   swapperContractName: string
+  zapperContractName: string
 }
 
-export const taskRunner = async ({ config, swapperContractName }: TaskRunnerProps) => {
+export const taskRunner = async ({
+  config,
+  swapperContractName,
+  zapperContractName,
+}: TaskRunnerProps) => {
   const deployer = await setupDeployer(config)
   try {
     // Upload contracts
@@ -16,12 +21,14 @@ export const taskRunner = async ({ config, swapperContractName }: TaskRunnerProp
     await deployer.upload('mockVault', wasmFile('mars_mock_vault'))
     await deployer.upload('marsOracleAdapter', wasmFile('mars_oracle_adapter'))
     await deployer.upload('swapper', wasmFile(swapperContractName))
+    await deployer.upload('zapper', wasmFile(zapperContractName))
     await deployer.upload('creditManager', wasmFile('mars_credit_manager'))
 
     // Instantiate contracts
     await deployer.instantiateMockVault()
     await deployer.instantiateMarsOracleAdapter()
     await deployer.instantiateSwapper()
+    await deployer.instantiateZapper()
     await deployer.instantiateCreditManager()
     await deployer.instantiateNftContract()
     await deployer.transferNftContractOwnership()
