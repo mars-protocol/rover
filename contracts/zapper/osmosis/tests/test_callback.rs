@@ -1,4 +1,4 @@
-use cosmwasm_std::{coin, Addr, Coin, Uint128};
+use cosmwasm_std::{coin, Addr, Coin};
 use osmosis_testing::{Account, Module, OsmosisTestApp, Wasm};
 
 use mars_zapper_base::{CallbackMsg, ContractError, ExecuteMsg};
@@ -29,10 +29,9 @@ fn test_only_contract_itself_can_callback() {
     let res_err = wasm
         .execute(
             &contract_addr,
-            &ExecuteMsg::Callback(CallbackMsg::ReturnLpTokens {
+            &ExecuteMsg::Callback(CallbackMsg::ReturnCoin {
                 balance_before: Coin::new(1u128, "gamm/pool/1"),
                 recipient: Addr::unchecked(user.address()),
-                minimum_receive: Uint128::one(),
             }),
             &[],
             user,

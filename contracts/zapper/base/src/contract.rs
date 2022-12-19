@@ -51,7 +51,7 @@ where
                 lp_token_out,
                 recipient,
                 minimum_receive,
-            } => P::execute_provide_liquidity(
+            } => Self::execute_provide_liquidity(
                 deps,
                 env,
                 info,
@@ -68,28 +68,10 @@ where
                     return Err(ContractError::Unauthorized {});
                 }
                 match msg {
-                    CallbackMsg::SingleSidedJoin {
-                        lp_token_out,
-                        coin_in,
-                    } => P::execute_callback_single_sided_join(
-                        deps,
-                        env,
-                        info,
-                        lp_token_out,
-                        coin_in,
-                    ),
-                    CallbackMsg::ReturnLpTokens {
+                    CallbackMsg::ReturnCoin {
                         balance_before,
                         recipient,
-                        minimum_receive,
-                    } => Self::execute_return_tokens(
-                        deps,
-                        env,
-                        info,
-                        balance_before,
-                        recipient,
-                        minimum_receive,
-                    ),
+                    } => Self::execute_return_tokens(deps, env, info, balance_before, recipient),
                 }
             }
         }
@@ -100,11 +82,58 @@ where
             QueryMsg::EstimateProvideLiquidity {
                 lp_token_out,
                 coins_in,
-            } => P::query_estimate_provide_liquidity(deps, env, lp_token_out, coins_in),
+            } => Self::query_estimate_provide_liquidity(deps, env, lp_token_out, coins_in),
             QueryMsg::EstimateWithdrawLiquidity { coin_in } => {
                 Self::query_estimate_withdraw_liquidity(deps, env, coin_in)
             }
         }
+    }
+
+    fn execute_provide_liquidity(
+        deps: DepsMut,
+        env: Env,
+        info: MessageInfo,
+        lp_token_out: String,
+        recipient: Option<String>,
+        minimum_receive: Uint128,
+    ) -> Result<Response, ContractError> {
+        let pool = P::get_pool_for_lp_token(deps.as_ref(), &lp_token_out)?;
+
+        // Unwrap recipient or use caller's address
+        let recipient = recipient.map_or(Ok(info.sender), |x| deps.api.addr_validate(&x))?;
+
+        let response = pool.provide_liquidity(
+            deps.as_ref(),
+            &env,
+            info.funds.clone().into(),
+            minimum_receive,
+        )?;
+
+        // Query current contract coin balances
+        let mut coin_balances: Vec<Coin> = Vec::with_capacity(info.funds.len() + 1); // funds + lp token
+        for funded_coin in info.funds {
+            let mut coin_balance = deps
+                .querier
+                .query_balance(&env.contract.address, &funded_coin.denom)?;
+            coin_balance.amount = coin_balance.amount.checked_sub(funded_coin.amount)?;
+            coin_balances.push(coin_balance);
+        }
+
+        // Query current contract LP token balance
+        let lp_token_balance = deps
+            .querier
+            .query_balance(&env.contract.address, &lp_token_out)?;
+        coin_balances.push(lp_token_balance);
+
+        // Callbacks to return remaining coins and LP tokens
+        let callback_msgs = prepare_return_coin_callbacks(&env, recipient.clone(), coin_balances)?;
+
+        let event = Event::new("rover/zapper/execute_provide_liquidity")
+            .add_attribute("lp_token_out", lp_token_out)
+            .add_attribute("minimum_receive", minimum_receive)
+            .add_attribute("recipient", recipient);
+
+        Ok(response.add_messages(callback_msgs).add_event(event))
     }
 
     fn execute_withdraw_liquidity(
@@ -116,30 +145,45 @@ where
         // Make sure only one coin is sent
         one_coin(&info)?;
 
-        let lp_token_coin = info.funds[0].clone();
-        let pool = P::get_pool_for_lp_token(deps.as_ref(), &lp_token_coin.denom)?;
-
-        // Simulate withdraw liquidity
-        let coins_returned =
-            pool.simulate_withdraw_liquidity(deps.as_ref(), &lp_token_coin.clone().into())?;
-
-        let withdraw_liquidity_res =
-            pool.withdraw_liquidity(deps.as_ref(), &env, lp_token_coin.clone().into())?;
+        let lp_token = info.funds[0].clone();
+        let pool = P::get_pool_for_lp_token(deps.as_ref(), &lp_token.denom)?;
 
         // Unwrap recipient or use caller
         let recipient = recipient.map_or(Ok(info.sender), |x| deps.api.addr_validate(&x))?;
 
-        // Send LP tokens to recipient
-        let send_msgs = coins_returned.transfer_msgs(&recipient)?;
+        // Use returned coins to check what denoms should be received
+        let coins_returned =
+            pool.simulate_withdraw_liquidity(deps.as_ref(), &lp_token.clone().into())?;
+        let coins_returned_str = coins_returned.to_string();
+
+        let response = pool.withdraw_liquidity(deps.as_ref(), &env, lp_token.clone().into())?;
+
+        // Query current contract coin balances
+        let mut coin_balances: Vec<Coin> = Vec::with_capacity(coins_returned.len() + 1); // coins returned + lp token
+        for coin_returned in coins_returned.to_vec() {
+            let coin_returned: Coin = coin_returned.try_into()?;
+            let coin_balance = deps
+                .querier
+                .query_balance(&env.contract.address, coin_returned.denom)?;
+            coin_balances.push(coin_balance);
+        }
+
+        // Query current contract LP token balance
+        let mut lp_token_balance = deps
+            .querier
+            .query_balance(&env.contract.address, &lp_token.denom)?;
+        lp_token_balance.amount = lp_token_balance.amount.checked_sub(lp_token.amount)?;
+        coin_balances.push(lp_token_balance);
+
+        // Callbacks to return remaining coins and LP tokens
+        let callback_msgs = prepare_return_coin_callbacks(&env, recipient.clone(), coin_balances)?;
 
         let event = Event::new("rover/zapper/execute_withdraw_liquidity")
-            .add_attribute("lp_token", lp_token_coin.denom)
-            .add_attribute("coins_returned", coins_returned.to_string())
+            .add_attribute("lp_token", lp_token.denom)
+            .add_attribute("coins_returned", coins_returned_str)
             .add_attribute("recipient", recipient);
 
-        Ok(withdraw_liquidity_res
-            .add_messages(send_msgs)
-            .add_event(event))
+        Ok(response.add_messages(callback_msgs).add_event(event))
     }
 
     fn execute_return_tokens(
@@ -148,19 +192,14 @@ where
         _info: MessageInfo,
         balance_before: Coin,
         recipient: Addr,
-        minimum_receive: Uint128,
     ) -> Result<Response, ContractError> {
         let balance_after = deps
             .querier
             .query_balance(env.contract.address, &balance_before.denom)?;
         let return_amount = balance_after.amount.checked_sub(balance_before.amount)?;
 
-        // Assert return_amount is greater than minimum_receive
-        if return_amount < minimum_receive {
-            return Err(ContractError::InsufficientLpTokens {
-                expected: minimum_receive,
-                received: return_amount,
-            });
+        if return_amount.is_zero() {
+            return Ok(Response::new());
         }
 
         let return_coin = Coin {
@@ -177,6 +216,19 @@ where
             .add_attribute("recipient", recipient);
 
         Ok(Response::new().add_message(send_msg).add_event(event))
+    }
+
+    fn query_estimate_provide_liquidity(
+        deps: Deps,
+        env: Env,
+        lp_token_out: String,
+        coins_in: Vec<Coin>,
+    ) -> StdResult<Binary> {
+        let pool = P::get_pool_for_lp_token(deps, &lp_token_out)?;
+
+        let lp_tokens_returned = pool.simulate_provide_liquidity(deps, &env, coins_in.into())?;
+
+        to_binary(&lp_tokens_returned.amount)
     }
 
     fn query_estimate_withdraw_liquidity(
@@ -196,4 +248,21 @@ where
 
         to_binary(&native_coins_returned)
     }
+}
+
+fn prepare_return_coin_callbacks(
+    env: &Env,
+    recipient: Addr,
+    coin_balances: Vec<Coin>,
+) -> StdResult<Vec<CosmosMsg>> {
+    coin_balances
+        .into_iter()
+        .map(|coin_balance| {
+            CallbackMsg::ReturnCoin {
+                balance_before: coin_balance,
+                recipient: recipient.clone(),
+            }
+            .into_cosmos_msg(env)
+        })
+        .collect()
 }

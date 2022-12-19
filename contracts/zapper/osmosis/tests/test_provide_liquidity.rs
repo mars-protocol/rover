@@ -1,8 +1,8 @@
-use cosmwasm_std::{coin, Uint128};
+use cosmwasm_std::{coin, Coin, Uint128};
 use cw_dex::CwDexError;
 use osmosis_testing::{Account, Bank, Gamm, Module, OsmosisTestApp, Wasm};
 
-use mars_zapper_base::{ContractError, ExecuteMsg, QueryMsg};
+use mars_zapper_base::{ExecuteMsg, QueryMsg};
 
 use crate::helpers::{assert_err, instantiate_contract, query_balance};
 
@@ -134,8 +134,8 @@ fn test_provide_liquidity_with_min_not_received() {
         .unwrap_err();
     assert_err(
         res_err,
-        ContractError::InsufficientLpTokens {
-            expected: min_receive,
+        CwDexError::MinOutNotReceived {
+            min_out: min_receive,
             received: Uint128::from(25000000000000000000u128),
         },
     );
@@ -374,7 +374,31 @@ fn test_provide_liquidity_with_two_unbalanced_coins() {
             },
         )
         .unwrap();
-    assert_eq!(estimate_amount.u128(), 39923886388075400u128);
+    assert_eq!(estimate_amount.u128(), 25000000000000000u128);
+
+    // how much coins are taken from account to create LP
+    let estimate_coins: Vec<Coin> = wasm
+        .query(
+            &contract_addr,
+            &QueryMsg::EstimateWithdrawLiquidity {
+                coin_in: coin(estimate_amount.u128(), pool_denom.clone()),
+            },
+        )
+        .unwrap();
+    let uatom_estimate_amount = estimate_coins
+        .iter()
+        .find(|c| c.denom == "uatom")
+        .unwrap()
+        .amount
+        .u128();
+    let uosmo_estimate_amount = estimate_coins
+        .iter()
+        .find(|c| c.denom == "uosmo")
+        .unwrap()
+        .amount
+        .u128();
+    assert_eq!(uatom_estimate_amount, 4950000u128);
+    assert_eq!(uosmo_estimate_amount, 9900000u128);
 
     wasm.execute(
         &contract_addr,
@@ -395,21 +419,12 @@ fn test_provide_liquidity_with_two_unbalanced_coins() {
     let contract_uosmo_balance = query_balance(&bank, &contract_addr, "uosmo");
     assert_eq!(contract_uosmo_balance, 0u128);
 
-    // FIXME: not equal?
-    //  left: `39923886666367302`,
-    //  right: `39923886388075400`
-    // let user_pool_balance = query_balance(&bank, &user.address(), &pool_denom);
-    // assert_eq!(user_pool_balance, estimate_amount.u128());
+    let user_pool_balance = query_balance(&bank, &user.address(), &pool_denom);
+    assert_eq!(user_pool_balance, estimate_amount.u128());
     let user_uatom_balance = query_balance(&bank, &user.address(), "uatom");
-    assert_eq!(
-        user_uatom_balance,
-        uatom_acc_balance - uatom_liquidity_amount
-    );
+    assert_eq!(user_uatom_balance, 999995000000u128);
     let user_uosmo_balance = query_balance(&bank, &user.address(), "uosmo");
-    assert_eq!(
-        user_uosmo_balance,
-        uosmo_acc_balance - uosmo_liquidity_amount
-    );
+    assert_eq!(user_uosmo_balance, 999990000000u128);
 }
 
 #[test]
