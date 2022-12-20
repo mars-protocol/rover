@@ -19,14 +19,9 @@ pub enum ExecuteMsg {
 
 #[cw_serde]
 pub enum CallbackMsg {
-    SingleSidedJoin {
-        lp_token_out: String,
-        coin_in: Coin,
-    },
-    ReturnLpTokens {
+    ReturnCoin {
         balance_before: Coin,
         recipient: Addr,
-        minimum_receive: Uint128,
     },
 }
 

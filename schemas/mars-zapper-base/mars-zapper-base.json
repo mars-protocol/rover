@@ -87,47 +87,18 @@
           {
             "type": "object",
             "required": [
-              "single_sided_join"
+              "return_coin"
             ],
             "properties": {
-              "single_sided_join": {
-                "type": "object",
-                "required": [
-                  "coin_in",
-                  "lp_token_out"
-                ],
-                "properties": {
-                  "coin_in": {
-                    "$ref": "#/definitions/Coin"
-                  },
-                  "lp_token_out": {
-                    "type": "string"
-                  }
-                },
-                "additionalProperties": false
-              }
-            },
-            "additionalProperties": false
-          },
-          {
-            "type": "object",
-            "required": [
-              "return_lp_tokens"
-            ],
-            "properties": {
-              "return_lp_tokens": {
+              "return_coin": {
                 "type": "object",
                 "required": [
                   "balance_before",
-                  "minimum_receive",
                   "recipient"
                 ],
                 "properties": {
                   "balance_before": {
                     "$ref": "#/definitions/Coin"
-                  },
-                  "minimum_receive": {
-                    "$ref": "#/definitions/Uint128"
                   },
                   "recipient": {
                     "$ref": "#/definitions/Addr"

@@ -23,20 +23,12 @@ export type ExecuteMsg =
       callback: CallbackMsg
     }
 export type Uint128 = string
-export type CallbackMsg =
-  | {
-      single_sided_join: {
-        coin_in: Coin
-        lp_token_out: string
-      }
-    }
-  | {
-      return_lp_tokens: {
-        balance_before: Coin
-        minimum_receive: Uint128
-        recipient: Addr
-      }
-    }
+export type CallbackMsg = {
+  return_coin: {
+    balance_before: Coin
+    recipient: Addr
+  }
+}
 export type Addr = string
 export interface Coin {
   amount: Uint128

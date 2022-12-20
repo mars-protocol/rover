@@ -1249,7 +1249,6 @@ name = "mars-zapper-osmosis"
 version = "1.0.0"
 dependencies = [
  "cosmwasm-std",
- "cw-asset",
  "cw-dex",
  "cw-utils 0.16.0",
  "cw2 1.0.0",
