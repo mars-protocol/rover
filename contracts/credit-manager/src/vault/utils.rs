@@ -75,37 +75,36 @@ pub fn vault_utilization_in_deposit_cap_denom(
     vault: &Vault,
     rover_addr: &Addr,
 ) -> ContractResult<Coin> {
-    let (rover_vault_coins_value, deposit_cap_value) =
-        get_utilization_values(deps, vault, rover_addr)?;
+    let rover_vault_balance_value = rover_vault_balance_value(deps, vault, rover_addr)?;
     let config = VAULT_CONFIGS.load(deps.storage, &vault.address)?;
+    let oracle = ORACLE.load(deps.storage)?;
+    let deposit_cap_denom_price = oracle
+        .query_price(&deps.querier, &config.deposit_cap.denom)?
+        .price;
 
-    let utilization = config.deposit_cap.amount.multiply_ratio(
-        rover_vault_coins_value.uint128(),
-        deposit_cap_value.uint128(),
-    );
     Ok(Coin {
         denom: config.deposit_cap.denom,
-        amount: utilization,
+        amount: rover_vault_balance_value
+            .checked_div(deposit_cap_denom_price)?
+            .uint128(),
     })
 }
 
-pub fn get_utilization_values(
+/// Total value of vault coins under Rover's management for vault
+pub fn rover_vault_balance_value(
     deps: &Deps,
     vault: &Vault,
     rover_addr: &Addr,
-) -> ContractResult<(Decimal, Decimal)> {
+) -> ContractResult<Decimal> {
     let oracle = ORACLE.load(deps.storage)?;
-    let config = VAULT_CONFIGS.load(deps.storage, &vault.address)?;
-    let deposit_cap_value = oracle.query_total_value(&deps.querier, &[config.deposit_cap])?;
-
     let vault_info = vault.query_info(&deps.querier)?;
     let rover_vault_coin_balance = vault.query_balance(&deps.querier, rover_addr)?;
-    let rover_vault_coins_value = oracle.query_total_value(
+    let balance_value = oracle.query_total_value(
         &deps.querier,
         &[coin(
             rover_vault_coin_balance.u128(),
             vault_info.vault_token,
         )],
     )?;
-    Ok((rover_vault_coins_value, deposit_cap_value))
+    Ok(balance_value)
 }
