@@ -32,14 +32,14 @@ pub enum ExecuteMsg {
 
 #[cw_serde]
 pub enum ActionAmount {
-    Amount(Uint128),
+    Exact(Uint128),
     AccountBalance,
 }
 
 impl ActionAmount {
-    pub fn to_option(&self) -> Option<Uint128> {
+    pub fn value(&self) -> Option<Uint128> {
         match self {
-            ActionAmount::Amount(amt) => Some(*amt),
+            ActionAmount::Exact(amt) => Some(*amt),
             ActionAmount::AccountBalance => None,
         }
     }
@@ -55,7 +55,7 @@ impl From<&Coin> for ActionCoin {
     fn from(value: &Coin) -> Self {
         Self {
             denom: value.denom.to_string(),
-            amount: ActionAmount::Amount(value.amount),
+            amount: ActionAmount::Exact(value.amount),
         }
     }
 }

@@ -30,7 +30,7 @@ fn test_only_account_owner_can_take_action() {
             vault: VaultBase::new("xyz".to_string()),
             coin: ActionCoin {
                 denom: "uosmo".to_string(),
-                amount: ActionAmount::Amount(Uint128::new(1)),
+                amount: ActionAmount::Exact(Uint128::new(1)),
             },
         }],
         &[],

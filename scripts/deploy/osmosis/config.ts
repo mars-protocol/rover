@@ -44,7 +44,7 @@ export const osmosisTestnetConfig: DeploymentConfig = {
       // https://github.com/apollodao/apollo-config/blob/master/config.json#L114
       vault: { address: autoCompoundingVault },
       config: {
-        deposit_cap: { denom: uosmo, amount: '1000000000' },
+        deposit_cap: { denom: uosmo, amount: '100000000000000000000000000' }, // 100 osmo
         liquidation_threshold: '0.75',
         max_ltv: '0.65',
         whitelisted: true,
@@ -57,7 +57,7 @@ export const osmosisTestnetConfig: DeploymentConfig = {
       withdrawAmount: '1',
       mock: {
         config: {
-          deposit_cap: { denom: uosmo, amount: '100000000000' },
+          deposit_cap: { denom: uosmo, amount: '100000000000000000000000000' }, // 100 osmo
           liquidation_threshold: '0.75',
           max_ltv: '0.65',
           whitelisted: true,

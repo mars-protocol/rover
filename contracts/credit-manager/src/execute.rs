@@ -201,9 +201,7 @@ pub fn execute_callback(
             recipient,
         } => withdraw(deps, &account_id, coin, recipient),
         CallbackMsg::Borrow { coin, account_id } => borrow(deps, env, &account_id, coin),
-        CallbackMsg::Repay { account_id, coin } => {
-            repay(deps, env, &account_id, &coin.denom, coin.amount.to_option())
-        }
+        CallbackMsg::Repay { account_id, coin } => repay(deps, env, &account_id, &coin),
         CallbackMsg::AssertBelowMaxLTV { account_id } => {
             assert_below_max_ltv(deps.as_ref(), env, &account_id)
         }
@@ -211,14 +209,7 @@ pub fn execute_callback(
             account_id,
             vault,
             coin,
-        } => enter_vault(
-            deps,
-            &env.contract.address,
-            &account_id,
-            vault,
-            &coin.denom,
-            coin.amount.to_option(),
-        ),
+        } => enter_vault(deps, &env.contract.address, &account_id, vault, &coin),
         CallbackMsg::UpdateVaultCoinBalance {
             vault,
             account_id,
@@ -263,15 +254,7 @@ pub fn execute_callback(
             coin_in,
             denom_out,
             slippage,
-        } => swap_exact_in(
-            deps,
-            env,
-            &account_id,
-            &coin_in.denom,
-            coin_in.amount.to_option(),
-            &denom_out,
-            slippage,
-        ),
+        } => swap_exact_in(deps, env, &account_id, &coin_in, &denom_out, slippage),
         CallbackMsg::UpdateCoinBalance {
             account_id,
             previous_balance,
@@ -307,13 +290,7 @@ pub fn execute_callback(
         CallbackMsg::WithdrawLiquidity {
             account_id,
             lp_token,
-        } => withdraw_liquidity(
-            deps,
-            env,
-            &account_id,
-            &lp_token.denom,
-            lp_token.amount.to_option(),
-        ),
+        } => withdraw_liquidity(deps, env, &account_id, &lp_token),
         CallbackMsg::AssertOneVaultPositionOnly { account_id } => {
             assert_only_one_vault_position(deps, &account_id)
         }

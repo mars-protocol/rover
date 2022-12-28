@@ -45,7 +45,7 @@ impl CoinInfo {
     pub fn to_action_coin(&self, amount: u128) -> ActionCoin {
         ActionCoin {
             denom: self.denom.clone(),
-            amount: ActionAmount::Amount(Uint128::new(amount)),
+            amount: ActionAmount::Exact(Uint128::new(amount)),
         }
     }
 

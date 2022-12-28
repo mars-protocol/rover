@@ -138,7 +138,7 @@ export type Action =
 export type ActionAmount =
   | 'account_balance'
   | {
-      amount: Uint128
+      exact: Uint128
     }
 export type VaultPositionType = 'u_n_l_o_c_k_e_d' | 'l_o_c_k_e_d' | 'u_n_l_o_c_k_i_n_g'
 export type AdminUpdate =

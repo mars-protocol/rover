@@ -351,7 +351,7 @@ fn test_can_provide_unbalanced() {
         vec![WithdrawLiquidity {
             lp_token: ActionCoin {
                 denom: lp_token.denom.clone(),
-                amount: ActionAmount::Amount(STARTING_LP_POOL_TOKENS.multiply_ratio(1u128, 2u128)),
+                amount: ActionAmount::Exact(STARTING_LP_POOL_TOKENS.multiply_ratio(1u128, 2u128)),
             },
         }],
         &[],

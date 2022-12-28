@@ -23,7 +23,7 @@ fn test_only_token_owner_can_swap_for_account() {
         vec![SwapExactIn {
             coin_in: ActionCoin {
                 denom: "mars".to_string(),
-                amount: ActionAmount::Amount(Uint128::new(12)),
+                amount: ActionAmount::Exact(Uint128::new(12)),
             },
             denom_out: "osmo".to_string(),
             slippage: Decimal::from_atomics(6u128, 1).unwrap(),

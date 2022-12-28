@@ -26,7 +26,7 @@ pub fn provide_liquidity(
     for coin_in in coins_in {
         let coin_balance = COIN_BALANCES.load(deps.storage, (account_id, &coin_in.denom))?;
         let new_amount = match coin_in.amount {
-            ActionAmount::Amount(amt) => amt,
+            ActionAmount::Exact(amt) => amt,
             ActionAmount::AccountBalance => coin_balance,
         };
         let updated_coin = Coin {
@@ -57,18 +57,18 @@ pub fn withdraw_liquidity(
     deps: DepsMut,
     env: Env,
     account_id: &str,
-    lp_token_denom: &str,
-    lp_token_amount: Option<Uint128>,
+    lp_token_action: &ActionCoin,
 ) -> ContractResult<Response> {
-    assert_coin_is_whitelisted(deps.storage, lp_token_denom)?;
+    assert_coin_is_whitelisted(deps.storage, &lp_token_action.denom)?;
 
     let lp_token = Coin {
-        denom: lp_token_denom.to_string(),
-        amount: lp_token_amount.unwrap_or(
-            COIN_BALANCES
-                .may_load(deps.storage, (account_id, lp_token_denom))?
+        denom: lp_token_action.denom.clone(),
+        amount: match lp_token_action.amount {
+            ActionAmount::Exact(a) => a,
+            ActionAmount::AccountBalance => COIN_BALANCES
+                .may_load(deps.storage, (account_id, &lp_token_action.denom))?
                 .unwrap_or(Uint128::zero()),
-        ),
+        },
     };
 
     if lp_token.amount.is_zero() {
