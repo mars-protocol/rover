@@ -1,9 +1,10 @@
-use cosmwasm_std::{Addr, Coin, Deps, StdResult, Storage, Uint128};
+use cosmwasm_std::{coin, Addr, Coin, Decimal, Deps, StdResult, Storage, Uint128};
 
 use mars_rover::adapters::vault::{Vault, VaultPositionAmount, VaultPositionUpdate};
 use mars_rover::error::{ContractError, ContractResult};
+use mars_rover::traits::IntoUint128;
 
-use crate::state::{MAX_UNLOCKING_POSITIONS, VAULT_CONFIGS, VAULT_POSITIONS};
+use crate::state::{MAX_UNLOCKING_POSITIONS, ORACLE, VAULT_CONFIGS, VAULT_POSITIONS};
 use crate::update_coin_balances::query_balance;
 
 pub fn assert_vault_is_whitelisted(storage: &mut dyn Storage, vault: &Vault) -> ContractResult<()> {
@@ -67,4 +68,44 @@ pub fn query_withdraw_denom_balance(
 ) -> StdResult<Coin> {
     let vault_info = vault.query_info(&deps.querier)?;
     query_balance(&deps.querier, rover_addr, vault_info.base_token.as_str())
+}
+
+pub fn vault_utilization_in_deposit_cap_denom(
+    deps: &Deps,
+    vault: &Vault,
+    rover_addr: &Addr,
+) -> ContractResult<Coin> {
+    let (rover_vault_coins_value, deposit_cap_value) =
+        get_utilization_values(deps, vault, rover_addr)?;
+    let config = VAULT_CONFIGS.load(deps.storage, &vault.address)?;
+
+    let utilization = config.deposit_cap.amount.multiply_ratio(
+        rover_vault_coins_value.uint128(),
+        deposit_cap_value.uint128(),
+    );
+    Ok(Coin {
+        denom: config.deposit_cap.denom,
+        amount: utilization,
+    })
+}
+
+pub fn get_utilization_values(
+    deps: &Deps,
+    vault: &Vault,
+    rover_addr: &Addr,
+) -> ContractResult<(Decimal, Decimal)> {
+    let oracle = ORACLE.load(deps.storage)?;
+    let config = VAULT_CONFIGS.load(deps.storage, &vault.address)?;
+    let deposit_cap_value = oracle.query_total_value(&deps.querier, &[config.deposit_cap])?;
+
+    let vault_info = vault.query_info(&deps.querier)?;
+    let rover_vault_coin_balance = vault.query_balance(&deps.querier, rover_addr)?;
+    let rover_vault_coins_value = oracle.query_total_value(
+        &deps.querier,
+        &[coin(
+            rover_vault_coin_balance.u128(),
+            vault_info.vault_token,
+        )],
+    )?;
+    Ok((rover_vault_coins_value, deposit_cap_value))
 }
