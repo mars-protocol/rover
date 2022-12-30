@@ -117,7 +117,7 @@ export class Deployer {
       msg.vault_pricing.push({
         addr: this.storage.addresses.mockVault!,
         method: 'preview_redeem',
-        base_denom: this.config.chain.baseDenom,
+        base_denom: this.config.testActions.vault.mock.baseToken.denom,
         vault_coin_denom: this.config.testActions.vault.mock.vaultTokenDenom,
       })
     }
