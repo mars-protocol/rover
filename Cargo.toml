@@ -9,6 +9,7 @@ members = [
     "packages/outpost",
     "packages/rover",
     "packages/math",
+    "packages/hello-wasm",
 
     # Mock contracts
     "contracts/mock-oracle",
@@ -48,6 +49,7 @@ osmosis-testing = { git = "https://github.com/osmosis-labs/osmosis-rust", rev = 
 schemars        = "0.8.11"
 serde           = { version = "1.0.150", default-features = false, features = ["derive"] }
 thiserror       = "1.0.37"
+wasm-bindgen = "0.2.83"
 
 # packages
 cosmwasm-vault-standard = { version = "0.1.0", features = ["lockup", "force-unlock"] }
@@ -57,6 +59,7 @@ mars-osmosis            = { version = "1.0.0", path = "./packages/chains/osmosis
 mars-outpost            = { version = "1.0.0", path = "./packages/outpost" }
 mars-owner              = "1.0.0"
 mars-rover              = { version = "1.0.0", path = "./packages/rover" }
+hello-wasm              = { version = "1.0.0", path = "./packages/hello-wasm" }
 
 # contracts
 mars-account-nft    = { version = "1.0.0", path = "./contracts/account-nft", features = ["library"] }

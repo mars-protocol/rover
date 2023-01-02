@@ -875,6 +875,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "hello-wasm"
+version = "1.0.0"
+dependencies = [
+ "wasm-bindgen",
+]
+
+[[package]]
 name = "hermit-abi"
 version = "0.1.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1036,6 +1043,7 @@ dependencies = [
  "cw2 1.0.1",
  "cw721",
  "cw721-base",
+ "hello-wasm",
  "itertools",
  "mars-account-nft",
  "mars-health",

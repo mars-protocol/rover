@@ -34,6 +34,8 @@ mars-outpost            = { workspace = true }
 mars-owner              = { workspace = true }
 mars-rover              = { workspace = true }
 
+hello-wasm = { workspace = true }
+
 [dev-dependencies]
 anyhow             = { workspace = true }
 cw-multi-test      = { workspace = true }
