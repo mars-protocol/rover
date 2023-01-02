@@ -1,8 +1,8 @@
 use cosmwasm_std::{
     to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdResult, WasmMsg,
 };
-use hello_wasm::greet;
 
+use hello_wasm::total_value_rust;
 use mars_account_nft::msg::ExecuteMsg as NftExecuteMsg;
 use mars_rover::{
     coins::Coins,
@@ -52,7 +52,7 @@ pub fn dispatch_actions(
     account_id: &str,
     actions: &[Action],
 ) -> ContractResult<Response> {
-    let test = greet("moo");
+    let _use_in_contract_test = total_value_rust(vec![]);
 
     assert_is_token_owner(&deps, &info.sender, account_id)?;
     assert_not_contract_in_config(&deps.as_ref(), &info.sender)?;

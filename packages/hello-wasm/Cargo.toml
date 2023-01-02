@@ -7,5 +7,17 @@ edition       = { workspace = true }
 [lib]
 crate-type = ["cdylib", "rlib"]
 
+[features]
+default = ["console_error_panic_hook"]
+
 [dependencies]
 wasm-bindgen = { workspace = true }
+cosmwasm-std = { workspace = true }
+serde                     = { workspace = true }
+serde-wasm-bindgen = "0.4.5"
+
+# The `console_error_panic_hook` crate provides better debugging of panics by
+# logging them with `console.error`. This is great for development, but requires
+# all the `std::fmt` and `std::panicking` infrastructure, so isn't great for
+# code size when deploying.
+console_error_panic_hook = { version = "0.1.7", optional = true }
