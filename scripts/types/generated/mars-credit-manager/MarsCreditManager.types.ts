@@ -12,11 +12,11 @@ export type RedBankBaseForString = string
 export type SwapperBaseForString = string
 export type ZapperBaseForString = string
 export interface InstantiateMsg {
-  admin: string
   allowed_coins: string[]
   max_close_factor: Decimal
   max_unlocking_positions: Uint128
   oracle: OracleBaseForString
+  owner: string
   red_bank: RedBankBaseForString
   swapper: SwapperBaseForString
   vault_configs: VaultInstantiateConfig[]
@@ -56,7 +56,7 @@ export type ExecuteMsg =
       }
     }
   | {
-      update_admin: OwnerUpdate
+      update_owner: OwnerUpdate
     }
   | {
       callback: CallbackMsg
@@ -143,13 +143,13 @@ export type ActionAmount =
 export type VaultPositionType = 'u_n_l_o_c_k_e_d' | 'l_o_c_k_e_d' | 'u_n_l_o_c_k_i_n_g'
 export type OwnerUpdate =
   | {
-      propose_new_admin: {
+      propose_new_owner: {
         proposed: string
       }
     }
   | 'clear_proposed'
   | 'accept_proposed'
-  | 'abolish_admin_role'
+  | 'abolish_owner_role'
 export type CallbackMsg =
   | {
       withdraw: {
@@ -410,11 +410,11 @@ export interface VaultUnlockingPosition {
 export type ArrayOfString = string[]
 export interface ConfigResponse {
   account_nft?: string | null
-  admin?: string | null
   max_close_factor: Decimal
   max_unlocking_positions: Uint128
   oracle: string
-  proposed_new_admin?: string | null
+  owner?: string | null
+  proposed_new_owner?: string | null
   red_bank: string
   swapper: string
   zapper: string
