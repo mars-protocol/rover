@@ -56,7 +56,7 @@ export type ExecuteMsg =
       }
     }
   | {
-      update_admin: AdminUpdate
+      update_admin: OwnerUpdate
     }
   | {
       callback: CallbackMsg
@@ -141,7 +141,7 @@ export type ActionAmount =
       exact: Uint128
     }
 export type VaultPositionType = 'u_n_l_o_c_k_e_d' | 'l_o_c_k_e_d' | 'u_n_l_o_c_k_i_n_g'
-export type AdminUpdate =
+export type OwnerUpdate =
   | {
       propose_new_admin: {
         proposed: string

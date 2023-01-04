@@ -24,7 +24,7 @@ import {
   Action,
   ActionAmount,
   VaultPositionType,
-  AdminUpdate,
+  OwnerUpdate,
   CallbackMsg,
   Addr,
   ActionCoin,

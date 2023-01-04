@@ -10,7 +10,7 @@ export interface InstantiateMsg {
 }
 export type ExecuteMsg =
   | {
-      update_admin: AdminUpdate
+      update_admin: OwnerUpdate
     }
   | {
       set_route: {
@@ -33,7 +33,7 @@ export type ExecuteMsg =
         recipient: Addr
       }
     }
-export type AdminUpdate =
+export type OwnerUpdate =
   | {
       propose_new_admin: {
         proposed: string
@@ -75,7 +75,7 @@ export type QueryMsg =
         denom_out: string
       }
     }
-export interface AdminResponse {
+export interface OwnerResponse {
   admin?: string | null
   proposed?: string | null
 }

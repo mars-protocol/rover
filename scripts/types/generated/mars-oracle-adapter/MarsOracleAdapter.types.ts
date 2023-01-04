@@ -26,9 +26,9 @@ export type ExecuteMsg =
       }
     }
   | {
-      update_admin: AdminUpdate
+      update_admin: OwnerUpdate
     }
-export type AdminUpdate =
+export type OwnerUpdate =
   | {
       propose_new_admin: {
         proposed: string

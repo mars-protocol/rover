@@ -11,14 +11,14 @@ import { StdFee } from '@cosmjs/amino'
 import {
   InstantiateMsg,
   ExecuteMsg,
-  AdminUpdate,
+  OwnerUpdate,
   Uint128,
   Decimal,
   Addr,
   Empty,
   Coin,
   QueryMsg,
-  AdminResponse,
+  OwnerResponse,
   EstimateExactInSwapResponse,
   RouteResponseForEmpty,
   ArrayOfRouteResponseForEmpty,
@@ -129,12 +129,12 @@ export function useMarsSwapperBaseRouteQuery<TData = RouteResponseForEmpty>({
   )
 }
 export interface MarsSwapperBaseAdminQuery<TData>
-  extends MarsSwapperBaseReactQuery<AdminResponse, TData> {}
-export function useMarsSwapperBaseAdminQuery<TData = AdminResponse>({
+  extends MarsSwapperBaseReactQuery<OwnerResponse, TData> {}
+export function useMarsSwapperBaseAdminQuery<TData = OwnerResponse>({
   client,
   options,
 }: MarsSwapperBaseAdminQuery<TData>) {
-  return useQuery<AdminResponse, Error, TData>(
+  return useQuery<OwnerResponse, Error, TData>(
     marsSwapperBaseQueryKeys.admin(client?.contractAddress),
     () => (client ? client.admin() : Promise.reject(new Error('Invalid client'))),
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
