@@ -1,7 +1,8 @@
 use std::cmp::min;
 
-use cosmwasm_std::{Coin, DepsMut, Env, Response, Uint128};
+use cosmwasm_std::{DepsMut, Env, Response, Uint256};
 
+use mars_coin::Coin256;
 use mars_rover::adapters::vault::{
     UnlockingChange, UnlockingPositions, UpdateType, Vault, VaultPositionAmount, VaultPositionType,
     VaultPositionUpdate,
@@ -18,7 +19,7 @@ pub fn liquidate_vault(
     env: Env,
     liquidator_account_id: &str,
     liquidatee_account_id: &str,
-    debt_coin: Coin,
+    debt_coin: Coin256,
     request_vault: Vault,
     position_type: VaultPositionType,
 ) -> ContractResult<Response> {
@@ -69,9 +70,9 @@ fn liquidate_unlocked(
     env: Env,
     liquidator_account_id: &str,
     liquidatee_account_id: &str,
-    debt_coin: Coin,
+    debt_coin: Coin256,
     request_vault: Vault,
-    amount: Uint128,
+    amount: Uint256,
 ) -> ContractResult<Response> {
     let vault_info = request_vault.query_info(&deps.querier)?;
 
@@ -99,7 +100,8 @@ fn liquidate_unlocked(
         VaultPositionUpdate::Unlocked(UpdateType::Decrement(request.amount)),
     )?;
 
-    let vault_withdraw_msg = request_vault.withdraw_msg(&deps.querier, request.amount)?;
+    let vault_withdraw_msg =
+        request_vault.withdraw_msg(&deps.querier, request.amount.try_into()?)?;
 
     let update_coin_balance_msg = update_balance_msg(
         &deps.querier,
@@ -125,7 +127,7 @@ fn liquidate_unlocking(
     env: Env,
     liquidator_account_id: &str,
     liquidatee_account_id: &str,
-    debt_coin: Coin,
+    debt_coin: Coin256,
     request_vault: Vault,
     unlocking_positions: UnlockingPositions,
 ) -> ContractResult<Response> {
@@ -165,7 +167,7 @@ fn liquidate_unlocking(
             VaultPositionUpdate::Unlocking(UnlockingChange::Decrement { id: u.id, amount }),
         )?;
 
-        let msg = request_vault.force_withdraw_unlocking_msg(u.id, Some(amount))?;
+        let msg = request_vault.force_withdraw_unlocking_msg(u.id, Some(amount.try_into()?))?;
         vault_withdraw_msgs.push(msg);
 
         total_to_liquidate = total_to_liquidate.checked_sub(amount)?;
@@ -195,9 +197,9 @@ fn liquidate_locked(
     env: Env,
     liquidator_account_id: &str,
     liquidatee_account_id: &str,
-    debt_coin: Coin,
+    debt_coin: Coin256,
     request_vault: Vault,
-    amount: Uint128,
+    amount: Uint256,
 ) -> ContractResult<Response> {
     let vault_info = request_vault.query_info(&deps.querier)?;
 
@@ -226,7 +228,7 @@ fn liquidate_locked(
     )?;
 
     let vault_withdraw_msg =
-        request_vault.force_withdraw_locked_msg(&deps.querier, request.amount)?;
+        request_vault.force_withdraw_locked_msg(&deps.querier, request.amount.try_into()?)?;
 
     let update_coin_balance_msg = update_balance_msg(
         &deps.querier,

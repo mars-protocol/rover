@@ -1,8 +1,8 @@
-use cosmwasm_std::{Coin, Deps, StdResult, Storage, Uint128};
-
 use crate::contract::STARTING_LP_POOL_TOKENS;
 use crate::error::ContractError;
 use crate::state::{COIN_BALANCES, COIN_CONFIG, LP_TOKEN_SUPPLY, ORACLE};
+use cosmwasm_std::{Coin, Deps, StdResult, Storage, Uint128};
+use mars_coin::IntoVecCoin256;
 
 pub fn estimate_provide_liquidity(
     deps: &Deps,
@@ -27,10 +27,13 @@ pub fn estimate_provide_liquidity(
             })
             .collect::<StdResult<Vec<_>>>()?;
         let oracle = ORACLE.load(deps.storage)?;
-        let total_underlying_value = oracle.query_total_value(&deps.querier, &coins)?;
-        let given_value = oracle.query_total_value(&deps.querier, &coins_in)?;
-        total_supply
-            .checked_multiply_ratio(given_value.atomics(), total_underlying_value.atomics())?
+        let total_underlying_value: Uint128 = oracle
+            .query_total_value(&deps.querier, &coins.to_vec_coin_256())?
+            .try_into()?;
+        let given_value: Uint128 = oracle
+            .query_total_value(&deps.querier, &coins_in.to_vec_coin_256())?
+            .try_into()?;
+        total_supply.checked_multiply_ratio(given_value, total_underlying_value)?
     };
     Ok(lp_tokens_estimate)
 }

@@ -1,8 +1,9 @@
-use cosmwasm_std::{coin, Addr, Coin, Decimal, Deps, StdResult, Storage, Uint128};
+use cosmwasm_std::{Addr, Deps, StdResult, Storage, Uint128, Uint256};
 
+use mars_coin::{coin256, Coin256};
 use mars_rover::adapters::vault::{Vault, VaultPositionAmount, VaultPositionUpdate};
 use mars_rover::error::{ContractError, ContractResult};
-use mars_rover::traits::IntoUint128;
+use mars_rover::math::DivideDecimal;
 
 use crate::state::{MAX_UNLOCKING_POSITIONS, ORACLE, VAULT_CONFIGS, VAULT_POSITIONS};
 use crate::update_coin_balances::query_balance;
@@ -30,10 +31,10 @@ pub fn assert_under_max_unlocking_limit(
         .unwrap_or(Uint128::zero())
         .checked_add(Uint128::one())?;
 
-    if new_amount > maximum {
+    if new_amount > maximum.into() {
         return Err(ContractError::ExceedsMaxUnlockingPositions {
             new_amount,
-            maximum,
+            maximum: maximum.into(),
         });
     }
     Ok(())
@@ -65,7 +66,7 @@ pub fn query_withdraw_denom_balance(
     deps: Deps,
     rover_addr: &Addr,
     vault: &Vault,
-) -> StdResult<Coin> {
+) -> StdResult<Coin256> {
     let vault_info = vault.query_info(&deps.querier)?;
     query_balance(&deps.querier, rover_addr, vault_info.base_token.as_str())
 }
@@ -74,7 +75,7 @@ pub fn vault_utilization_in_deposit_cap_denom(
     deps: &Deps,
     vault: &Vault,
     rover_addr: &Addr,
-) -> ContractResult<Coin> {
+) -> ContractResult<Coin256> {
     let rover_vault_balance_value = rover_vault_balance_value(deps, vault, rover_addr)?;
     let config = VAULT_CONFIGS.load(deps.storage, &vault.address)?;
     let oracle = ORACLE.load(deps.storage)?;
@@ -82,11 +83,9 @@ pub fn vault_utilization_in_deposit_cap_denom(
         .query_price(&deps.querier, &config.deposit_cap.denom)?
         .price;
 
-    Ok(Coin {
+    Ok(Coin256 {
         denom: config.deposit_cap.denom,
-        amount: rover_vault_balance_value
-            .checked_div(deposit_cap_denom_price)?
-            .uint128(),
+        amount: rover_vault_balance_value.div_decimal(deposit_cap_denom_price)?,
     })
 }
 
@@ -95,13 +94,13 @@ pub fn rover_vault_balance_value(
     deps: &Deps,
     vault: &Vault,
     rover_addr: &Addr,
-) -> ContractResult<Decimal> {
+) -> ContractResult<Uint256> {
     let oracle = ORACLE.load(deps.storage)?;
     let vault_info = vault.query_info(&deps.querier)?;
     let rover_vault_coin_balance = vault.query_balance(&deps.querier, rover_addr)?;
     let balance_value = oracle.query_total_value(
         &deps.querier,
-        &[coin(
+        &[coin256(
             rover_vault_coin_balance.u128(),
             vault_info.vault_token,
         )],

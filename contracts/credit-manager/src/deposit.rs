@@ -1,6 +1,6 @@
-use cosmwasm_std::{Coin, Response, Storage, Uint128};
+use cosmwasm_std::{Response, Storage, Uint256};
 
-use mars_rover::coins::Coins;
+use mars_coin::{Coin256, Coins};
 use mars_rover::error::{ContractError, ContractResult};
 
 use crate::utils::{assert_coin_is_whitelisted, increment_coin_balance};
@@ -9,7 +9,7 @@ pub fn deposit(
     storage: &mut dyn Storage,
     response: Response,
     account_id: &str,
-    coin: &Coin,
+    coin: &Coin256,
     received_coins: &mut Coins,
 ) -> ContractResult<Response> {
     assert_coin_is_whitelisted(storage, &coin.denom)?;
@@ -30,10 +30,10 @@ pub fn deposit(
 }
 
 /// Assert that fund of exactly the same type and amount was sent along with a message
-fn assert_sent_fund(expected: &Coin, received_coins: &Coins) -> ContractResult<()> {
+fn assert_sent_fund(expected: &Coin256, received_coins: &Coins) -> ContractResult<()> {
     let received = received_coins
         .amount(&expected.denom)
-        .unwrap_or_else(Uint128::zero);
+        .unwrap_or_else(Uint256::zero);
 
     if received != expected.amount {
         return Err(ContractError::FundsMismatch {

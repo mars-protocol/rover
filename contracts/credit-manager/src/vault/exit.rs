@@ -1,4 +1,4 @@
-use cosmwasm_std::{to_binary, CosmosMsg, DepsMut, Env, Response, Uint128, WasmMsg};
+use cosmwasm_std::{to_binary, CosmosMsg, DepsMut, Env, Response, Uint256, WasmMsg};
 
 use mars_rover::adapters::vault::{UpdateType, Vault, VaultPositionUpdate};
 use mars_rover::error::ContractResult;
@@ -14,7 +14,7 @@ pub fn exit_vault(
     env: Env,
     account_id: &str,
     vault: Vault,
-    amount: Uint128,
+    amount: Uint256,
 ) -> ContractResult<Response> {
     assert_vault_is_whitelisted(deps.storage, &vault)?;
 
@@ -28,7 +28,7 @@ pub fn exit_vault(
     )?;
 
     // Sends vault coins to vault in exchange for underlying assets
-    let withdraw_msg = vault.withdraw_msg(&deps.querier, amount)?;
+    let withdraw_msg = vault.withdraw_msg(&deps.querier, amount.try_into()?)?;
 
     // Updates coin balances for account after a vault withdraw has taken place
     let previous_balance =

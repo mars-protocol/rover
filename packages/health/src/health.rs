@@ -1,32 +1,37 @@
-use crate::query::MarsQuerier;
-use cosmwasm_std::{Addr, Coin, Decimal, QuerierWrapper, StdError, StdResult, Uint128};
-use mars_outpost::{math::divide_decimal_by_decimal, red_bank::Market};
 use std::{collections::HashMap, fmt};
+
+use cosmwasm_std::{Addr, Decimal256, Fraction, QuerierWrapper, Uint256};
+
+use mars_coin::Coin256;
+use mars_outpost::red_bank::Market;
+
+use crate::error::HealthResult;
+use crate::query::MarsQuerier;
 
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
 pub struct Position {
     pub denom: String,
-    pub price: Decimal,
-    pub collateral_amount: Decimal,
-    pub debt_amount: Decimal,
-    pub max_ltv: Decimal,
-    pub liquidation_threshold: Decimal,
+    pub price: Decimal256,
+    pub collateral_amount: Uint256,
+    pub debt_amount: Uint256,
+    pub max_ltv: Decimal256,
+    pub liquidation_threshold: Decimal256,
 }
 
 #[derive(Default, Debug, PartialEq, Eq)]
 pub struct Health {
     /// The sum of the value of all debts
-    pub total_debt_value: Decimal,
+    pub total_debt_value: Uint256,
     /// The sum of the value of all collaterals
-    pub total_collateral_value: Decimal,
+    pub total_collateral_value: Uint256,
     /// The sum of the value of all colletarals adjusted by their Max LTV
-    pub max_ltv_adjusted_collateral: Decimal,
+    pub max_ltv_adjusted_collateral: Uint256,
     /// The sum of the value of all colletarals adjusted by their Liquidation Threshold
-    pub liquidation_threshold_adjusted_collateral: Decimal,
+    pub liquidation_threshold_adjusted_collateral: Uint256,
     /// The sum of the value of all collaterals multiplied by their max LTV, over the total value of debt
-    pub max_ltv_health_factor: Option<Decimal>,
+    pub max_ltv_health_factor: Option<Decimal256>,
     /// The sum of the value of all collaterals multiplied by their liquidation threshold over the total value of debt
-    pub liquidation_health_factor: Option<Decimal>,
+    pub liquidation_health_factor: Option<Decimal256>,
 }
 
 impl fmt::Display for Health {
@@ -50,9 +55,9 @@ impl Health {
         querier: &QuerierWrapper,
         oracle_addr: &Addr,
         red_bank_addr: &Addr,
-        collateral: &[Coin],
-        debt: &[Coin],
-    ) -> StdResult<Health> {
+        collateral: &[Coin256],
+        debt: &[Coin256],
+    ) -> HealthResult<Health> {
         let querier = MarsQuerier::new(querier, oracle_addr, red_bank_addr);
         let positions = Self::positions_from_coins(&querier, collateral, debt)?;
 
@@ -60,27 +65,35 @@ impl Health {
     }
 
     /// Compute the health for a Position
-    pub fn compute_health(positions: &[Position]) -> StdResult<Health> {
-        let mut health = positions.iter().try_fold::<_, _, StdResult<Health>>(
+    pub fn compute_health(positions: &[Position]) -> HealthResult<Health> {
+        let mut health = positions.iter().try_fold::<_, _, HealthResult<Health>>(
             Health::default(),
             |mut h, p| {
-                let collateral_value = p.collateral_amount.checked_mul(p.price)?;
-                h.total_debt_value += p.debt_amount.checked_mul(p.price)?;
+                let collateral_value = p
+                    .collateral_amount
+                    .checked_multiply_ratio(p.price.numerator(), p.price.denominator())?;
+                h.total_debt_value += p
+                    .debt_amount
+                    .checked_multiply_ratio(p.price.numerator(), p.price.denominator())?;
                 h.total_collateral_value += collateral_value;
-                h.max_ltv_adjusted_collateral += collateral_value.checked_mul(p.max_ltv)?;
-                h.liquidation_threshold_adjusted_collateral +=
-                    collateral_value.checked_mul(p.liquidation_threshold)?;
+                h.max_ltv_adjusted_collateral += collateral_value
+                    .checked_multiply_ratio(p.max_ltv.numerator(), p.max_ltv.denominator())?;
+                h.liquidation_threshold_adjusted_collateral += collateral_value
+                    .checked_multiply_ratio(
+                        p.liquidation_threshold.numerator(),
+                        p.liquidation_threshold.denominator(),
+                    )?;
                 Ok(h)
             },
         )?;
 
         // If there aren't any debts a health factor can't be computed (divide by zero)
         if !health.total_debt_value.is_zero() {
-            health.max_ltv_health_factor = Some(divide_decimal_by_decimal(
+            health.max_ltv_health_factor = Some(Decimal256::checked_from_ratio(
                 health.max_ltv_adjusted_collateral,
                 health.total_debt_value,
             )?);
-            health.liquidation_health_factor = Some(divide_decimal_by_decimal(
+            health.liquidation_health_factor = Some(Decimal256::checked_from_ratio(
                 health.liquidation_threshold_adjusted_collateral,
                 health.total_debt_value,
             )?);
@@ -92,27 +105,27 @@ impl Health {
     #[inline]
     pub fn is_liquidatable(&self) -> bool {
         self.liquidation_health_factor
-            .map_or(false, |hf| hf < Decimal::one())
+            .map_or(false, |hf| hf < Decimal256::one())
     }
 
     #[inline]
     pub fn is_above_max_ltv(&self) -> bool {
         self.max_ltv_health_factor
-            .map_or(false, |hf| hf < Decimal::one())
+            .map_or(false, |hf| hf < Decimal256::one())
     }
 
     /// Convert a collection of coins (Collateral and debts) to a map of `Position`
     pub fn positions_from_coins(
         querier: &MarsQuerier,
-        collateral: &[Coin],
-        debt: &[Coin],
-    ) -> StdResult<HashMap<String, Position>> {
+        collateral: &[Coin256],
+        debt: &[Coin256],
+    ) -> HealthResult<HashMap<String, Position>> {
         let mut positions: HashMap<String, Position> = HashMap::new();
 
-        collateral.iter().try_for_each(|c| -> StdResult<_> {
+        collateral.iter().try_for_each(|c| -> HealthResult<_> {
             match positions.get_mut(&c.denom) {
                 Some(p) => {
-                    p.collateral_amount += to_decimal(c.amount)?;
+                    p.collateral_amount += c.amount;
                 }
                 None => {
                     let Market {
@@ -125,11 +138,11 @@ impl Health {
                         c.denom.clone(),
                         Position {
                             denom: c.denom.clone(),
-                            collateral_amount: to_decimal(c.amount)?,
-                            debt_amount: Decimal::zero(),
+                            collateral_amount: c.amount,
+                            debt_amount: Uint256::zero(),
                             price: querier.query_price(&c.denom)?,
-                            max_ltv: max_loan_to_value,
-                            liquidation_threshold,
+                            max_ltv: max_loan_to_value.into(),
+                            liquidation_threshold: liquidation_threshold.into(),
                         },
                     );
                 }
@@ -137,10 +150,10 @@ impl Health {
             Ok(())
         })?;
 
-        debt.iter().try_for_each(|d| -> StdResult<_> {
+        debt.iter().try_for_each(|d| -> HealthResult<_> {
             match positions.get_mut(&d.denom) {
                 Some(p) => {
-                    p.debt_amount += to_decimal(d.amount)?;
+                    p.debt_amount += d.amount;
                 }
                 None => {
                     let Market {
@@ -153,11 +166,11 @@ impl Health {
                         d.denom.clone(),
                         Position {
                             denom: d.denom.clone(),
-                            collateral_amount: Decimal::zero(),
-                            debt_amount: to_decimal(d.amount)?,
+                            collateral_amount: Uint256::zero(),
+                            debt_amount: d.amount,
                             price: querier.query_price(&d.denom)?,
-                            max_ltv: max_loan_to_value,
-                            liquidation_threshold,
+                            max_ltv: max_loan_to_value.into(),
+                            liquidation_threshold: liquidation_threshold.into(),
                         },
                     );
                 }
@@ -166,16 +179,4 @@ impl Health {
         })?;
         Ok(positions)
     }
-}
-
-/// helper function to convert `Uint128` to `Decimal`.
-/// Maps `CheckFromRatioError` to `StdError`
-pub fn to_decimal(x: Uint128) -> StdResult<Decimal> {
-    Decimal::checked_from_ratio(x, 1u128).map_err(|_e| StdError::Overflow {
-        source: cosmwasm_std::OverflowError {
-            operation: cosmwasm_std::OverflowOperation::Mul,
-            operand1: x.to_string(),
-            operand2: "".to_string(),
-        },
-    })
 }

@@ -1,16 +1,16 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Addr, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Order, Response, StdResult,
+    to_binary, Addr, Binary, Decimal256, Deps, DepsMut, Env, MessageInfo, Order, Response,
+    StdResult,
 };
 use cw2::set_contract_version;
 use cw_storage_plus::Bound;
 
-use mars_outpost::oracle::PriceResponse;
 use mars_owner::OwnerInit::SetInitialOwner;
 use mars_owner::OwnerUpdate;
 use mars_rover::adapters::vault::VaultBase;
-use mars_rover::adapters::Oracle;
+use mars_rover::adapters::{Oracle, OracleAdapterPriceResponse};
 
 use crate::error::ContractResult;
 use crate::msg::{
@@ -101,7 +101,7 @@ fn query_all_pricing_info(
         .collect::<StdResult<Vec<_>>>()
 }
 
-fn query_price(deps: Deps, denom: &str) -> ContractResult<PriceResponse> {
+fn query_price(deps: Deps, denom: &str) -> ContractResult<OracleAdapterPriceResponse> {
     let info_opt = VAULT_PRICING_INFO.may_load(deps.storage, denom)?;
     let oracle = ORACLE.load(deps.storage)?;
 
@@ -121,18 +121,18 @@ fn calculate_preview_redeem(
     oracle: &Oracle,
     info: &VaultPricingInfo,
     vault: &VaultBase<Addr>,
-) -> ContractResult<PriceResponse> {
+) -> ContractResult<OracleAdapterPriceResponse> {
     let vault_coin_supply = vault.query_total_vault_coins_issued(&deps.querier)?;
     let price = if vault_coin_supply.is_zero() {
-        Decimal::zero()
+        Decimal256::zero()
     } else {
         let total_underlying = vault.query_preview_redeem(&deps.querier, vault_coin_supply)?;
-        let underlying_per_vault_coin = Decimal::from_ratio(total_underlying, vault_coin_supply);
+        let underlying_per_vault_coin = Decimal256::from_ratio(total_underlying, vault_coin_supply);
         let price_res = oracle.query_price(&deps.querier, &info.base_denom)?;
         price_res.price.checked_mul(underlying_per_vault_coin)?
     };
 
-    Ok(PriceResponse {
+    Ok(OracleAdapterPriceResponse {
         denom: info.vault_coin_denom.clone(),
         price,
     })

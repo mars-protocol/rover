@@ -1,6 +1,6 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    to_binary, Addr, Api, Coin, CosmosMsg, QuerierWrapper, StdResult, Uint128, WasmMsg,
+    to_binary, Addr, Api, Coin, CosmosMsg, QuerierWrapper, StdResult, Uint128, Uint256, WasmMsg,
 };
 
 use crate::msg::zapper::{ExecuteMsg, QueryMsg};
@@ -39,7 +39,7 @@ impl Zapper {
         querier: &QuerierWrapper,
         lp_token_out: &str,
         coins_in: &[Coin],
-    ) -> StdResult<Uint128> {
+    ) -> StdResult<Uint256> {
         querier.query_wasm_smart(
             self.address().to_string(),
             &QueryMsg::EstimateProvideLiquidity {

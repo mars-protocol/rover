@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    to_binary, Addr, Api, Coin, CosmosMsg, QuerierWrapper, QueryRequest, StdResult, Uint128,
-    WasmMsg, WasmQuery,
+    Addr, Api, Coin, CosmosMsg, QuerierWrapper, QueryRequest, StdResult, to_binary,
+    Uint256, WasmMsg, WasmQuery,
 };
 
 use mars_outpost::red_bank;
@@ -63,7 +63,7 @@ impl RedBank {
         querier: &QuerierWrapper,
         user_address: &Addr,
         denom: &str,
-    ) -> StdResult<Uint128> {
+    ) -> StdResult<Uint256> {
         let response: red_bank::UserDebtResponse =
             querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
                 contract_addr: self.address().to_string(),
@@ -72,7 +72,7 @@ impl RedBank {
                     denom: denom.to_string(),
                 })?,
             }))?;
-        Ok(response.amount)
+        Ok(response.amount.into())
     }
 
     pub fn query_market(&self, querier: &QuerierWrapper, denom: &str) -> StdResult<Market> {

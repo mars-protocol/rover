@@ -1,5 +1,6 @@
-use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, DepsMut, Response};
+use cosmwasm_std::{Addr, BankMsg, CosmosMsg, DepsMut, Response};
 
+use mars_coin::Coin256;
 use mars_rover::error::{ContractError, ContractResult};
 
 use crate::utils::decrement_coin_balance;
@@ -7,7 +8,7 @@ use crate::utils::decrement_coin_balance;
 pub fn withdraw(
     deps: DepsMut,
     account_id: &str,
-    coin: Coin,
+    coin: Coin256,
     recipient: Addr,
 ) -> ContractResult<Response> {
     if coin.amount.is_zero() {
@@ -19,7 +20,7 @@ pub fn withdraw(
     // send coin to recipient
     let transfer_msg = CosmosMsg::Bank(BankMsg::Send {
         to_address: recipient.to_string(),
-        amount: vec![coin.clone()],
+        amount: vec![coin.try_into()?],
     });
 
     Ok(Response::new()

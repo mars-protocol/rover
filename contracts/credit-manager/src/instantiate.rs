@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use cosmwasm_std::{Decimal, DepsMut};
+use cosmwasm_std::{Decimal256, DepsMut};
 use mars_owner::OwnerInit::SetInitialOwner;
 
 use mars_rover::error::ContractError::InvalidConfig;
@@ -69,8 +69,8 @@ pub fn assert_no_duplicate_coins(denoms: &[String]) -> ContractResult<()> {
     Ok(())
 }
 
-pub fn assert_lte_to_one(dec: &Decimal) -> ContractResult<()> {
-    if dec > &Decimal::one() {
+pub fn assert_lte_to_one(dec: &Decimal256) -> ContractResult<()> {
+    if dec > &Decimal256::one() {
         return Err(InvalidConfig {
             reason: "value greater than one".to_string(),
         });

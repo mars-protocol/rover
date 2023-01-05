@@ -3,9 +3,8 @@ use std::collections::{BTreeMap, HashSet};
 use std::fmt;
 use std::str::FromStr;
 
-use crate::msg::execute::ActionCoin;
-use crate::traits::{Denoms, Stringify};
-use cosmwasm_std::{Coin, StdError, StdResult, Uint128};
+use crate::Coin256;
+use cosmwasm_std::{Coin, StdError, StdResult, Uint256};
 use schemars::JsonSchema;
 use serde::{de, Serialize};
 
@@ -58,7 +57,7 @@ use serde::{de, Serialize};
 /// let plain = coins.to_string();
 /// ```
 #[derive(Serialize, Clone, Default, Debug, PartialEq, Eq, JsonSchema)]
-pub struct Coins(BTreeMap<String, Uint128>);
+pub struct Coins(BTreeMap<String, Uint256>);
 
 // We implement a custom serde::de::Deserialize trait to handle the case where the JSON string contains
 // duplicate keys, i.e. duplicate coin denoms.
@@ -98,7 +97,7 @@ impl<'de> de::Deserialize<'de> for Coins {
                 M: de::MapAccess<'de>,
             {
                 let mut seen_denoms = HashSet::<String>::new();
-                let mut coins = BTreeMap::<String, Uint128>::new();
+                let mut coins = BTreeMap::<String, Uint256>::new();
 
                 while let Some((denom, amount_str)) = access.next_entry::<String, String>()? {
                     if seen_denoms.contains(&denom) {
@@ -108,7 +107,7 @@ impl<'de> de::Deserialize<'de> for Coins {
                         )));
                     }
 
-                    let amount = Uint128::from_str(&amount_str).map_err(|_| {
+                    let amount = Uint256::from_str(&amount_str).map_err(|_| {
                         de::Error::custom(format!(
                             "failed to parse into Coins! invalid amount: {}",
                             amount_str
@@ -134,10 +133,10 @@ impl<'de> de::Deserialize<'de> for Coins {
     }
 }
 
-impl TryFrom<Vec<Coin>> for Coins {
+impl TryFrom<Vec<Coin256>> for Coins {
     type Error = StdError;
 
-    fn try_from(vec: Vec<Coin>) -> StdResult<Self> {
+    fn try_from(vec: Vec<Coin256>) -> StdResult<Self> {
         let vec_len = vec.len();
         let map = vec
             .into_iter()
@@ -155,6 +154,15 @@ impl TryFrom<Vec<Coin>> for Coins {
         }
 
         Ok(Self(map))
+    }
+}
+
+impl TryFrom<Vec<Coin>> for Coins {
+    type Error = StdError;
+
+    fn try_from(vec: Vec<Coin>) -> StdResult<Self> {
+        let coins256 = vec.iter().map(Into::<Coin256>::into).collect::<Vec<_>>();
+        Coins::try_from(coins256)
     }
 }
 
@@ -183,12 +191,12 @@ impl FromStr for Coins {
         //
         // This assumes the denom never starts with a number, which is the case:
         // https://github.com/cosmos/cosmos-sdk/blob/v0.46.0/types/coin.go#L854-L856
-        let parse_coin_str = |s: &str| -> StdResult<Coin> {
+        let parse_coin_str = |s: &str| -> StdResult<Coin256> {
             for (i, c) in s.chars().enumerate() {
                 if c.is_alphabetic() {
-                    let amount = Uint128::from_str(&s[..i])?;
+                    let amount = Uint256::from_str(&s[..i])?;
                     let denom = String::from(&s[i..]);
-                    return Ok(Coin { amount, denom });
+                    return Ok(Coin256 { amount, denom });
                 }
             }
 
@@ -222,10 +230,10 @@ impl fmt::Display for Coins {
 
 impl Coins {
     /// Cast to Vec<Coin>, while NOT consuming the original object
-    pub fn to_vec(&self) -> Vec<Coin> {
+    pub fn to_vec(&self) -> Vec<Coin256> {
         self.0
             .iter()
-            .map(|(denom, amount)| Coin {
+            .map(|(denom, amount)| Coin256 {
                 denom: denom.clone(),
                 amount: *amount,
             })
@@ -233,10 +241,10 @@ impl Coins {
     }
 
     /// Cast to Vec<Coin>, consuming the original object
-    pub fn into_vec(self) -> Vec<Coin> {
+    pub fn into_vec(self) -> Vec<Coin256> {
         self.0
             .into_iter()
-            .map(|(denom, amount)| Coin { denom, amount })
+            .map(|(denom, amount)| Coin256 { denom, amount })
             .collect()
     }
 
@@ -252,21 +260,21 @@ impl Coins {
         self.0.keys().cloned().collect()
     }
 
-    pub fn amount(&self, denom: &str) -> Option<Uint128> {
+    pub fn amount(&self, denom: &str) -> Option<Uint256> {
         self.0.get(denom).map(Clone::clone)
     }
 
-    /// NOTE: the syntax can be simpler if Uint128 has an inplace add method...
-    pub fn add(&mut self, coin: &Coin) -> StdResult<()> {
+    /// NOTE: the syntax can be simpler if Uint256 has an inplace add method...
+    pub fn add(&mut self, coin: &Coin256) -> StdResult<()> {
         let amount = self
             .0
             .entry(coin.denom.clone())
-            .or_insert_with(Uint128::zero);
+            .or_insert_with(Uint256::zero);
         *amount = amount.checked_add(coin.amount)?;
         Ok(())
     }
 
-    pub fn deduct(&mut self, to_deduct: &Coin) -> StdResult<()> {
+    pub fn deduct(&mut self, to_deduct: &Coin256) -> StdResult<()> {
         if let Some(amount) = self.amount(&to_deduct.denom) {
             let new_amount = amount.checked_sub(to_deduct.amount)?;
             if new_amount.is_zero() {
@@ -284,23 +292,26 @@ impl Coins {
     }
 }
 
-impl Stringify for &[Coin] {
-    fn to_string(&self) -> String {
+pub trait IntoVecCoin256 {
+    fn to_vec_coin_256(&self) -> Vec<Coin256>;
+}
+
+impl IntoVecCoin256 for Vec<Coin> {
+    fn to_vec_coin_256(&self) -> Vec<Coin256> {
         self.iter()
-            .map(|coin| coin.clone().denom)
-            .collect::<Vec<String>>()
-            .join(", ")
+            .map(|c| Coin256 {
+                denom: c.denom.clone(),
+                amount: c.amount.into(),
+            })
+            .collect()
     }
 }
 
-impl Denoms for Vec<Coin> {
-    fn to_denoms(&self) -> Vec<&str> {
-        self.iter().map(|c| c.denom.as_str()).collect()
-    }
-}
-
-impl Denoms for Vec<ActionCoin> {
-    fn to_denoms(&self) -> Vec<&str> {
-        self.iter().map(|c| c.denom.as_str()).collect()
-    }
-}
+// impl Stringify for &[Coin] {
+//     fn to_string(&self) -> String {
+//         self.iter()
+//             .map(|coin| coin.clone().denom)
+//             .collect::<Vec<String>>()
+//             .join(", ")
+//     }
+// }

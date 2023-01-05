@@ -1,4 +1,4 @@
-use cosmwasm_std::{CheckedMultiplyRatioError, StdError};
+use cosmwasm_std::{CheckedMultiplyRatioError, ConversionOverflowError, StdError};
 use cw_utils::PaymentError;
 use thiserror::Error;
 
@@ -16,6 +16,9 @@ pub enum ContractError {
 
     #[error("{0}")]
     CheckedMultiply(#[from] CheckedMultiplyRatioError),
+
+    #[error("{0}")]
+    ConversionOverflowError(#[from] ConversionOverflowError),
 
     #[error("Required minimum received was not met")]
     ReceivedBelowMinimum,

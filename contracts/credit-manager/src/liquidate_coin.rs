@@ -1,13 +1,15 @@
-use std::ops::{Add, Div};
+use std::ops::Add;
 
 use cosmwasm_std::{
-    Coin, CosmosMsg, Decimal, DepsMut, Env, QuerierWrapper, Response, StdError, Storage, Uint128,
+    CosmosMsg, Decimal256, DepsMut, Env, Fraction, QuerierWrapper, Response, StdError, Storage,
+    Uint256,
 };
-use mars_rover::adapters::Oracle;
 
+use mars_coin::Coin256;
+use mars_rover::adapters::Oracle;
 use mars_rover::error::{ContractError, ContractResult};
+use mars_rover::math::{DivideDecimal, MulDecimal};
 use mars_rover::msg::execute::CallbackMsg;
-use mars_rover::traits::{IntoDecimal, IntoUint128};
 
 use crate::health::{compute_health, val_or_na};
 use crate::repay::current_debt_for_denom;
@@ -19,7 +21,7 @@ pub fn liquidate_coin(
     env: Env,
     liquidator_account_id: &str,
     liquidatee_account_id: &str,
-    debt_coin: Coin,
+    debt_coin: Coin256,
     request_coin_denom: &str,
 ) -> ContractResult<Response> {
     let request_coin_balance = COIN_BALANCES
@@ -67,10 +69,10 @@ pub fn calculate_liquidation(
     deps: &DepsMut,
     env: &Env,
     liquidatee_account_id: &str,
-    debt_coin: &Coin,
+    debt_coin: &Coin256,
     request_coin: &str,
-    request_coin_balance: Uint128,
-) -> ContractResult<(Coin, Coin)> {
+    request_coin_balance: Uint256,
+) -> ContractResult<(Coin256, Coin256)> {
     // Assert the liquidatee's credit account is liquidatable
     let health = compute_health(deps.as_ref(), env, liquidatee_account_id)?;
     if !health.is_liquidatable() {
@@ -86,26 +88,23 @@ pub fn calculate_liquidation(
 
     // Ensure debt amount does not exceed close factor % of the liquidatee's total debt value
     let close_factor = MAX_CLOSE_FACTOR.load(deps.storage)?;
-    let max_close_value = close_factor.checked_mul(health.total_debt_value)?;
+    let max_close_value = health.total_debt_value.mul_decimal(close_factor)?;
     let oracle = ORACLE.load(deps.storage)?;
     let debt_res = oracle.query_price(&deps.querier, &debt_coin.denom)?;
-    let max_close_amount = max_close_value.div(debt_res.price).uint128();
+    let max_close_amount = max_close_value.mul_decimal(debt_res.price)?;
 
     // Calculate the maximum debt possible to repay given liquidatee's request coin balance
     // FORMULA: debt amount = request value / (1 + liquidation bonus %) / debt price
     let request_res = oracle.query_price(&deps.querier, request_coin)?;
-    let max_request_value = request_res
-        .price
-        .checked_mul(request_coin_balance.to_dec()?)?;
-
-    let liq_bonus_rate = RED_BANK
+    let max_request_value = request_coin_balance.mul_decimal(request_res.price)?;
+    let liq_bonus_rate: Decimal256 = RED_BANK
         .load(deps.storage)?
         .query_market(&deps.querier, &debt_coin.denom)?
-        .liquidation_bonus;
+        .liquidation_bonus
+        .into();
     let request_coin_adjusted_max_debt = max_request_value
-        .div(liq_bonus_rate.add(Decimal::one()))
-        .div(debt_res.price)
-        .uint128();
+        .div_decimal(Decimal256::one().add(liq_bonus_rate))?
+        .div_decimal(debt_res.price)?;
 
     let final_debt_to_repay = *vec![
         debt_coin.amount,
@@ -119,19 +118,19 @@ pub fn calculate_liquidation(
 
     // Calculate exact request coin amount to give to liquidator
     // FORMULA: request amount = (1 + liquidation bonus %) * debt value / request coin price
-    let request_amount = liq_bonus_rate
-        .add(Decimal::one())
-        .checked_mul(debt_res.price.checked_mul(final_debt_to_repay.to_dec()?)?)?
-        .div(request_res.price)
-        .uint128();
+
+    let request_amount = final_debt_to_repay
+        .checked_multiply_ratio(debt_res.price.numerator(), debt_res.price.denominator())?
+        .mul_decimal(liq_bonus_rate.add(Decimal256::one()))?
+        .div_decimal(request_res.price)?;
 
     // (Debt Coin, Request Coin)
     let result = (
-        Coin {
+        Coin256 {
             denom: debt_coin.denom.clone(),
             amount: final_debt_to_repay,
         },
-        Coin {
+        Coin256 {
             denom: request_coin.to_string(),
             amount: request_amount,
         },
@@ -147,7 +146,7 @@ pub fn repay_debt(
     env: &Env,
     liquidator_account_id: &str,
     liquidatee_account_id: &str,
-    debt: &Coin,
+    debt: &Coin256,
 ) -> ContractResult<CosmosMsg> {
     // Transfer debt coin from liquidator's coin balance to liquidatee
     // Will be used to pay off the debt via CallbackMsg::Repay {}
@@ -166,7 +165,7 @@ pub fn repay_debt(
 fn assert_liquidation_profitable(
     querier: &QuerierWrapper,
     oracle: &Oracle,
-    (debt_coin, request_coin): (Coin, Coin),
+    (debt_coin, request_coin): (Coin256, Coin256),
 ) -> ContractResult<()> {
     let debt_value = oracle.query_total_value(querier, &[debt_coin.clone()])?;
     let request_value = oracle.query_total_value(querier, &[request_coin.clone()])?;

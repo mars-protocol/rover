@@ -1,7 +1,8 @@
 use cosmwasm_std::{
-    to_binary, Addr, Coin, CosmosMsg, Deps, DepsMut, QuerierWrapper, Response, Uint128, WasmMsg,
+    to_binary, Addr, CosmosMsg, Deps, DepsMut, QuerierWrapper, Response, Uint256, WasmMsg,
 };
 
+use mars_coin::Coin256;
 use mars_rover::adapters::vault::{UpdateType, Vault, VaultPositionUpdate};
 use mars_rover::error::{ContractError, ContractResult};
 use mars_rover::msg::execute::{ActionAmount, ActionCoin, CallbackMsg};
@@ -26,7 +27,7 @@ pub fn enter_vault(
             COIN_BALANCES.load(deps.storage, (account_id, &coin.denom))?
         }
     };
-    let coin_to_enter = Coin {
+    let coin_to_enter = Coin256 {
         denom: coin.denom.clone(),
         amount,
     };
@@ -38,7 +39,7 @@ pub fn enter_vault(
 
     decrement_coin_balance(deps.storage, account_id, &coin_to_enter)?;
 
-    let current_balance = vault.query_balance(&deps.querier, rover_addr)?;
+    let current_balance = vault.query_balance(&deps.querier, rover_addr)?.into();
     let update_vault_balance_msg = CosmosMsg::Wasm(WasmMsg::Execute {
         contract_addr: rover_addr.to_string(),
         funds: vec![],
@@ -50,7 +51,7 @@ pub fn enter_vault(
     });
 
     Ok(Response::new()
-        .add_message(vault.deposit_msg(&coin_to_enter)?)
+        .add_message(vault.deposit_msg(&coin_to_enter.try_into()?)?)
         .add_message(update_vault_balance_msg)
         .add_attribute("action", "rover/credit-manager/vault/deposit"))
 }
@@ -59,10 +60,10 @@ pub fn update_vault_coin_balance(
     deps: DepsMut,
     vault: Vault,
     account_id: &str,
-    previous_total_balance: Uint128,
+    previous_total_balance: Uint256,
     rover_addr: &Addr,
 ) -> ContractResult<Response> {
-    let current_balance = vault.query_balance(&deps.querier, rover_addr)?;
+    let current_balance = Uint256::from(vault.query_balance(&deps.querier, rover_addr)?);
 
     if previous_total_balance >= current_balance {
         return Err(ContractError::NoVaultCoinsReceived);
@@ -92,7 +93,7 @@ pub fn update_vault_coin_balance(
 pub fn assert_denom_matches_vault_reqs(
     querier: QuerierWrapper,
     vault: &Vault,
-    coin: &Coin,
+    coin: &Coin256,
 ) -> ContractResult<()> {
     let vault_info = vault.query_info(&querier)?;
     if vault_info.base_token != coin.denom {
@@ -107,7 +108,7 @@ pub fn assert_denom_matches_vault_reqs(
 pub fn assert_deposit_is_under_cap(
     deps: Deps,
     vault: &Vault,
-    coin_to_add: &Coin,
+    coin_to_add: &Coin256,
     rover_addr: &Addr,
 ) -> ContractResult<()> {
     let oracle = ORACLE.load(deps.storage)?;

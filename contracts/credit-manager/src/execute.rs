@@ -3,7 +3,7 @@ use cosmwasm_std::{
 };
 
 use mars_account_nft::msg::ExecuteMsg as NftExecuteMsg;
-use mars_rover::coins::Coins;
+use mars_coin::Coins;
 use mars_rover::error::{ContractError, ContractResult};
 use mars_rover::msg::execute::{Action, CallbackMsg};
 

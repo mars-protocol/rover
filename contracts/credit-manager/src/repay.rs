@@ -1,7 +1,8 @@
 use std::cmp::min;
 
-use cosmwasm_std::{Coin, Deps, DepsMut, Env, Response, Uint128};
+use cosmwasm_std::{Coin, Deps, DepsMut, Env, Response, Uint256};
 
+use mars_coin::Coin256;
 use mars_rover::error::{ContractError, ContractResult};
 use mars_rover::msg::execute::ActionCoin;
 
@@ -17,11 +18,11 @@ pub fn repay(
     // Ensure repayment does not exceed max debt on account
     let (debt_amount, debt_shares) =
         current_debt_for_denom(deps.as_ref(), &env, account_id, &coin.denom)?;
-    let amount_to_repay = min(debt_amount, coin.amount.value().unwrap_or(Uint128::MAX));
+    let amount_to_repay = min(debt_amount, coin.amount.value().unwrap_or(Uint256::MAX));
     let shares_to_repay = debt_amount_to_shares(
         deps.as_ref(),
         &env,
-        &Coin {
+        &Coin256 {
             denom: coin.denom.to_string(),
             amount: amount_to_repay,
         },
@@ -49,7 +50,7 @@ pub fn repay(
     decrement_coin_balance(
         deps.storage,
         account_id,
-        &Coin {
+        &Coin256 {
             denom: coin.denom.to_string(),
             amount: amount_to_repay,
         },
@@ -58,7 +59,7 @@ pub fn repay(
     let red_bank = RED_BANK.load(deps.storage)?;
     let red_bank_repay_msg = red_bank.repay_msg(&Coin {
         denom: coin.denom.to_string(),
-        amount: amount_to_repay,
+        amount: amount_to_repay.try_into()?,
     })?;
 
     Ok(Response::new()
@@ -68,7 +69,7 @@ pub fn repay(
         .add_attribute("coins_repaid", amount_to_repay))
 }
 
-fn debt_amount_to_shares(deps: Deps, env: &Env, coin: &Coin) -> ContractResult<Uint128> {
+fn debt_amount_to_shares(deps: Deps, env: &Env, coin: &Coin256) -> ContractResult<Uint256> {
     let red_bank = RED_BANK.load(deps.storage)?;
     let total_debt_shares = TOTAL_DEBT_SHARES.load(deps.storage, &coin.denom)?;
     let total_debt_amount =
@@ -84,7 +85,7 @@ pub fn current_debt_for_denom(
     env: &Env,
     account_id: &str,
     denom: &str,
-) -> ContractResult<(Uint128, Uint128)> {
+) -> ContractResult<(Uint256, Uint256)> {
     let debt_shares = DEBT_SHARES
         .load(deps.storage, (account_id, denom))
         .map_err(|_| ContractError::NoDebt)?;

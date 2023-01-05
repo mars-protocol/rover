@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Decimal, Uint128};
+use cosmwasm_std::{Addr, Decimal256, Uint256, Uint64};
 use cw_item_set::Set;
 use cw_storage_plus::{Item, Map};
 use mars_owner::Owner;
@@ -21,13 +21,13 @@ pub const ZAPPER: Item<Zapper> = Item::new("zapper");
 // Config
 pub const OWNER: Owner = Owner::new("owner");
 pub const ALLOWED_COINS: Set<&str> = Set::new("allowed_coins");
-pub const MAX_CLOSE_FACTOR: Item<Decimal> = Item::new("max_close_factor");
-pub const MAX_UNLOCKING_POSITIONS: Item<Uint128> = Item::new("max_unlocking_positions");
+pub const MAX_CLOSE_FACTOR: Item<Decimal256> = Item::new("max_close_factor");
+pub const MAX_UNLOCKING_POSITIONS: Item<Uint64> = Item::new("max_unlocking_positions");
 
 // Positions
-pub const COIN_BALANCES: Map<(&str, &str), Uint128> = Map::new("coin_balance"); // Map<(AccountId, Denom), Amount>
-pub const DEBT_SHARES: Map<(&str, &str), Uint128> = Map::new("debt_shares"); // Map<(AccountId, Denom), Shares>
-pub const TOTAL_DEBT_SHARES: Map<&str, Uint128> = Map::new("total_debt_shares"); // Map<Denom, Shares>
+pub const COIN_BALANCES: Map<(&str, &str), Uint256> = Map::new("coin_balance"); // Map<(AccountId, Denom), Amount>
+pub const DEBT_SHARES: Map<(&str, &str), Uint256> = Map::new("debt_shares"); // Map<(AccountId, Denom), Shares>
+pub const TOTAL_DEBT_SHARES: Map<&str, Uint256> = Map::new("total_debt_shares"); // Map<Denom, Shares>
 pub const VAULT_POSITIONS: Map<(&str, Addr), VaultPositionAmount> = Map::new("vault_positions"); // Map<(AccountId, VaultAddr), VaultPositionAmount>
 
 // Temporary state to save variables to be used on reply handling

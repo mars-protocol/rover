@@ -1,7 +1,8 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{to_binary, Addr, Coin, CosmosMsg, Decimal, StdResult, Uint128, WasmMsg};
-
+use cosmwasm_std::{to_binary, Addr, CosmosMsg, Decimal, StdResult, Uint128, Uint256, WasmMsg};
 use mars_owner::OwnerUpdate;
+
+use mars_coin::Coin256;
 
 use crate::adapters::vault::{Vault, VaultPositionType, VaultUnchecked};
 use crate::msg::instantiate::ConfigUpdates;
@@ -32,12 +33,12 @@ pub enum ExecuteMsg {
 
 #[cw_serde]
 pub enum ActionAmount {
-    Exact(Uint128),
+    Exact(Uint256),
     AccountBalance,
 }
 
 impl ActionAmount {
-    pub fn value(&self) -> Option<Uint128> {
+    pub fn value(&self) -> Option<Uint256> {
         match self {
             ActionAmount::Exact(amt) => Some(*amt),
             ActionAmount::AccountBalance => None,
@@ -51,8 +52,8 @@ pub struct ActionCoin {
     pub amount: ActionAmount,
 }
 
-impl From<&Coin> for ActionCoin {
-    fn from(value: &Coin) -> Self {
+impl From<&Coin256> for ActionCoin {
+    fn from(value: &Coin256) -> Self {
         Self {
             denom: value.denom.to_string(),
             amount: ActionAmount::Exact(value.amount),
@@ -64,11 +65,11 @@ impl From<&Coin> for ActionCoin {
 #[cw_serde]
 pub enum Action {
     /// Deposit coin of specified denom and amount. Verifies if the correct amount is sent with transaction.
-    Deposit(Coin),
+    Deposit(Coin256),
     /// Withdraw coin of specified denom and amount
-    Withdraw(Coin),
+    Withdraw(Coin256),
     /// Borrow coin of specified amount from Red Bank
-    Borrow(Coin),
+    Borrow(Coin256),
     /// Repay coin of specified amount back to Red Bank. If `amount: AccountBalance` is passed,
     /// the repaid amount will be the minimum between account balance for denom and total owed.
     Repay(ActionCoin),
@@ -81,12 +82,12 @@ pub enum Action {
     /// Withdraw underlying coins from vault
     ExitVault {
         vault: VaultUnchecked,
-        amount: Uint128,
+        amount: Uint256,
     },
     /// Requests unlocking of shares for a vault with a required lock period
     RequestVaultUnlock {
         vault: VaultUnchecked,
-        amount: Uint128,
+        amount: Uint256,
     },
     /// Withdraws the assets for unlocking position id from vault. Required time must have elapsed.
     ExitVaultUnlocked { id: u64, vault: VaultUnchecked },
@@ -103,7 +104,7 @@ pub enum Action {
         liquidatee_account_id: String,
         /// The coin debt that the liquidator wishes to pay back on behalf of the liquidatee.
         /// The liquidator must already have these assets in their credit account.
-        debt_coin: Coin,
+        debt_coin: Coin256,
         /// The coin they wish to acquire from the liquidatee (amount returned will include the bonus)
         request_coin_denom: String,
     },
@@ -114,7 +115,7 @@ pub enum Action {
     /// The `VaultPositionType` will determine which bucket to liquidate from.
     LiquidateVault {
         liquidatee_account_id: String,
-        debt_coin: Coin,
+        debt_coin: Coin256,
         request_vault: VaultUnchecked,
         position_type: VaultPositionType,
     },
@@ -145,12 +146,12 @@ pub enum CallbackMsg {
     /// Decrement the token's asset amount;
     Withdraw {
         account_id: String,
-        coin: Coin,
+        coin: Coin256,
         recipient: Addr,
     },
     /// Borrow specified amount of coin from Red Bank;
     /// Increase the token's coin amount and debt shares;
-    Borrow { account_id: String, coin: Coin },
+    Borrow { account_id: String, coin: Coin256 },
     /// Repay coin of specified amount back to Red Bank;
     /// Decrement the token's coin amount and debt shares;
     /// If `coin.amount: AccountBalance` is passed, the repaid amount will be the minimum
@@ -172,7 +173,7 @@ pub enum CallbackMsg {
     ExitVault {
         account_id: String,
         vault: Vault,
-        amount: Uint128,
+        amount: Uint256,
     },
     /// Used to update the account balance of vault coins after a vault action has taken place
     UpdateVaultCoinBalance {
@@ -180,13 +181,13 @@ pub enum CallbackMsg {
         /// Account that needs vault coin balance adjustment
         account_id: String,
         /// Total vault coin balance in Rover
-        previous_total_balance: Uint128,
+        previous_total_balance: Uint256,
     },
     /// Requests unlocking of shares for a vault with a lock period
     RequestVaultUnlock {
         account_id: String,
         vault: Vault,
-        amount: Uint128,
+        amount: Uint256,
     },
     /// Withdraws assets from vault for a locked position having a lockup period that has been fulfilled
     ExitVaultUnlocked {
@@ -198,13 +199,13 @@ pub enum CallbackMsg {
     LiquidateCoin {
         liquidator_account_id: String,
         liquidatee_account_id: String,
-        debt_coin: Coin,
+        debt_coin: Coin256,
         request_coin_denom: String,
     },
     LiquidateVault {
         liquidator_account_id: String,
         liquidatee_account_id: String,
-        debt_coin: Coin,
+        debt_coin: Coin256,
         request_vault: Vault,
         position_type: VaultPositionType,
     },
@@ -221,7 +222,7 @@ pub enum CallbackMsg {
         /// Account that needs coin balance adjustment
         account_id: String,
         /// Total balance for coin in Rover prior to withdraw
-        previous_balance: Coin,
+        previous_balance: Coin256,
     },
     /// Add Vec<Coin> to liquidity pool in exchange for LP tokens
     ProvideLiquidity {

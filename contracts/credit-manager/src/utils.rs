@@ -3,18 +3,17 @@ use std::hash::Hash;
 
 use cosmwasm_std::Order::Ascending;
 use cosmwasm_std::{
-    to_binary, Addr, Coin, CosmosMsg, Decimal, Deps, DepsMut, Empty, QuerierWrapper, StdResult,
-    Storage, Uint128, WasmMsg,
+    to_binary, Addr, CosmosMsg, Deps, DepsMut, Empty, QuerierWrapper, StdResult, Storage, Uint256,
+    WasmMsg,
 };
 use cw721::OwnerOfResponse;
 use cw721_base::QueryMsg;
 
+use mars_coin::Coin256;
 use mars_rover::error::{ContractError, ContractResult};
 use mars_rover::math::CeilRatio;
 use mars_rover::msg::execute::CallbackMsg;
-use mars_rover::msg::query::CoinValue;
 use mars_rover::msg::ExecuteMsg;
-use mars_rover::traits::IntoDecimal;
 
 use crate::state::{
     ACCOUNT_NFT, ALLOWED_COINS, COIN_BALANCES, ORACLE, RED_BANK, SWAPPER, TOTAL_DEBT_SHARES,
@@ -65,11 +64,11 @@ pub fn assert_coins_are_whitelisted(
 pub fn increment_coin_balance(
     storage: &mut dyn Storage,
     account_id: &str,
-    coin: &Coin,
-) -> ContractResult<Uint128> {
+    coin: &Coin256,
+) -> ContractResult<Uint256> {
     COIN_BALANCES.update(storage, (account_id, &coin.denom), |value_opt| {
         value_opt
-            .unwrap_or_else(Uint128::zero)
+            .unwrap_or_else(Uint256::zero)
             .checked_add(coin.amount)
             .map_err(ContractError::Overflow)
     })
@@ -78,12 +77,12 @@ pub fn increment_coin_balance(
 pub fn decrement_coin_balance(
     storage: &mut dyn Storage,
     account_id: &str,
-    coin: &Coin,
-) -> ContractResult<Uint128> {
+    coin: &Coin256,
+) -> ContractResult<Uint256> {
     let path = COIN_BALANCES.key((account_id, &coin.denom));
     let value_opt = path.may_load(storage)?;
     let new_value = value_opt
-        .unwrap_or_else(Uint128::zero)
+        .unwrap_or_else(Uint256::zero)
         .checked_sub(coin.amount)?;
     if new_value.is_zero() {
         path.remove(storage);
@@ -126,12 +125,12 @@ pub fn debt_shares_to_amount(
     deps: Deps,
     rover_addr: &Addr,
     denom: &str,
-    shares: Uint128,
-) -> ContractResult<Coin> {
+    shares: Uint256,
+) -> ContractResult<Coin256> {
     // total shares of debt issued for denom
     let total_debt_shares = TOTAL_DEBT_SHARES
         .load(deps.storage, denom)
-        .unwrap_or(Uint128::zero());
+        .unwrap_or(Uint256::zero());
 
     // total rover debt amount in Redbank for asset
     let red_bank = RED_BANK.load(deps.storage)?;
@@ -140,21 +139,9 @@ pub fn debt_shares_to_amount(
     // Amount of debt for token's position. Rounded up to favor participants in the debt pool.
     let amount = total_debt_amount.multiply_ratio_ceil(shares, total_debt_shares)?;
 
-    Ok(Coin {
+    Ok(Coin256 {
         denom: denom.to_string(),
         amount,
-    })
-}
-
-pub fn coin_value(deps: &Deps, coin: &Coin) -> ContractResult<CoinValue> {
-    let oracle = ORACLE.load(deps.storage)?;
-    let res = oracle.query_price(&deps.querier, &coin.denom)?;
-    let value = res.price.checked_mul(coin.amount.to_dec()?)?;
-    Ok(CoinValue {
-        denom: coin.denom.clone(),
-        amount: coin.amount,
-        price: res.price,
-        value,
     })
 }
 
@@ -187,16 +174,6 @@ pub fn assert_not_contract_in_config(deps: &Deps, addr_to_flag: &Addr) -> Contra
         });
     }
     Ok(())
-}
-
-pub trait IntoUint128 {
-    fn uint128(&self) -> Uint128;
-}
-
-impl IntoUint128 for Decimal {
-    fn uint128(&self) -> Uint128 {
-        *self * Uint128::new(1)
-    }
 }
 
 pub fn contents_equal<T>(vec_a: &[T], vec_b: &[T]) -> bool

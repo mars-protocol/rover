@@ -1,11 +1,17 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Addr, Api, Coin, Decimal, QuerierWrapper, StdResult};
-use mars_outpost::oracle::PriceResponse;
+use cosmwasm_std::{Addr, Api, Decimal256, QuerierWrapper, StdResult, Uint256};
 
+use mars_coin::Coin256;
 use mars_mock_oracle::msg::QueryMsg;
 
 use crate::error::ContractResult;
-use crate::traits::IntoDecimal;
+use crate::math::MulDecimal;
+
+#[cw_serde]
+pub struct OracleAdapterPriceResponse {
+    pub denom: String,
+    pub price: Decimal256,
+}
 
 #[cw_serde]
 pub struct OracleBase<T>(T);
@@ -36,7 +42,11 @@ impl OracleUnchecked {
 }
 
 impl Oracle {
-    pub fn query_price(&self, querier: &QuerierWrapper, denom: &str) -> StdResult<PriceResponse> {
+    pub fn query_price(
+        &self,
+        querier: &QuerierWrapper,
+        denom: &str,
+    ) -> StdResult<OracleAdapterPriceResponse> {
         querier.query_wasm_smart(
             self.address().to_string(),
             &QueryMsg::Price {
@@ -48,13 +58,13 @@ impl Oracle {
     pub fn query_total_value(
         &self,
         querier: &QuerierWrapper,
-        coins: &[Coin],
-    ) -> ContractResult<Decimal> {
+        coins: &[Coin256],
+    ) -> ContractResult<Uint256> {
         Ok(coins
             .iter()
             .map(|coin| {
                 let res = self.query_price(querier, &coin.denom)?;
-                Ok(res.price.checked_mul(coin.amount.to_dec()?)?)
+                Ok(coin.amount.mul_decimal(res.price)?)
             })
             .collect::<ContractResult<Vec<_>>>()?
             .iter()

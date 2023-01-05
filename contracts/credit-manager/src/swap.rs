@@ -1,5 +1,6 @@
-use cosmwasm_std::{Coin, Decimal, DepsMut, Env, Response, Uint128};
+use cosmwasm_std::{Decimal, DepsMut, Env, Response, Uint256};
 
+use mars_coin::Coin256;
 use mars_rover::error::{ContractError, ContractResult};
 use mars_rover::msg::execute::{ActionAmount, ActionCoin};
 
@@ -16,13 +17,13 @@ pub fn swap_exact_in(
 ) -> ContractResult<Response> {
     assert_coin_is_whitelisted(deps.storage, denom_out)?;
 
-    let coin_in_to_trade = Coin {
+    let coin_in_to_trade = Coin256 {
         denom: coin_in.denom.clone(),
         amount: match coin_in.amount {
             ActionAmount::Exact(a) => a,
             ActionAmount::AccountBalance => COIN_BALANCES
                 .may_load(deps.storage, (account_id, &coin_in.denom))?
-                .unwrap_or(Uint128::zero()),
+                .unwrap_or(Uint256::zero()),
         },
     };
 
@@ -39,7 +40,11 @@ pub fn swap_exact_in(
     let swapper = SWAPPER.load(deps.storage)?;
 
     Ok(Response::new()
-        .add_message(swapper.swap_exact_in_msg(&coin_in_to_trade, denom_out, slippage)?)
+        .add_message(swapper.swap_exact_in_msg(
+            &coin_in_to_trade.try_into()?,
+            denom_out,
+            slippage,
+        )?)
         .add_message(update_coin_balance_msg)
         .add_attribute("action", "rover/credit-manager/swapper"))
 }

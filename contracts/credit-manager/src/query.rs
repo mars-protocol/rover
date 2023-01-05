@@ -1,6 +1,7 @@
-use cosmwasm_std::{Addr, Coin, Deps, Env, Order, StdResult, Uint128};
+use cosmwasm_std::{Addr, Deps, Env, Order, StdResult, Uint128};
 use cw_storage_plus::Bound;
 
+use mars_coin::Coin256;
 use mars_rover::adapters::vault::{Vault, VaultBase, VaultPosition, VaultUnchecked};
 use mars_rover::error::ContractResult;
 use mars_rover::msg::query::{
@@ -85,13 +86,13 @@ fn query_debt_amounts(deps: Deps, env: &Env, account_id: &str) -> ContractResult
         .collect()
 }
 
-pub fn query_coin_balances(deps: Deps, account_id: &str) -> ContractResult<Vec<Coin>> {
+pub fn query_coin_balances(deps: Deps, account_id: &str) -> ContractResult<Vec<Coin256>> {
     COIN_BALANCES
         .prefix(account_id)
         .range(deps.storage, None, None, Order::Ascending)
         .map(|item| {
             let (denom, amount) = item?;
-            Ok(Coin { denom, amount })
+            Ok(Coin256 { denom, amount })
         })
         .collect()
 }
@@ -281,7 +282,7 @@ pub fn query_all_total_vault_coin_balances(
         .map(|res| {
             let addr = res?;
             let vault = VaultBase::new(addr);
-            let balance = vault.query_balance(&deps.querier, rover_addr)?;
+            let balance = vault.query_balance(&deps.querier, rover_addr)?.into();
             Ok(VaultWithBalance { vault, balance })
         })
         .collect()

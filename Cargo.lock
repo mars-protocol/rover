@@ -1021,6 +1021,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "mars-coin"
+version = "1.0.0"
+dependencies = [
+ "cosmwasm-std",
+ "schemars",
+ "serde",
+]
+
+[[package]]
 name = "mars-credit-manager"
 version = "1.0.0"
 dependencies = [
@@ -1037,6 +1046,7 @@ dependencies = [
  "cw721-base",
  "itertools",
  "mars-account-nft",
+ "mars-coin",
  "mars-health",
  "mars-mock-oracle",
  "mars-mock-red-bank",
@@ -1053,8 +1063,11 @@ dependencies = [
 name = "mars-health"
 version = "1.0.0"
 dependencies = [
+ "cosmwasm-schema",
  "cosmwasm-std",
+ "mars-coin",
  "mars-outpost",
+ "thiserror",
 ]
 
 [[package]]
@@ -1098,6 +1111,7 @@ dependencies = [
  "cosmwasm-vault-standard",
  "cw-storage-plus 1.0.1",
  "cw-utils 0.16.0",
+ "mars-coin",
  "mars-rover",
  "thiserror",
 ]
@@ -1162,6 +1176,7 @@ dependencies = [
  "cosmwasm-vault-standard",
  "cw-storage-plus 1.0.1",
  "cw-utils 0.16.0",
+ "mars-coin",
  "mars-health",
  "mars-mock-oracle",
  "mars-mock-red-bank",
@@ -1240,6 +1255,7 @@ dependencies = [
  "cosmwasm-std",
  "cw-storage-plus 1.0.1",
  "cw-utils 0.16.0",
+ "mars-coin",
  "mars-rover",
  "thiserror",
 ]

@@ -23,5 +23,6 @@ cosmwasm-std            = { workspace = true }
 cosmwasm-vault-standard = { workspace = true }
 cw-storage-plus         = { workspace = true }
 cw-utils                = { workspace = true }
+mars-coin               = { workspace = true }
 mars-rover              = { workspace = true }
 thiserror               = { workspace = true }

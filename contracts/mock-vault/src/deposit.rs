@@ -1,4 +1,5 @@
 use cosmwasm_std::{BankMsg, Coin, CosmosMsg, DepsMut, MessageInfo, Response, StdResult, Uint128};
+use mars_coin::IntoVecCoin256;
 
 use crate::contract::STARTING_VAULT_SHARES;
 use crate::error::ContractError;
@@ -14,10 +15,13 @@ pub fn deposit(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractErr
         TOTAL_VAULT_SHARES.save(deps.storage, &STARTING_VAULT_SHARES)?;
         STARTING_VAULT_SHARES
     } else {
-        let total_vault_value = oracle.query_total_value(&deps.querier, &[balance])?;
-        let assets_value = oracle.query_total_value(&deps.querier, &info.funds)?;
-        let shares_to_add = total_shares
-            .checked_multiply_ratio(assets_value.atomics(), total_vault_value.atomics())?;
+        let assets_value: Uint128 = oracle
+            .query_total_value(&deps.querier, &info.funds.to_vec_coin_256())?
+            .try_into()?;
+        let total_vault_value: Uint128 = oracle
+            .query_total_value(&deps.querier, &[balance.into()])?
+            .try_into()?;
+        let shares_to_add = total_shares.checked_multiply_ratio(assets_value, total_vault_value)?;
         TOTAL_VAULT_SHARES.save(deps.storage, &(total_shares + shares_to_add))?;
         shares_to_add
     };

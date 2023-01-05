@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::Uint128;
+use cosmwasm_std::Uint256;
 
 use crate::adapters::vault::{
     UnlockingChange, UpdateType, VaultPositionUpdate, VaultUnlockingPosition,
@@ -17,17 +17,17 @@ impl VaultPositionAmount {
         self.unlocked().is_zero() && self.locked().is_zero() && self.unlocking().is_empty()
     }
 
-    pub fn unlocked(&self) -> Uint128 {
+    pub fn unlocked(&self) -> Uint256 {
         match self {
             VaultPositionAmount::Unlocked(amount) => amount.total(),
-            _ => Uint128::zero(),
+            _ => Uint256::zero(),
         }
     }
 
-    pub fn locked(&self) -> Uint128 {
+    pub fn locked(&self) -> Uint256 {
         match self {
             VaultPositionAmount::Locking(amount) => amount.locked.total(),
-            _ => Uint128::zero(),
+            _ => Uint256::zero(),
         }
     }
 
@@ -77,23 +77,23 @@ impl VaultPositionAmount {
 }
 
 #[cw_serde]
-pub struct VaultAmount(Uint128);
+pub struct VaultAmount(Uint256);
 
 impl VaultAmount {
-    pub fn new(amount: Uint128) -> VaultAmount {
+    pub fn new(amount: Uint256) -> VaultAmount {
         VaultAmount(amount)
     }
 
-    pub fn total(&self) -> Uint128 {
+    pub fn total(&self) -> Uint256 {
         self.0
     }
 
-    pub fn increment(&mut self, amount: Uint128) -> ContractResult<()> {
+    pub fn increment(&mut self, amount: Uint256) -> ContractResult<()> {
         self.0 = self.0.checked_add(amount)?;
         Ok(())
     }
 
-    pub fn decrement(&mut self, amount: Uint128) -> ContractResult<()> {
+    pub fn decrement(&mut self, amount: Uint256) -> ContractResult<()> {
         self.0 = self.0.checked_sub(amount)?;
         Ok(())
     }
@@ -117,7 +117,7 @@ impl UnlockingPositions {
         self.0.clone()
     }
 
-    pub fn total(&self) -> Uint128 {
+    pub fn total(&self) -> Uint256 {
         self.0.iter().map(|u| u.coin.amount).sum()
     }
 
@@ -130,7 +130,7 @@ impl UnlockingPositions {
         Ok(())
     }
 
-    pub fn decrement(&mut self, id: u64, amount: Uint128) -> ContractResult<()> {
+    pub fn decrement(&mut self, id: u64, amount: Uint256) -> ContractResult<()> {
         let res = self.0.iter_mut().find(|p| p.id == id);
         match res {
             Some(p) => {

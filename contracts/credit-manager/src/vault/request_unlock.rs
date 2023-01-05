@@ -1,5 +1,6 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Addr, Coin, DepsMut, Reply, Response, Uint128};
+use cosmwasm_std::{Addr, Coin, DepsMut, Reply, Response, Uint256};
+use mars_coin::Coin256;
 
 use crate::state::VAULT_REQUEST_TEMP_STORAGE;
 use crate::vault::assert_under_max_unlocking_limit;
@@ -14,7 +15,7 @@ use crate::vault::utils::{assert_vault_is_whitelisted, update_vault_position};
 #[cw_serde]
 pub struct RequestTempStorage {
     pub account_id: String,
-    pub amount: Uint128,
+    pub amount: Uint256,
     pub vault_addr: Addr,
 }
 
@@ -22,7 +23,7 @@ pub fn request_vault_unlock(
     deps: DepsMut,
     account_id: &str,
     vault: Vault,
-    amount: Uint128,
+    amount: Uint256,
 ) -> ContractResult<Response> {
     assert_vault_is_whitelisted(deps.storage, &vault)?;
     vault.query_lockup_duration(&deps.querier).map_err(|_| {
@@ -51,7 +52,7 @@ pub fn request_vault_unlock(
     let vault_info = vault.query_info(&deps.querier)?;
     let request_unlock_msg = vault.request_unlock_msg(Coin {
         denom: vault_info.vault_token,
-        amount,
+        amount: amount.try_into()?,
     })?;
 
     Ok(Response::new()
@@ -72,9 +73,9 @@ pub fn handle_unlock_request_reply(deps: DepsMut, reply: Reply) -> ContractResul
         &storage.vault_addr,
         VaultPositionUpdate::Unlocking(UnlockingChange::Add(VaultUnlockingPosition {
             id: unlocking_position.id,
-            coin: Coin {
+            coin: Coin256 {
                 denom: info.base_token,
-                amount: unlocking_position.base_token_amount,
+                amount: unlocking_position.base_token_amount.into(),
             },
         })),
     )?;

@@ -1,5 +1,5 @@
 [package]
-name          = "mars-health"
+name          = "mars-coin"
 version       = { workspace = true }
 authors       = { workspace = true }
 edition       = { workspace = true }
@@ -17,8 +17,6 @@ doctest = false
 backtraces = ["cosmwasm-std/backtraces"]
 
 [dependencies]
-cosmwasm-schema = { workspace = true }
-cosmwasm-std    = { workspace = true }
-mars-coin       = { workspace = true }
-mars-outpost    = { workspace = true }
-thiserror       = { workspace = true }
+cosmwasm-std = { workspace = true }
+schemars     = { workspace = true }
+serde        = { workspace = true }

@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::Uint128;
+use cosmwasm_std::Uint256;
 
 use crate::adapters::vault::{
     LockingVaultAmount, UnlockingPositions, VaultAmount, VaultPositionAmount,
@@ -8,14 +8,14 @@ use crate::adapters::vault::{
 
 #[cw_serde]
 pub enum UpdateType {
-    Increment(Uint128),
-    Decrement(Uint128),
+    Increment(Uint256),
+    Decrement(Uint256),
 }
 
 #[cw_serde]
 pub enum UnlockingChange {
     Add(VaultUnlockingPosition),
-    Decrement { id: u64, amount: Uint128 },
+    Decrement { id: u64, amount: Uint256 },
 }
 
 #[cw_serde]
@@ -29,10 +29,10 @@ impl VaultPositionUpdate {
     pub fn default_amount(&self) -> VaultPositionAmount {
         match self {
             VaultPositionUpdate::Unlocked { .. } => {
-                VaultPositionAmount::Unlocked(VaultAmount::new(Uint128::zero()))
+                VaultPositionAmount::Unlocked(VaultAmount::new(Uint256::zero()))
             }
             _ => VaultPositionAmount::Locking(LockingVaultAmount {
-                locked: VaultAmount::new(Uint128::zero()),
+                locked: VaultAmount::new(Uint256::zero()),
                 unlocking: UnlockingPositions::new(vec![]),
             }),
         }

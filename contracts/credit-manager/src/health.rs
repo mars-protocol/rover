@@ -1,12 +1,13 @@
-use cosmwasm_std::{Coin, Decimal, Deps, Env, Event, Response};
+use cosmwasm_std::{Decimal256, Deps, Env, Event, Response, Uint256};
+
+use mars_coin::Coin256;
 use mars_health::health::{Health, Position};
 use mars_health::query::MarsQuerier;
 use mars_outpost::red_bank::Market;
-
 use mars_rover::adapters::vault::VaultPosition;
 use mars_rover::adapters::{Oracle, RedBank};
 use mars_rover::error::{ContractError, ContractResult};
-use mars_rover::traits::{Coins, IntoDecimal};
+use mars_rover::traits::ToCoins;
 
 use crate::query::query_positions;
 use crate::state::{ALLOWED_COINS, ORACLE, RED_BANK, VAULT_CONFIGS};
@@ -37,8 +38,8 @@ pub fn compute_health(deps: Deps, env: &Env, account_id: &str) -> ContractResult
 
 fn get_positions_for_coins(
     deps: &Deps,
-    collateral: &[Coin],
-    debt: &[Coin],
+    collateral: &[Coin256],
+    debt: &[Coin256],
     oracle: &Oracle,
     red_bank: &RedBank,
 ) -> ContractResult<Vec<Position>> {
@@ -48,7 +49,7 @@ fn get_positions_for_coins(
         // If coin has been de-listed, drop MaxLTV to zero
         .map(|mut p| {
             if !ALLOWED_COINS.contains(deps.storage, &p.denom) {
-                p.max_ltv = Decimal::zero();
+                p.max_ltv = Decimal256::zero();
             }
             p
         })
@@ -72,12 +73,8 @@ fn get_positions_for_vaults(
             positions.push(Position {
                 denom: price_res.denom,
                 price: price_res.price,
-                collateral_amount: v
-                    .amount
-                    .unlocked()
-                    .checked_add(v.amount.locked())?
-                    .to_dec()?,
-                debt_amount: Decimal::zero(),
+                collateral_amount: v.amount.unlocked().checked_add(v.amount.locked())?,
+                debt_amount: Uint256::zero(),
                 max_ltv: config.max_ltv,
                 liquidation_threshold: config.liquidation_threshold,
             });
@@ -93,10 +90,10 @@ fn get_positions_for_vaults(
                 positions.push(Position {
                     denom: price_res.denom,
                     price: price_res.price,
-                    collateral_amount: u.coin.amount.to_dec()?,
-                    debt_amount: Decimal::zero(),
-                    max_ltv: max_loan_to_value,
-                    liquidation_threshold,
+                    collateral_amount: u.coin.amount,
+                    debt_amount: Uint256::zero(),
+                    max_ltv: max_loan_to_value.into(),
+                    liquidation_threshold: liquidation_threshold.into(),
                 })
             }
 
@@ -141,6 +138,6 @@ pub fn assert_below_max_ltv(deps: Deps, env: Env, account_id: &str) -> ContractR
         .add_event(event))
 }
 
-pub fn val_or_na(opt: Option<Decimal>) -> String {
+pub fn val_or_na(opt: Option<Decimal256>) -> String {
     opt.map_or_else(|| "n/a".to_string(), |dec| dec.to_string())
 }

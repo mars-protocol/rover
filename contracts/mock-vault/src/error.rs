@@ -1,4 +1,4 @@
-use cosmwasm_std::{CheckedMultiplyRatioError, StdError};
+use cosmwasm_std::{CheckedMultiplyRatioError, ConversionOverflowError, StdError};
 use mars_rover::error::ContractError as RoverError;
 use thiserror::Error;
 
@@ -14,6 +14,9 @@ pub enum ContractError {
 
     #[error("{0}")]
     CheckedMultiply(#[from] CheckedMultiplyRatioError),
+
+    #[error("{0}")]
+    ConversionOverflowError(#[from] ConversionOverflowError),
 
     #[error("Lockup position {0} not found")]
     LockupPositionNotFound(u64),

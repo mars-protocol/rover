@@ -1,11 +1,12 @@
 use cosmwasm_std::{
-    CheckedFromRatioError, CheckedMultiplyRatioError, Coin, DecimalRangeExceeded, OverflowError,
-    StdError, Uint128,
+    CheckedMultiplyRatioError, ConversionOverflowError, DecimalRangeExceeded, OverflowError,
+    StdError, Uint128, Uint256,
 };
 use mars_owner::OwnerError;
 use thiserror::Error;
 
-use crate::coins::Coins;
+use mars_coin::{Coin256, Coins};
+use mars_health::error::HealthError;
 
 pub type ContractResult<T> = Result<T, ContractError>;
 
@@ -21,16 +22,13 @@ pub enum ContractError {
     AboveVaultDepositCap { new_value: String, maximum: String },
 
     #[error("{0}")]
-    OwnerError(#[from] OwnerError),
+    CheckedMultiply(#[from] CheckedMultiplyRatioError),
 
     #[error("{0} is not an available coin to request")]
     CoinNotAvailable(String),
 
     #[error("{0}")]
-    CheckedFromRatioError(#[from] CheckedFromRatioError),
-
-    #[error("{0}")]
-    CheckedMultiply(#[from] CheckedMultiplyRatioError),
+    ConversionOverflowError(#[from] ConversionOverflowError),
 
     #[error("{0}")]
     DecimalRangeExceeded(#[from] DecimalRangeExceeded),
@@ -49,9 +47,12 @@ pub enum ContractError {
 
     #[error("Sent fund mismatch. Expected: {expected:?}, received {received:?}")]
     FundsMismatch {
-        expected: Uint128,
-        received: Uint128,
+        expected: Uint256,
+        received: Uint256,
     },
+
+    #[error("{0}")]
+    HealthError(#[from] HealthError),
 
     #[error(
         "Actions did not result in improved health factor: before: {prev_hf:?}, after: {new_hf:?}"
@@ -62,7 +63,10 @@ pub enum ContractError {
     InvalidConfig { reason: String },
 
     #[error("Paying down {debt_coin:?} for {request_coin:?} does not result in a profit for the liquidator")]
-    LiquidationNotProfitable { debt_coin: Coin, request_coin: Coin },
+    LiquidationNotProfitable {
+        debt_coin: Coin256,
+        request_coin: Coin256,
+    },
 
     #[error("Issued incorrect action for vault type")]
     MismatchedVaultType,
@@ -95,6 +99,9 @@ pub enum ContractError {
 
     #[error("No more than one vault positions is allowed")]
     OnlyOneVaultPositionAllowed,
+
+    #[error("{0}")]
+    OwnerError(#[from] OwnerError),
 
     #[error("{0}")]
     Overflow(#[from] OverflowError),
