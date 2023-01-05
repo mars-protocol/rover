@@ -1,6 +1,8 @@
 use cosmwasm_std::OverflowOperation::Sub;
 use cosmwasm_std::StdError::NotFound;
-use cosmwasm_std::{Addr, OverflowError, Uint128};
+use cosmwasm_std::{coin, Addr, Decimal, OverflowError, Uint128};
+use mars_mock_oracle::msg::CoinPrice;
+use std::str::FromStr;
 
 use mars_mock_vault::contract::STARTING_VAULT_SHARES;
 use mars_rover::adapters::vault::VaultBase;
@@ -10,7 +12,7 @@ use mars_rover::msg::execute::{ActionAmount, ActionCoin};
 
 use crate::helpers::{
     assert_err, locked_vault_info, lp_token_info, uatom_info, unlocked_vault_info, uosmo_info,
-    AccountToFund, MockEnv,
+    AccountToFund, MockEnv, VaultTestInfo,
 };
 
 pub mod helpers;
@@ -445,4 +447,77 @@ fn test_successful_deposit_with_implied_full_balance_amount() {
         &leverage_vault.base_token_denom,
     );
     assert_eq!(base_denom.amount, Uint128::new(200))
+}
+
+#[test]
+fn overflowssss() {
+    let vault_coin_supply = Uint128::new(16056786018220341354753147123);
+    let total_underlying = Uint128::new(16335772030974293411822);
+    let underlying_per_vault_coin = Decimal::from_ratio(total_underlying, vault_coin_supply);
+    let price_per_underlying = Decimal::from_str("0.000000000000132519").unwrap();
+    let price_per_vault_coin = price_per_underlying * underlying_per_vault_coin;
+    let res_str = price_per_vault_coin.to_string();
+    let res = 1;
+}
+
+#[test]
+fn test_decimal_exceeded() {
+    let lp_token = lp_token_info();
+    let osmo = uosmo_info();
+    let vault_token_denom =
+        "factory/osmo1v40lnedgvake8p7f49gvqu0q3vc9sx3qpc0jqtyfdyw25d4vg8us38an37/cwVTT";
+    let leverage_vault = VaultTestInfo {
+        vault_token_denom: vault_token_denom.to_string(),
+        base_token_denom: lp_token.denom.clone(),
+        lockup: None,
+        deposit_cap: coin(100000000, "uosmo"),
+        max_ltv: Decimal::from_str("0.65").unwrap(),
+        liquidation_threshold: Decimal::from_str("0.75").unwrap(),
+    };
+
+    let user = Addr::unchecked("user");
+    let mut mock = MockEnv::new()
+        .allowed_coins(&[lp_token.clone(), osmo.clone()])
+        .vault_configs(&[leverage_vault.clone()])
+        .fund_account(AccountToFund {
+            addr: user.clone(),
+            funds: vec![lp_token.to_coin(113881626468260853679)],
+        })
+        .build()
+        .unwrap();
+
+    mock.price_change(CoinPrice {
+        denom: vault_token_denom.to_string(),
+        price: Decimal::from_atomics(1017374959872877u128, 21).unwrap(),
+    });
+
+    mock.price_change(CoinPrice {
+        denom: lp_token.denom.clone(),
+        price: Decimal::from_atomics(132519u128, 18).unwrap(),
+    });
+
+    mock.price_change(CoinPrice {
+        denom: osmo.denom.clone(),
+        price: Decimal::from_atomics(1u128, 0).unwrap(),
+    });
+
+    let vault = mock.get_vault(&leverage_vault);
+    let account_id = mock.create_credit_account(&user).unwrap();
+
+    mock.update_credit_account(
+        &account_id,
+        &user,
+        vec![
+            Deposit(lp_token.to_coin(113881626468260853679)),
+            EnterVault {
+                vault: vault.clone(),
+                coin: ActionCoin {
+                    denom: lp_token.denom.to_string(),
+                    amount: ActionAmount::AccountBalance,
+                },
+            },
+        ],
+        &[lp_token.to_coin(113881626468260853679)],
+    )
+    .unwrap();
 }

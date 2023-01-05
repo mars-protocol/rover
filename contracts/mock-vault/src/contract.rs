@@ -21,11 +21,11 @@ use crate::state::{
 use crate::unlock::{request_unlock, withdraw_unlocked, withdraw_unlocking_force};
 use crate::withdraw::{redeem_force, withdraw};
 
-pub const STARTING_VAULT_SHARES: Uint128 = Uint128::new(1_000_000);
+pub const STARTING_VAULT_SHARES: Uint128 = Uint128::new(16056786018220341354753147123);
 
 /// cw-multi-test does not yet have the ability to mint sdk coins. For this reason,
 /// this contract expects to be pre-funded with vault tokens and it will simulate the mint.
-pub const DEFAULT_VAULT_TOKEN_PREFUND: Uint128 = Uint128::new(1_000_000_000);
+pub const DEFAULT_VAULT_TOKEN_PREFUND: Uint128 = Uint128::new(16056786018220341354753147123);
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(

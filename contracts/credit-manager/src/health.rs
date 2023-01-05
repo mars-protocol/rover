@@ -65,6 +65,7 @@ fn get_positions_for_vaults(
         .iter()
         .map(|v| {
             let info = v.vault.query_info(&deps.querier)?;
+            // Bug 🐞: Price too low and renders zero
             let price_res = oracle.query_price(&deps.querier, &info.vault_token)?;
             let config = VAULT_CONFIGS.load(deps.storage, &v.vault.address)?;
             let mut positions = vec![];
@@ -76,6 +77,7 @@ fn get_positions_for_vaults(
                     .amount
                     .unlocked()
                     .checked_add(v.amount.locked())?
+                    // Bug 🐛: number too high for Decimal struct
                     .to_dec()?,
                 debt_amount: Decimal::zero(),
                 max_ltv: config.max_ltv,
