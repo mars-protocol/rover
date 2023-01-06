@@ -4,7 +4,6 @@ use mars_mock_oracle::msg::CoinPrice;
 use mars_rover::error::ContractError;
 use mars_rover::error::ContractError::{AboveMaxLTV, LiquidationNotProfitable, NotLiquidatable};
 use mars_rover::msg::execute::Action::{Borrow, Deposit, EnterVault, LiquidateCoin};
-use mars_rover::traits::IntoDecimal;
 
 use crate::helpers::{
     assert_err, get_coin, get_debt, lp_token_info, uatom_info, ujake_info, unlocked_vault_info,
@@ -163,7 +162,7 @@ fn test_liquidatee_does_not_have_requested_asset() {
 
     mock.price_change(CoinPrice {
         denom: uatom_info.denom.clone(),
-        price: 20.to_dec().unwrap(),
+        price: Decimal::from_atomics(20u128, 0).unwrap(),
     });
 
     let liquidator = Addr::unchecked("liquidator");
@@ -237,7 +236,7 @@ fn test_liquidatee_does_not_have_debt_coin() {
 
     mock.price_change(CoinPrice {
         denom: uatom_info.denom.clone(),
-        price: 20.to_dec().unwrap(),
+        price: Decimal::from_atomics(20u128, 0).unwrap(),
     });
 
     let liquidator = Addr::unchecked("liquidator");
@@ -292,7 +291,7 @@ fn test_liquidator_does_not_have_enough_to_pay_debt() {
 
     mock.price_change(CoinPrice {
         denom: uatom_info.denom.clone(),
-        price: 20.to_dec().unwrap(),
+        price: Decimal::from_atomics(20u128, 0).unwrap(),
     });
 
     let liquidator = Addr::unchecked("liquidator");
@@ -351,7 +350,7 @@ fn test_liquidator_left_in_unhealthy_state() {
 
     mock.price_change(CoinPrice {
         denom: uatom_info.denom.clone(),
-        price: 20.to_dec().unwrap(),
+        price: Decimal::from_atomics(20u128, 0).unwrap(),
     });
 
     let liquidator = Addr::unchecked("liquidator");
@@ -482,7 +481,7 @@ fn test_debt_amount_adjusted_to_close_factor_max() {
 
     mock.price_change(CoinPrice {
         denom: uatom_info.denom.clone(),
-        price: 6.to_dec().unwrap(),
+        price: Decimal::from_atomics(6u128, 0).unwrap(),
     });
 
     let liquidator_account_id = mock.create_credit_account(&liquidator).unwrap();
@@ -560,7 +559,7 @@ fn test_debt_amount_adjusted_to_total_debt_for_denom() {
 
     mock.price_change(CoinPrice {
         denom: uatom_info.denom,
-        price: 20.to_dec().unwrap(),
+        price: Decimal::from_atomics(20u128, 0).unwrap(),
     });
 
     let liquidator_account_id = mock.create_credit_account(&liquidator).unwrap();
@@ -637,7 +636,7 @@ fn test_debt_amount_adjusted_to_max_allowed_by_request_coin() {
 
     mock.price_change(CoinPrice {
         denom: uatom_info.denom.clone(),
-        price: 20.to_dec().unwrap(),
+        price: Decimal::from_atomics(20u128, 0).unwrap(),
     });
 
     let liquidator_account_id = mock.create_credit_account(&liquidator).unwrap();

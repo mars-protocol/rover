@@ -8,7 +8,6 @@ use mars_rover::error::ContractError;
 use mars_rover::msg::execute::Action::{
     Borrow, Deposit, EnterVault, LiquidateVault, RequestVaultUnlock,
 };
-use mars_rover::traits::IntoDecimal;
 
 use crate::helpers::{
     assert_err, get_coin, get_debt, locked_vault_info, lp_token_info, uatom_info, ujake_info,
@@ -164,7 +163,7 @@ fn test_liquidator_does_not_have_debt_coin_in_credit_account() {
 
     mock.price_change(CoinPrice {
         denom: ujake.denom.clone(),
-        price: Uint128::new(20).to_dec().unwrap(),
+        price: Decimal::from_atomics(20u128, 1).unwrap(),
     });
 
     let liquidator = Addr::unchecked("liquidator");
@@ -351,7 +350,7 @@ fn test_liquidate_unlocked_vault() {
 
     mock.price_change(CoinPrice {
         denom: ujake.denom.clone(),
-        price: Uint128::new(20).to_dec().unwrap(),
+        price: Decimal::from_atomics(20u128, 0).unwrap(),
     });
 
     let liquidator_account_id = mock.create_credit_account(&liquidator).unwrap();
@@ -437,7 +436,7 @@ fn test_liquidate_locked_vault() {
 
     mock.price_change(CoinPrice {
         denom: atom.denom.clone(),
-        price: Uint128::new(20).to_dec().unwrap(),
+        price: Decimal::from_atomics(20u128, 0).unwrap(),
     });
 
     let liquidator_account_id = mock.create_credit_account(&liquidator).unwrap();
@@ -542,7 +541,7 @@ fn test_liquidate_unlocking_liquidation_order() {
 
     mock.price_change(CoinPrice {
         denom: ujake.denom.clone(),
-        price: Uint128::new(20).to_dec().unwrap(),
+        price: Decimal::from_atomics(20u128, 0).unwrap(),
     });
 
     let liquidator_account_id = mock.create_credit_account(&liquidator).unwrap();
@@ -658,7 +657,7 @@ fn test_liquidation_calculation_adjustment() {
 
     mock.price_change(CoinPrice {
         denom: ujake.denom.clone(),
-        price: Uint128::new(20).to_dec().unwrap(),
+        price: Decimal::from_atomics(20u128, 0).unwrap(),
     });
 
     let liquidator_account_id = mock.create_credit_account(&liquidator).unwrap();

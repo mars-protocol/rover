@@ -1,12 +1,9 @@
-use std::ops::{Div, Mul};
-
-use cosmwasm_std::{Empty, Uint128};
+use cosmwasm_std::{Decimal256, Empty, Uint128};
 use cosmwasm_vault_standard::VaultStandardQueryMsg::{PreviewRedeem, TotalVaultTokenSupply};
 use cw_multi_test::App;
 
-use mars_outpost::oracle::PriceResponse;
-use mars_rover::adapters::oracle::{ConfigResponse, QueryMsg, VaultPricingInfo};
-use mars_rover::traits::IntoDecimal;
+use mars_rover::adapters::oracle::{ConfigResponse, PriceResponse, QueryMsg, VaultPricingInfo};
+use mars_rover::math::MulDecimal;
 
 use crate::helpers::{instantiate_oracle_adapter, mock_vault_info};
 
@@ -92,11 +89,10 @@ fn test_vault_coin_preview_redeem() {
         .unwrap();
 
     let total_value_of_vault = total_lp_tokens
-        .to_dec()
-        .unwrap()
-        .mul(lp_token_oracle_res.price);
+        .mul_decimal_256(lp_token_oracle_res.price)
+        .unwrap();
 
-    let price_per_vault_coin = total_value_of_vault.div(vault_token_supply);
+    let price_per_vault_coin = Decimal256::from_ratio(total_value_of_vault, vault_token_supply);
 
     let oracle_adapter_res: PriceResponse = app
         .wrap()
