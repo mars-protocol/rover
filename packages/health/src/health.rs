@@ -4,7 +4,7 @@ use mars_outpost::{math::divide_decimal_by_decimal, red_bank::Market};
 use std::{collections::HashMap, fmt};
 
 #[derive(Default, Debug, Clone, PartialEq, Eq)]
-pub struct Position {
+pub struct Position<T> {
     pub denom: String,
     pub price: Decimal,
     pub collateral_amount: Decimal,

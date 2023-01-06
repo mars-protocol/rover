@@ -1,4 +1,4 @@
-use cosmwasm_std::{Coin, Decimal, Deps, Env, Event, Response};
+use cosmwasm_std::{Coin, Decimal, Decimal256, Deps, Env, Event, Fraction, Response, Uint256};
 use mars_health::health::{Health, Position};
 use mars_health::query::MarsQuerier;
 use mars_outpost::red_bank::Market;
@@ -67,6 +67,16 @@ fn get_positions_for_vaults(
             let info = v.vault.query_info(&deps.querier)?;
             // Bug 🐞: Price too low and renders zero
             let price_res = oracle.query_price(&deps.querier, &info.vault_token)?;
+
+            let price = Decimal256::one(); // 0.00000000000000000000000000123
+            let asset_amount_256 = Uint256::from(1324245234235235);
+
+            let total_value_256 =
+                asset_amount_256.checked_multiply_ratio(price.numerator(), price.denominator())?;
+
+            let total_value_128 = total_value_256.try_into()?; // price below one ---> ok
+                                                               // price above one --> overflow potential
+
             let config = VAULT_CONFIGS.load(deps.storage, &v.vault.address)?;
             let mut positions = vec![];
 
