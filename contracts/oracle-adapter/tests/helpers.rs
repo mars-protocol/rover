@@ -16,7 +16,7 @@ use mars_mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
 use mars_oracle_adapter::contract::{execute, instantiate, query};
 use mars_oracle_adapter::error::ContractError;
 use mars_rover::adapters::oracle::{
-    InstantiateMsg, OracleBase, OracleUnchecked, PricingMethod, VaultPricingInfo,
+    InstantiateMsg, Oracle, OracleBase, OracleUnchecked, PricingMethod, VaultPricingInfo,
 };
 use mars_rover::adapters::vault::VaultBase;
 
@@ -122,7 +122,7 @@ fn starting_vault_deposit(app: &mut BasicApp, vault_info: &VaultPricingInfo) {
     app.execute(user, deposit_msg).unwrap();
 }
 
-fn deploy_oracle(app: &mut BasicApp) -> OracleBase<Addr, Decimal> {
+fn deploy_oracle(app: &mut BasicApp) -> Oracle {
     let contract = ContractWrapper::new(oracleExecute, oracleInstantiate, oracleQuery);
     let code_id = app.store_code(Box::new(contract));
 

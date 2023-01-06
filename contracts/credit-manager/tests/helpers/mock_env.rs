@@ -2,16 +2,16 @@ use std::mem::take;
 
 use anyhow::Result as AnyResult;
 use cosmwasm_std::testing::MockApi;
-use cosmwasm_std::{coins, Addr, Coin, Decimal, Decimal256, Empty, Uint128};
+use cosmwasm_std::{coins, Addr, Coin, Decimal, Empty, Uint128};
 use cosmwasm_vault_standard::extensions::lockup::{LockupQueryMsg, UnlockingPosition};
 use cosmwasm_vault_standard::msg::VaultStandardQueryMsg::{Info as VaultInfoMsg, VaultExtension};
 use cosmwasm_vault_standard::msg::{ExtensionQueryMsg, VaultInfoResponse};
 use cw_multi_test::{App, AppResponse, BankSudo, BasicApp, Executor, SudoMsg};
-use mars_account_nft::msg::InstantiateMsg as NftInstantiateMsg;
 use mars_owner::OwnerUpdate;
 
 use mars_account_nft::config::ConfigUpdates as NftConfigUpdates;
 use mars_account_nft::msg::ExecuteMsg as NftExecuteMsg;
+use mars_account_nft::msg::InstantiateMsg as NftInstantiateMsg;
 use mars_mock_oracle::msg::{
     CoinPrice, ExecuteMsg as OracleExecuteMsg, InstantiateMsg as OracleInstantiateMsg,
 };
@@ -21,8 +21,8 @@ use mars_mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
 use mars_outpost::red_bank::QueryMsg::UserDebt;
 use mars_outpost::red_bank::UserDebtResponse;
 use mars_rover::adapters::oracle::{
-    InstantiateMsg as OracleAdapterInstantiateMsg, OracleBase, OracleUnchecked, PricingMethod,
-    VaultPricingInfo,
+    InstantiateMsg as OracleAdapterInstantiateMsg, Oracle, OracleAdapter, OracleBase,
+    OracleUnchecked, PricingMethod, VaultPricingInfo,
 };
 use mars_rover::adapters::red_bank::RedBankBase;
 use mars_rover::adapters::swap::QueryMsg::EstimateExactInSwap;
@@ -62,8 +62,8 @@ pub struct MockEnvBuilder {
     pub vault_configs: Option<Vec<VaultTestInfo>>,
     pub pre_deployed_vaults: Option<Vec<VaultInstantiateConfig>>,
     pub allowed_coins: Option<Vec<CoinInfo>>,
-    pub oracle: Option<OracleBase<Addr, Decimal>>,
-    pub oracle_adapter: Option<OracleBase<Addr, Decimal256>>,
+    pub oracle: Option<Oracle>,
+    pub oracle_adapter: Option<OracleAdapter>,
     pub red_bank: Option<RedBankBase<Addr>>,
     pub deploy_nft_contract: bool,
     pub set_nft_contract_minter: bool,
@@ -571,7 +571,7 @@ impl MockEnvBuilder {
             .unwrap_or_else(|| Addr::unchecked("owner"))
     }
 
-    fn get_oracle(&mut self) -> OracleBase<Addr, Decimal> {
+    fn get_oracle(&mut self) -> Oracle {
         if self.oracle.is_none() {
             let addr = self.deploy_oracle();
             self.oracle = Some(addr);
@@ -579,7 +579,7 @@ impl MockEnvBuilder {
         self.oracle.clone().unwrap()
     }
 
-    fn deploy_oracle(&mut self) -> OracleBase<Addr, Decimal> {
+    fn deploy_oracle(&mut self) -> Oracle {
         let contract_code_id = self.app.store_code(mock_oracle_contract());
         let mut prices: Vec<CoinPrice> = self
             .get_allowed_coins()
@@ -607,10 +607,7 @@ impl MockEnvBuilder {
         OracleBase::new(addr)
     }
 
-    fn get_oracle_adapter(
-        &mut self,
-        vaults: Vec<VaultInstantiateConfig>,
-    ) -> OracleBase<Addr, Decimal256> {
+    fn get_oracle_adapter(&mut self, vaults: Vec<VaultInstantiateConfig>) -> OracleAdapter {
         if self.oracle_adapter.is_none() {
             let addr = self.deploy_oracle_adapter(vaults);
             self.oracle_adapter = Some(addr);
@@ -618,10 +615,7 @@ impl MockEnvBuilder {
         self.oracle_adapter.clone().unwrap()
     }
 
-    fn deploy_oracle_adapter(
-        &mut self,
-        vaults: Vec<VaultInstantiateConfig>,
-    ) -> OracleBase<Addr, Decimal256> {
+    fn deploy_oracle_adapter(&mut self, vaults: Vec<VaultInstantiateConfig>) -> OracleAdapter {
         let owner = Addr::unchecked("oracle_adapter_contract_owner");
         let contract_code_id = self.app.store_code(mock_oracle_adapter_contract());
         let oracle = self.get_oracle().into();
