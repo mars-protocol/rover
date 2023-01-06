@@ -25,7 +25,6 @@ cw-utils                = { workspace = true }
 mars-coin               = { workspace = true }
 mars-health             = { workspace = true }
 mars-mock-oracle        = { workspace = true }
-mars-mock-red-bank      = { workspace = true }
 mars-outpost            = { workspace = true }
 mars-owner              = { workspace = true }
 schemars                = { workspace = true }

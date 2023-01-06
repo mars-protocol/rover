@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Deps, Env, Order, StdResult, Uint128};
+use cosmwasm_std::{Addr, Deps, Env, Order, StdResult, Uint256};
 use cw_storage_plus::Bound;
 
 use mars_coin::Coin256;
@@ -254,7 +254,7 @@ pub fn query_total_vault_coin_balance(
     deps: Deps,
     unchecked: &VaultUnchecked,
     rover_addr: &Addr,
-) -> StdResult<Uint128> {
+) -> StdResult<Uint256> {
     let vault = unchecked.check(deps.api)?;
     vault.query_balance(&deps.querier, rover_addr)
 }
@@ -282,7 +282,7 @@ pub fn query_all_total_vault_coin_balances(
         .map(|res| {
             let addr = res?;
             let vault = VaultBase::new(addr);
-            let balance = vault.query_balance(&deps.querier, rover_addr)?.into();
+            let balance = vault.query_balance(&deps.querier, rover_addr)?;
             Ok(VaultWithBalance { vault, balance })
         })
         .collect()

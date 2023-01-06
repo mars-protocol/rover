@@ -39,10 +39,6 @@ impl fmt::Display for Coin256 {
     }
 }
 
-pub fn coin256(amount: u128, denom: impl Into<String>) -> Coin256 {
-    Coin256::new(amount, denom)
-}
-
 impl TryFrom<&Coin256> for Coin {
     type Error = ConversionOverflowError;
 

@@ -6,7 +6,7 @@ use std::hash::Hash;
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
     to_binary, Addr, Api, BalanceResponse, BankQuery, Coin, CosmosMsg, QuerierWrapper,
-    QueryRequest, StdResult, SubMsg, Uint128, WasmMsg, WasmQuery,
+    QueryRequest, StdResult, SubMsg, Uint128, Uint256, WasmMsg, WasmQuery,
 };
 use cw_utils::Duration;
 
@@ -200,13 +200,13 @@ impl Vault {
         }))
     }
 
-    pub fn query_balance(&self, querier: &QuerierWrapper, addr: &Addr) -> StdResult<Uint128> {
+    pub fn query_balance(&self, querier: &QuerierWrapper, addr: &Addr) -> StdResult<Uint256> {
         let vault_info = self.query_info(querier)?;
         let res: BalanceResponse = querier.query(&QueryRequest::Bank(BankQuery::Balance {
             address: addr.to_string(),
             denom: vault_info.vault_token,
         }))?;
-        Ok(res.amount.amount)
+        Ok(res.amount.amount.into())
     }
 
     pub fn query_preview_redeem(

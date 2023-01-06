@@ -306,12 +306,3 @@ impl IntoVecCoin256 for Vec<Coin> {
             .collect()
     }
 }
-
-// impl Stringify for &[Coin] {
-//     fn to_string(&self) -> String {
-//         self.iter()
-//             .map(|coin| coin.clone().denom)
-//             .collect::<Vec<String>>()
-//             .join(", ")
-//     }
-// }

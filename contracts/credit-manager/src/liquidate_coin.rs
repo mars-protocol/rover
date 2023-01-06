@@ -1,14 +1,13 @@
 use std::ops::Add;
 
 use cosmwasm_std::{
-    CosmosMsg, Decimal256, DepsMut, Env, Fraction, QuerierWrapper, Response, StdError, Storage,
-    Uint256,
+    CosmosMsg, Decimal256, DepsMut, Env, QuerierWrapper, Response, StdError, Storage, Uint256,
 };
 
 use mars_coin::Coin256;
 use mars_rover::adapters::Oracle;
 use mars_rover::error::{ContractError, ContractResult};
-use mars_rover::math::{DivideDecimal, MulDecimal};
+use mars_rover::math::{DivDecimal, MulDecimal};
 use mars_rover::msg::execute::CallbackMsg;
 
 use crate::health::{compute_health, val_or_na};
@@ -117,10 +116,10 @@ pub fn calculate_liquidation(
     .ok_or_else(|| StdError::generic_err("Minimum not found"))?;
 
     // Calculate exact request coin amount to give to liquidator
-    // FORMULA: request amount = (1 + liquidation bonus %) * debt value / request coin price
+    // FORMULA: request amount = debt value * (1 + liquidation bonus %) / request coin price
 
     let request_amount = final_debt_to_repay
-        .checked_multiply_ratio(debt_res.price.numerator(), debt_res.price.denominator())?
+        .mul_decimal(debt_res.price)?
         .mul_decimal(liq_bonus_rate.add(Decimal256::one()))?
         .div_decimal(request_res.price)?;
 

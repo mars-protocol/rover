@@ -1,9 +1,9 @@
 use cosmwasm_std::{Addr, Deps, StdResult, Storage, Uint128, Uint256};
 
-use mars_coin::{coin256, Coin256};
+use mars_coin::Coin256;
 use mars_rover::adapters::vault::{Vault, VaultPositionAmount, VaultPositionUpdate};
 use mars_rover::error::{ContractError, ContractResult};
-use mars_rover::math::DivideDecimal;
+use mars_rover::math::DivDecimal;
 
 use crate::state::{MAX_UNLOCKING_POSITIONS, ORACLE, VAULT_CONFIGS, VAULT_POSITIONS};
 use crate::update_coin_balances::query_balance;
@@ -23,7 +23,7 @@ pub fn assert_under_max_unlocking_limit(
     account_id: &str,
     vault: &Vault,
 ) -> ContractResult<()> {
-    let maximum = MAX_UNLOCKING_POSITIONS.load(storage)?;
+    let maximum = MAX_UNLOCKING_POSITIONS.load(storage)?.into();
     let new_amount = VAULT_POSITIONS
         .may_load(storage, (account_id, vault.address.clone()))?
         .map(|p| p.unlocking().positions().len())
@@ -31,10 +31,10 @@ pub fn assert_under_max_unlocking_limit(
         .unwrap_or(Uint128::zero())
         .checked_add(Uint128::one())?;
 
-    if new_amount > maximum.into() {
+    if new_amount > maximum {
         return Err(ContractError::ExceedsMaxUnlockingPositions {
             new_amount,
-            maximum: maximum.into(),
+            maximum,
         });
     }
     Ok(())
@@ -100,10 +100,10 @@ pub fn rover_vault_balance_value(
     let rover_vault_coin_balance = vault.query_balance(&deps.querier, rover_addr)?;
     let balance_value = oracle.query_total_value(
         &deps.querier,
-        &[coin256(
-            rover_vault_coin_balance.u128(),
-            vault_info.vault_token,
-        )],
+        &[Coin256 {
+            denom: vault_info.vault_token,
+            amount: rover_vault_coin_balance,
+        }],
     )?;
     Ok(balance_value)
 }

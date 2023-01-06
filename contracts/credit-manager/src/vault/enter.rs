@@ -39,7 +39,7 @@ pub fn enter_vault(
 
     decrement_coin_balance(deps.storage, account_id, &coin_to_enter)?;
 
-    let current_balance = vault.query_balance(&deps.querier, rover_addr)?.into();
+    let current_balance = vault.query_balance(&deps.querier, rover_addr)?;
     let update_vault_balance_msg = CosmosMsg::Wasm(WasmMsg::Execute {
         contract_addr: rover_addr.to_string(),
         funds: vec![],
@@ -63,7 +63,7 @@ pub fn update_vault_coin_balance(
     previous_total_balance: Uint256,
     rover_addr: &Addr,
 ) -> ContractResult<Response> {
-    let current_balance = Uint256::from(vault.query_balance(&deps.querier, rover_addr)?);
+    let current_balance = vault.query_balance(&deps.querier, rover_addr)?;
 
     if previous_total_balance >= current_balance {
         return Err(ContractError::NoVaultCoinsReceived);
