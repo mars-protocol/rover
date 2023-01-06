@@ -1,5 +1,5 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Addr, Decimal256};
+use cosmwasm_std::{Addr, Decimal, Decimal256};
 use mars_owner::OwnerUpdate;
 
 use crate::adapters::oracle::{Oracle, OracleUnchecked};
@@ -21,7 +21,7 @@ pub enum ExecuteMsg {
 #[derive(QueryResponses)]
 pub enum QueryMsg {
     /// If denom is vault coin, will retrieve priceable underlying before querying oracle
-    #[returns(PriceResponse)]
+    #[returns(PriceResponse<Decimal256>)]
     Price { denom: String },
 
     #[returns(ConfigResponse)]
@@ -38,9 +38,18 @@ pub enum QueryMsg {
 }
 
 #[cw_serde]
-pub struct PriceResponse {
+pub struct PriceResponse<T> {
     pub denom: String,
-    pub price: Decimal256,
+    pub price: T,
+}
+
+impl From<PriceResponse<Decimal>> for PriceResponse<Decimal256> {
+    fn from(res: PriceResponse<Decimal>) -> Self {
+        Self {
+            denom: res.denom,
+            price: res.price.into(),
+        }
+    }
 }
 
 #[cw_serde]

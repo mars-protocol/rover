@@ -100,7 +100,7 @@ fn query_all_pricing_info(
         .collect::<StdResult<Vec<_>>>()
 }
 
-fn query_price(deps: Deps, denom: &str) -> ContractResult<PriceResponse> {
+fn query_price(deps: Deps, denom: &str) -> ContractResult<PriceResponse<Decimal256>> {
     let info_opt = VAULT_PRICING_INFO.may_load(deps.storage, denom)?;
     let oracle = ORACLE.load(deps.storage)?;
 
@@ -111,7 +111,7 @@ fn query_price(deps: Deps, denom: &str) -> ContractResult<PriceResponse> {
                 calculate_preview_redeem(&deps, &oracle, &info, &vault)
             }
         },
-        _ => Ok(oracle.query_price(&deps.querier, denom)?),
+        _ => Ok(oracle.query_price(&deps.querier, denom)?.into()),
     }
 }
 
@@ -120,7 +120,7 @@ fn calculate_preview_redeem(
     oracle: &Oracle,
     info: &VaultPricingInfo,
     vault: &VaultBase<Addr>,
-) -> ContractResult<PriceResponse> {
+) -> ContractResult<PriceResponse<Decimal256>> {
     let vault_coin_supply = vault.query_total_vault_coins_issued(&deps.querier)?;
     let price = if vault_coin_supply.is_zero() {
         Decimal256::zero()
@@ -128,7 +128,7 @@ fn calculate_preview_redeem(
         let total_underlying = vault.query_preview_redeem(&deps.querier, vault_coin_supply)?;
         let underlying_per_vault_coin = Decimal256::from_ratio(total_underlying, vault_coin_supply);
         let price_res = oracle.query_price(&deps.querier, &info.base_denom)?;
-        price_res.price.checked_mul(underlying_per_vault_coin)?
+        underlying_per_vault_coin.checked_mul(price_res.price.into())?
     };
 
     Ok(PriceResponse {

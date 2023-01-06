@@ -4,14 +4,14 @@ use cosmwasm_std::{
     Coin, CosmosMsg, Decimal, DepsMut, Env, QuerierWrapper, Response, StdError, Storage, Uint128,
 };
 
-use mars_rover::adapters::oracle::Oracle;
+use mars_rover::adapters::oracle::OracleAdapter;
 use mars_rover::error::{ContractError, ContractResult};
 use mars_rover::math::{DivDecimal, MulDecimal};
 use mars_rover::msg::execute::CallbackMsg;
 
 use crate::health::{compute_health, val_or_na};
 use crate::repay::current_debt_for_denom;
-use crate::state::{COIN_BALANCES, MAX_CLOSE_FACTOR, ORACLE, RED_BANK};
+use crate::state::{COIN_BALANCES, MAX_CLOSE_FACTOR, ORACLE_ADAPTER, RED_BANK};
 use crate::utils::{decrement_coin_balance, increment_coin_balance};
 
 pub fn liquidate_coin(
@@ -87,7 +87,7 @@ pub fn calculate_liquidation(
     // Ensure debt amount does not exceed close factor % of the liquidatee's total debt value
     let close_factor = MAX_CLOSE_FACTOR.load(deps.storage)?;
     let max_close_value = health.total_debt_value.mul_decimal(close_factor)?;
-    let oracle = ORACLE.load(deps.storage)?;
+    let oracle = ORACLE_ADAPTER.load(deps.storage)?;
     let debt_res = oracle.query_price(&deps.querier, &debt_coin.denom)?;
     let max_close_amount = max_close_value.mul_decimal_256(debt_res.price)?;
 
@@ -160,7 +160,7 @@ pub fn repay_debt(
 /// that the liquidation will result in loss for the liquidator. This assertion prevents this.
 fn assert_liquidation_profitable(
     querier: &QuerierWrapper,
-    oracle: &Oracle,
+    oracle: &OracleAdapter,
     (debt_coin, request_coin): (Coin, Coin),
 ) -> ContractResult<()> {
     let debt_value = oracle.query_total_value(querier, &[debt_coin.clone()])?;

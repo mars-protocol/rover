@@ -15,7 +15,7 @@ use mars_rover::msg::execute::CallbackMsg;
 use mars_rover::msg::ExecuteMsg;
 
 use crate::state::{
-    ACCOUNT_NFT, ALLOWED_COINS, COIN_BALANCES, ORACLE, RED_BANK, SWAPPER, TOTAL_DEBT_SHARES,
+    ACCOUNT_NFT, ALLOWED_COINS, COIN_BALANCES, ORACLE_ADAPTER, RED_BANK, SWAPPER, TOTAL_DEBT_SHARES,
     VAULT_CONFIGS, ZAPPER,
 };
 use crate::update_coin_balances::query_balance;
@@ -156,7 +156,7 @@ pub fn assert_not_contract_in_config(deps: &Deps, addr_to_flag: &Addr) -> Contra
     let config_contracts = vec![
         ACCOUNT_NFT.load(deps.storage)?,
         RED_BANK.load(deps.storage)?.address().clone(),
-        ORACLE.load(deps.storage)?.address().clone(),
+        ORACLE_ADAPTER.load(deps.storage)?.address().clone(),
         SWAPPER.load(deps.storage)?.address().clone(),
         ZAPPER.load(deps.storage)?.address().clone(),
     ];

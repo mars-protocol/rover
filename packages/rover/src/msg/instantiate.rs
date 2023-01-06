@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Decimal, Uint128};
 
-use crate::adapters::oracle::OracleUnchecked;
+use crate::adapters::oracle::OracleAdapterUnchecked;
 use crate::adapters::red_bank::RedBankUnchecked;
 use crate::adapters::swap::SwapperUnchecked;
 use crate::adapters::vault::{VaultConfig, VaultUnchecked};
@@ -19,8 +19,8 @@ pub struct InstantiateMsg {
     pub vault_configs: Vec<VaultInstantiateConfig>,
     /// The Mars Protocol money market contract where we borrow assets from
     pub red_bank: RedBankUnchecked,
-    /// The Mars Protocol oracle contract. We read prices of assets here.
-    pub oracle: OracleUnchecked,
+    /// The Mars oracle adapter contract. Proxies oracle calls to provide vault token price support.
+    pub oracle_adapter: OracleAdapterUnchecked,
     /// The maximum percent a liquidator can decrease the debt amount of the liquidatee
     pub max_close_factor: Decimal,
     /// The maximum number of unlocking positions an account can have simultaneously
@@ -64,7 +64,7 @@ pub struct ConfigUpdates {
     pub account_nft: Option<String>,
     pub allowed_coins: Option<Vec<String>>,
     pub vault_configs: Option<Vec<VaultInstantiateConfig>>,
-    pub oracle: Option<OracleUnchecked>,
+    pub oracle: Option<OracleAdapterUnchecked>,
     pub max_close_factor: Option<Decimal>,
     pub max_unlocking_positions: Option<Uint128>,
     pub swapper: Option<SwapperUnchecked>,

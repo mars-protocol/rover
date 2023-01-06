@@ -11,7 +11,7 @@ use crate::instantiate::{
 };
 use crate::state::OWNER;
 use crate::state::{
-    ACCOUNT_NFT, ALLOWED_COINS, MAX_CLOSE_FACTOR, MAX_UNLOCKING_POSITIONS, ORACLE, SWAPPER,
+    ACCOUNT_NFT, ALLOWED_COINS, MAX_CLOSE_FACTOR, MAX_UNLOCKING_POSITIONS, ORACLE_ADAPTER, SWAPPER,
     VAULT_CONFIGS, ZAPPER,
 };
 
@@ -68,7 +68,7 @@ pub fn update_config(
     }
 
     if let Some(unchecked) = new_config.oracle {
-        ORACLE.save(deps.storage, &unchecked.check(deps.api)?)?;
+        ORACLE_ADAPTER.save(deps.storage, &unchecked.check(deps.api)?)?;
         response = response
             .add_attribute("key", "oracle")
             .add_attribute("value", unchecked.address());

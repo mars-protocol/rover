@@ -2,7 +2,7 @@ use std::mem::take;
 
 use anyhow::Result as AnyResult;
 use cosmwasm_std::testing::MockApi;
-use cosmwasm_std::{coins, Addr, Coin, Decimal, Empty, Uint128};
+use cosmwasm_std::{coins, Addr, Coin, Decimal, Decimal256, Empty, Uint128};
 use cosmwasm_vault_standard::extensions::lockup::{LockupQueryMsg, UnlockingPosition};
 use cosmwasm_vault_standard::msg::VaultStandardQueryMsg::{Info as VaultInfoMsg, VaultExtension};
 use cosmwasm_vault_standard::msg::{ExtensionQueryMsg, VaultInfoResponse};
@@ -62,8 +62,8 @@ pub struct MockEnvBuilder {
     pub vault_configs: Option<Vec<VaultTestInfo>>,
     pub pre_deployed_vaults: Option<Vec<VaultInstantiateConfig>>,
     pub allowed_coins: Option<Vec<CoinInfo>>,
-    pub oracle: Option<OracleBase<Addr>>,
-    pub oracle_adapter: Option<OracleBase<Addr>>,
+    pub oracle: Option<OracleBase<Addr, Decimal>>,
+    pub oracle_adapter: Option<OracleBase<Addr, Decimal256>>,
     pub red_bank: Option<RedBankBase<Addr>>,
     pub deploy_nft_contract: bool,
     pub set_nft_contract_minter: bool,
@@ -541,7 +541,8 @@ impl MockEnvBuilder {
         vault_configs.extend(self.deploy_vaults());
         vault_configs.extend(self.pre_deployed_vaults.clone().unwrap_or_default());
 
-        let oracle = self.get_oracle_adapter(vault_configs.clone()).into();
+        let oracle_adapter = self.get_oracle_adapter(vault_configs.clone()).into();
+        let oracle = self.get_oracle().into();
         let zapper = self.deploy_zapper(&oracle)?.into();
 
         self.app.instantiate_contract(
@@ -552,7 +553,7 @@ impl MockEnvBuilder {
                 allowed_coins,
                 vault_configs,
                 red_bank,
-                oracle,
+                oracle_adapter,
                 max_close_factor,
                 max_unlocking_positions,
                 swapper,
@@ -570,7 +571,7 @@ impl MockEnvBuilder {
             .unwrap_or_else(|| Addr::unchecked("owner"))
     }
 
-    fn get_oracle(&mut self) -> OracleBase<Addr> {
+    fn get_oracle(&mut self) -> OracleBase<Addr, Decimal> {
         if self.oracle.is_none() {
             let addr = self.deploy_oracle();
             self.oracle = Some(addr);
@@ -578,7 +579,7 @@ impl MockEnvBuilder {
         self.oracle.clone().unwrap()
     }
 
-    fn deploy_oracle(&mut self) -> OracleBase<Addr> {
+    fn deploy_oracle(&mut self) -> OracleBase<Addr, Decimal> {
         let contract_code_id = self.app.store_code(mock_oracle_contract());
         let mut prices: Vec<CoinPrice> = self
             .get_allowed_coins()
@@ -606,7 +607,10 @@ impl MockEnvBuilder {
         OracleBase::new(addr)
     }
 
-    fn get_oracle_adapter(&mut self, vaults: Vec<VaultInstantiateConfig>) -> OracleBase<Addr> {
+    fn get_oracle_adapter(
+        &mut self,
+        vaults: Vec<VaultInstantiateConfig>,
+    ) -> OracleBase<Addr, Decimal256> {
         if self.oracle_adapter.is_none() {
             let addr = self.deploy_oracle_adapter(vaults);
             self.oracle_adapter = Some(addr);
@@ -614,7 +618,10 @@ impl MockEnvBuilder {
         self.oracle_adapter.clone().unwrap()
     }
 
-    fn deploy_oracle_adapter(&mut self, vaults: Vec<VaultInstantiateConfig>) -> OracleBase<Addr> {
+    fn deploy_oracle_adapter(
+        &mut self,
+        vaults: Vec<VaultInstantiateConfig>,
+    ) -> OracleBase<Addr, Decimal256> {
         let owner = Addr::unchecked("oracle_adapter_contract_owner");
         let contract_code_id = self.app.store_code(mock_oracle_adapter_contract());
         let oracle = self.get_oracle().into();

@@ -1,6 +1,6 @@
 use anyhow::Result as AnyResult;
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{coin, Addr, Coin, Decimal};
+use cosmwasm_std::{coin, Addr, Coin, Decimal, Decimal256};
 use cw_multi_test::{AppResponse, BankSudo, BasicApp, ContractWrapper, Executor, SudoMsg};
 use cw_utils::Duration;
 use mars_mock_oracle::contract::{
@@ -121,7 +121,7 @@ fn starting_vault_deposit(app: &mut BasicApp, vault_info: &VaultPricingInfo) {
     app.execute(user, deposit_msg).unwrap();
 }
 
-fn deploy_oracle(app: &mut BasicApp) -> OracleBase<Addr> {
+fn deploy_oracle(app: &mut BasicApp) -> OracleBase<Addr, Decimal> {
     let contract = ContractWrapper::new(oracleExecute, oracleInstantiate, oracleQuery);
     let code_id = app.store_code(Box::new(contract));
 

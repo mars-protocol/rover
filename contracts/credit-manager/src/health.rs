@@ -3,19 +3,19 @@ use cosmwasm_std::{Coin, Decimal, Deps, Env, Event, Response, Uint128};
 use mars_health::health::{Health, Position};
 use mars_health::query::MarsQuerier;
 use mars_outpost::red_bank::Market;
-use mars_rover::adapters::oracle::Oracle;
+use mars_rover::adapters::oracle::OracleAdapter;
 use mars_rover::adapters::red_bank::RedBank;
 use mars_rover::adapters::vault::VaultPosition;
 use mars_rover::error::{ContractError, ContractResult};
 use mars_rover::traits::Coins;
 
 use crate::query::query_positions;
-use crate::state::{ALLOWED_COINS, ORACLE, RED_BANK, VAULT_CONFIGS};
+use crate::state::{ALLOWED_COINS, ORACLE_ADAPTER, RED_BANK, VAULT_CONFIGS};
 
 // Given Red Bank and Mars-Oracle does not have knowledge of vaults,
 // we cannot use Health::compute_health_from_coins() and must assemble positions manually
 pub fn compute_health(deps: Deps, env: &Env, account_id: &str) -> ContractResult<Health> {
-    let oracle = ORACLE.load(deps.storage)?;
+    let oracle = ORACLE_ADAPTER.load(deps.storage)?;
     let red_bank = RED_BANK.load(deps.storage)?;
 
     let res = query_positions(deps, env, account_id)?;
@@ -40,7 +40,7 @@ fn get_positions_for_coins(
     deps: &Deps,
     collateral: &[Coin],
     debt: &[Coin],
-    oracle: &Oracle,
+    oracle: &OracleAdapter,
     red_bank: &RedBank,
 ) -> ContractResult<Vec<Position>> {
     let querier = MarsQuerier::new(&deps.querier, oracle.address(), red_bank.address());
@@ -60,7 +60,7 @@ fn get_positions_for_coins(
 fn get_positions_for_vaults(
     deps: &Deps,
     vaults: &[VaultPosition],
-    oracle: &Oracle,
+    oracle: &OracleAdapter,
 ) -> ContractResult<Vec<Position>> {
     let positions = vaults
         .iter()
