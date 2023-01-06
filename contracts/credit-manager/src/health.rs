@@ -1,10 +1,11 @@
 use cosmwasm_std::{Coin, Decimal, Deps, Env, Event, Response};
+
 use mars_health::health::{Health, Position};
 use mars_health::query::MarsQuerier;
 use mars_outpost::red_bank::Market;
-
+use mars_rover::adapters::oracle::Oracle;
+use mars_rover::adapters::red_bank::RedBank;
 use mars_rover::adapters::vault::VaultPosition;
-use mars_rover::adapters::{Oracle, RedBank};
 use mars_rover::error::{ContractError, ContractResult};
 use mars_rover::traits::{Coins, IntoDecimal};
 

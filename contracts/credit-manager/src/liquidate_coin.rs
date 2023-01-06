@@ -3,8 +3,8 @@ use std::ops::{Add, Div};
 use cosmwasm_std::{
     Coin, CosmosMsg, Decimal, DepsMut, Env, QuerierWrapper, Response, StdError, Storage, Uint128,
 };
-use mars_rover::adapters::Oracle;
 
+use mars_rover::adapters::oracle::Oracle;
 use mars_rover::error::{ContractError, ContractResult};
 use mars_rover::msg::execute::CallbackMsg;
 use mars_rover::traits::{IntoDecimal, IntoUint128};

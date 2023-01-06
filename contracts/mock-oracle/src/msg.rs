@@ -1,6 +1,8 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::Decimal;
 
+use mars_rover::adapters::oracle::PriceResponse;
+
 #[cw_serde]
 pub struct CoinPrice {
     pub denom: String,
@@ -21,6 +23,6 @@ pub enum ExecuteMsg {
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
-    #[returns(mars_outpost::oracle::PriceResponse)]
+    #[returns(PriceResponse)]
     Price { denom: String },
 }

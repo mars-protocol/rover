@@ -23,7 +23,6 @@ cosmwasm-vault-standard = { workspace = true }
 cw-storage-plus         = { workspace = true }
 cw-utils                = { workspace = true }
 mars-health             = { workspace = true }
-mars-mock-oracle        = { workspace = true }
 mars-mock-red-bank      = { workspace = true }
 mars-outpost            = { workspace = true }
 mars-owner              = { workspace = true }

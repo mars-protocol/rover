@@ -1,22 +1,20 @@
+use cosmwasm_std::{
+    Addr, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Order, Response, StdResult, to_binary,
+};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{
-    to_binary, Addr, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Order, Response, StdResult,
-};
 use cw2::set_contract_version;
 use cw_storage_plus::Bound;
-
-use mars_outpost::oracle::PriceResponse;
 use mars_owner::OwnerInit::SetInitialOwner;
 use mars_owner::OwnerUpdate;
+
+use mars_rover::adapters::oracle::{
+    ConfigResponse, ConfigUpdates, ExecuteMsg, InstantiateMsg, Oracle, PriceResponse,
+    PricingMethod, QueryMsg, VaultPricingInfo,
+};
 use mars_rover::adapters::vault::VaultBase;
-use mars_rover::adapters::Oracle;
 
 use crate::error::ContractResult;
-use crate::msg::{
-    ConfigResponse, ConfigUpdates, ExecuteMsg, InstantiateMsg, PricingMethod, QueryMsg,
-    VaultPricingInfo,
-};
 use crate::state::{ORACLE, OWNER, VAULT_PRICING_INFO};
 
 const CONTRACT_NAME: &str = env!("CARGO_PKG_NAME");
