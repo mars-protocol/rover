@@ -2,7 +2,7 @@ use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Addr, Decimal, Decimal256};
 use mars_owner::OwnerUpdate;
 
-use crate::adapters::oracle::{Oracle, OracleUnchecked};
+use crate::adapters::oracle::OracleUnchecked;
 
 #[cw_serde]
 pub struct InstantiateMsg {
@@ -56,7 +56,7 @@ impl From<PriceResponse<Decimal>> for PriceResponse<Decimal256> {
 pub struct ConfigResponse {
     pub owner: Option<String>,
     pub proposed_new_owner: Option<String>,
-    pub oracle: Oracle,
+    pub oracle: OracleUnchecked,
 }
 
 #[cw_serde]

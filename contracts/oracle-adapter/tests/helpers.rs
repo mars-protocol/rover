@@ -1,8 +1,9 @@
 use anyhow::Result as AnyResult;
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{coin, Addr, Coin, Decimal, Decimal256};
+use cosmwasm_std::{coin, Addr, Coin, Decimal};
 use cw_multi_test::{AppResponse, BankSudo, BasicApp, ContractWrapper, Executor, SudoMsg};
 use cw_utils::Duration;
+
 use mars_mock_oracle::contract::{
     execute as oracleExecute, instantiate as oracleInstantiate, query as oracleQuery,
 };

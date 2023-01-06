@@ -4,8 +4,7 @@ use mars_owner::OwnerError::NotOwner;
 
 use mars_oracle_adapter::error::ContractError::OwnerError;
 use mars_rover::adapters::oracle::{
-    ConfigResponse, ConfigUpdates, ExecuteMsg, OracleBase, OracleUnchecked, QueryMsg,
-    VaultPricingInfo,
+    ConfigResponse, ConfigUpdates, ExecuteMsg, OracleUnchecked, QueryMsg, VaultPricingInfo,
 };
 
 use crate::helpers::{assert_err, instantiate_oracle_adapter};
@@ -47,7 +46,7 @@ fn test_update_config_works_with_full_config() {
         contract_addr.clone(),
         &ExecuteMsg::UpdateConfig {
             new_config: ConfigUpdates {
-                oracle: Some(new_oracle),
+                oracle: Some(new_oracle.clone()),
                 vault_pricing: Some(new_vault_pricing),
             },
         },
@@ -67,10 +66,7 @@ fn test_update_config_works_with_full_config() {
     );
 
     assert_ne!(new_config.oracle, original_config.oracle);
-    assert_eq!(
-        new_config.oracle,
-        OracleBase::new(Addr::unchecked("new_oracle".to_string()))
-    );
+    assert_eq!(new_config.oracle, new_oracle);
 
     let pricing_infos: Vec<VaultPricingInfo> = app
         .wrap()

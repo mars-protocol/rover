@@ -142,7 +142,7 @@ fn query_config(deps: Deps) -> ContractResult<ConfigResponse> {
     Ok(ConfigResponse {
         owner: res.owner,
         proposed_new_owner: res.proposed,
-        oracle: ORACLE.load(deps.storage)?,
+        oracle: ORACLE.load(deps.storage)?.into(),
     })
 }
 

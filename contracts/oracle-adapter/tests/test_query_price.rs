@@ -1,4 +1,4 @@
-use cosmwasm_std::{Decimal256, Empty, Uint128};
+use cosmwasm_std::{Decimal, Decimal256, Empty, Uint128};
 use cosmwasm_vault_standard::VaultStandardQueryMsg::{PreviewRedeem, TotalVaultTokenSupply};
 use cw_multi_test::App;
 
@@ -19,7 +19,7 @@ fn test_non_vault_coin_priced() {
         .query_wasm_smart(contract_addr.to_string(), &QueryMsg::Config {})
         .unwrap();
 
-    let uosmo_oracle_res: PriceResponse = app
+    let uosmo_oracle_res: PriceResponse<Decimal> = app
         .wrap()
         .query_wasm_smart(
             config.oracle.address().to_string(),
@@ -29,7 +29,7 @@ fn test_non_vault_coin_priced() {
         )
         .unwrap();
 
-    let res: PriceResponse = app
+    let res: PriceResponse<Decimal256> = app
         .wrap()
         .query_wasm_smart(
             contract_addr.to_string(),
@@ -39,7 +39,7 @@ fn test_non_vault_coin_priced() {
         )
         .unwrap();
 
-    assert_eq!(res.price, uosmo_oracle_res.price);
+    assert_eq!(res.price, Decimal256::from(uosmo_oracle_res.price));
 }
 
 #[test]
@@ -78,7 +78,7 @@ fn test_vault_coin_preview_redeem() {
         .query_wasm_smart(contract_addr.to_string(), &QueryMsg::Config {})
         .unwrap();
 
-    let lp_token_oracle_res: PriceResponse = app
+    let lp_token_oracle_res: PriceResponse<Decimal> = app
         .wrap()
         .query_wasm_smart(
             config.oracle.address().to_string(),
@@ -89,12 +89,12 @@ fn test_vault_coin_preview_redeem() {
         .unwrap();
 
     let total_value_of_vault = total_lp_tokens
-        .mul_decimal_256(lp_token_oracle_res.price)
+        .mul_decimal(lp_token_oracle_res.price)
         .unwrap();
 
     let price_per_vault_coin = Decimal256::from_ratio(total_value_of_vault, vault_token_supply);
 
-    let oracle_adapter_res: PriceResponse = app
+    let oracle_adapter_res: PriceResponse<Decimal256> = app
         .wrap()
         .query_wasm_smart(
             contract_addr.to_string(),

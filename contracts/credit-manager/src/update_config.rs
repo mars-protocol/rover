@@ -67,7 +67,7 @@ pub fn update_config(
             .add_attribute("value", configs.to_string().fallback("None"))
     }
 
-    if let Some(unchecked) = new_config.oracle {
+    if let Some(unchecked) = new_config.oracle_adapter {
         ORACLE_ADAPTER.save(deps.storage, &unchecked.check(deps.api)?)?;
         response = response
             .add_attribute("key", "oracle")
