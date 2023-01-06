@@ -9,6 +9,7 @@ members = [
     "packages/health",
     "packages/outpost",
     "packages/rover",
+    "packages/math",
 
     # Mock contracts
     "contracts/mock-oracle",
@@ -51,6 +52,7 @@ thiserror       = "1.0.37"
 # packages
 cosmwasm-vault-standard = { version = "0.1.0", features = ["lockup", "force-unlock"] }
 mars-health             = { version = "1.0.0", path = "./packages/health" }
+mars-math               = { version = "1.0.0", path = "./packages/math" }
 mars-osmosis            = { version = "1.0.0", path = "./packages/chains/osmosis" }
 mars-outpost            = { version = "1.0.0", path = "./packages/outpost" }
 mars-owner              = "1.0.0"

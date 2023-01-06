@@ -1,6 +1,13 @@
-use cosmwasm_std::{Addr, Decimal, QuerierWrapper, StdResult};
-use mars_outpost::oracle::{self, PriceResponse};
+use cosmwasm_schema::cw_serde;
+use cosmwasm_std::{Addr, Decimal256, QuerierWrapper, StdResult};
+use mars_outpost::oracle;
 use mars_outpost::red_bank::{self, Market};
+
+#[cw_serde]
+pub struct OracleAdapterPriceResponse {
+    pub denom: String,
+    pub price: Decimal256,
+}
 
 pub struct MarsQuerier<'a> {
     querier: &'a QuerierWrapper<'a>,
@@ -30,8 +37,8 @@ impl<'a> MarsQuerier<'a> {
         )
     }
 
-    pub fn query_price(&self, denom: &str) -> StdResult<Decimal> {
-        let PriceResponse { price, .. } = self.querier.query_wasm_smart(
+    pub fn query_price(&self, denom: &str) -> StdResult<Decimal256> {
+        let OracleAdapterPriceResponse { price, .. } = self.querier.query_wasm_smart(
             self.oracle_addr,
             &oracle::QueryMsg::Price {
                 denom: denom.to_string(),

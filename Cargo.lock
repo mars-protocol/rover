@@ -1053,8 +1053,19 @@ dependencies = [
 name = "mars-health"
 version = "1.0.0"
 dependencies = [
+ "cosmwasm-schema",
  "cosmwasm-std",
+ "mars-math",
  "mars-outpost",
+ "thiserror",
+]
+
+[[package]]
+name = "mars-math"
+version = "1.0.0"
+dependencies = [
+ "cosmwasm-std",
+ "thiserror",
 ]
 
 [[package]]
@@ -1076,7 +1087,7 @@ dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-storage-plus 1.0.1",
- "mars-rover",
+ "mars-outpost",
 ]
 
 [[package]]
@@ -1163,6 +1174,7 @@ dependencies = [
  "cw-storage-plus 1.0.1",
  "cw-utils 0.16.0",
  "mars-health",
+ "mars-math",
  "mars-outpost",
  "mars-owner",
  "schemars",

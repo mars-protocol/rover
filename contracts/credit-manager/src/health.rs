@@ -1,4 +1,4 @@
-use cosmwasm_std::{Coin, Decimal, Deps, Env, Event, Response};
+use cosmwasm_std::{Coin, Decimal, Deps, Env, Event, Response, Uint128};
 
 use mars_health::health::{Health, Position};
 use mars_health::query::MarsQuerier;
@@ -7,7 +7,7 @@ use mars_rover::adapters::oracle::Oracle;
 use mars_rover::adapters::red_bank::RedBank;
 use mars_rover::adapters::vault::VaultPosition;
 use mars_rover::error::{ContractError, ContractResult};
-use mars_rover::traits::{Coins, IntoDecimal};
+use mars_rover::traits::Coins;
 
 use crate::query::query_positions;
 use crate::state::{ALLOWED_COINS, ORACLE, RED_BANK, VAULT_CONFIGS};
@@ -73,12 +73,8 @@ fn get_positions_for_vaults(
             positions.push(Position {
                 denom: price_res.denom,
                 price: price_res.price,
-                collateral_amount: v
-                    .amount
-                    .unlocked()
-                    .checked_add(v.amount.locked())?
-                    .to_dec()?,
-                debt_amount: Decimal::zero(),
+                collateral_amount: v.amount.unlocked().checked_add(v.amount.locked())?,
+                debt_amount: Uint128::zero(),
                 max_ltv: config.max_ltv,
                 liquidation_threshold: config.liquidation_threshold,
             });
@@ -94,8 +90,8 @@ fn get_positions_for_vaults(
                 positions.push(Position {
                     denom: price_res.denom,
                     price: price_res.price,
-                    collateral_amount: u.coin.amount.to_dec()?,
-                    debt_amount: Decimal::zero(),
+                    collateral_amount: u.coin.amount,
+                    debt_amount: Uint128::zero(),
                     max_ltv: max_loan_to_value,
                     liquidation_threshold,
                 })

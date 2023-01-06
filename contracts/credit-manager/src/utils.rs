@@ -12,9 +12,7 @@ use cw721_base::QueryMsg;
 use mars_rover::error::{ContractError, ContractResult};
 use mars_rover::math::CeilRatio;
 use mars_rover::msg::execute::CallbackMsg;
-use mars_rover::msg::query::CoinValue;
 use mars_rover::msg::ExecuteMsg;
-use mars_rover::traits::IntoDecimal;
 
 use crate::state::{
     ACCOUNT_NFT, ALLOWED_COINS, COIN_BALANCES, ORACLE, RED_BANK, SWAPPER, TOTAL_DEBT_SHARES,
@@ -143,18 +141,6 @@ pub fn debt_shares_to_amount(
     Ok(Coin {
         denom: denom.to_string(),
         amount,
-    })
-}
-
-pub fn coin_value(deps: &Deps, coin: &Coin) -> ContractResult<CoinValue> {
-    let oracle = ORACLE.load(deps.storage)?;
-    let res = oracle.query_price(&deps.querier, &coin.denom)?;
-    let value = res.price.checked_mul(coin.amount.to_dec()?)?;
-    Ok(CoinValue {
-        denom: coin.denom.clone(),
-        amount: coin.amount,
-        price: res.price,
-        value,
     })
 }
 

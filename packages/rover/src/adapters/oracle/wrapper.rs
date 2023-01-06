@@ -3,7 +3,7 @@ use cosmwasm_std::{Addr, Api, Coin, QuerierWrapper, StdResult, Uint128};
 
 use crate::adapters::oracle::{PriceResponse, QueryMsg};
 use crate::error::ContractResult;
-use crate::math::MulDecimal256;
+use crate::math::MulDecimal;
 
 #[cw_serde]
 pub struct OracleBase<T>(T);
@@ -52,7 +52,7 @@ impl Oracle {
             .iter()
             .map(|coin| {
                 let res = self.query_price(querier, &coin.denom)?;
-                Ok(coin.amount.mul_decimal(res.price)?)
+                Ok(coin.amount.mul_decimal_256(res.price)?)
             })
             .collect::<ContractResult<Vec<_>>>()?
             .iter()

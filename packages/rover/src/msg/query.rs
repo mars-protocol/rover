@@ -175,10 +175,10 @@ pub struct ConfigResponse {
 
 #[cw_serde]
 pub struct HealthResponse {
-    pub total_debt_value: Decimal,
-    pub total_collateral_value: Decimal,
-    pub max_ltv_adjusted_collateral: Decimal,
-    pub liquidation_threshold_adjusted_collateral: Decimal,
+    pub total_debt_value: Uint128,
+    pub total_collateral_value: Uint128,
+    pub max_ltv_adjusted_collateral: Uint128,
+    pub liquidation_threshold_adjusted_collateral: Uint128,
     pub max_ltv_health_factor: Option<Decimal>,
     pub liquidation_health_factor: Option<Decimal>,
     pub liquidatable: bool,

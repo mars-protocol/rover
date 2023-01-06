@@ -2,6 +2,7 @@ use cosmwasm_std::{
     CheckedFromRatioError, CheckedMultiplyRatioError, Coin, DecimalRangeExceeded, OverflowError,
     StdError, Uint128,
 };
+use mars_health::health::HealthError;
 use mars_owner::OwnerError;
 use thiserror::Error;
 
@@ -56,6 +57,9 @@ pub enum ContractError {
         expected: Uint128,
         received: Uint128,
     },
+
+    #[error("{0}")]
+    HealthError(#[from] HealthError),
 
     #[error(
         "Actions did not result in improved health factor: before: {prev_hf:?}, after: {new_hf:?}"

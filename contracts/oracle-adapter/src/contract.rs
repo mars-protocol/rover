@@ -1,8 +1,9 @@
-use cosmwasm_std::{
-    Addr, Binary, Decimal, Deps, DepsMut, Env, MessageInfo, Order, Response, StdResult, to_binary,
-};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
+use cosmwasm_std::{
+    to_binary, Addr, Binary, Decimal256, Deps, DepsMut, Env, MessageInfo, Order, Response,
+    StdResult,
+};
 use cw2::set_contract_version;
 use cw_storage_plus::Bound;
 use mars_owner::OwnerInit::SetInitialOwner;
@@ -122,10 +123,10 @@ fn calculate_preview_redeem(
 ) -> ContractResult<PriceResponse> {
     let vault_coin_supply = vault.query_total_vault_coins_issued(&deps.querier)?;
     let price = if vault_coin_supply.is_zero() {
-        Decimal::zero()
+        Decimal256::zero()
     } else {
         let total_underlying = vault.query_preview_redeem(&deps.querier, vault_coin_supply)?;
-        let underlying_per_vault_coin = Decimal::from_ratio(total_underlying, vault_coin_supply);
+        let underlying_per_vault_coin = Decimal256::from_ratio(total_underlying, vault_coin_supply);
         let price_res = oracle.query_price(&deps.querier, &info.base_denom)?;
         price_res.price.checked_mul(underlying_per_vault_coin)?
     };
