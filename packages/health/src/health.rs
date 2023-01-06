@@ -1,9 +1,9 @@
 use std::{collections::HashMap, fmt};
 
 use cosmwasm_std::{Addr, Coin, Decimal, Decimal256, QuerierWrapper, StdError, StdResult, Uint128};
+use mars_math::{DecimalMathError, MulDecimal};
 use thiserror::Error;
 
-use mars_math::{DecimalMathError, MulDecimal256};
 use mars_outpost::red_bank::Market;
 
 use crate::query::MarsQuerier;
@@ -79,12 +79,12 @@ impl Health {
         let mut health = positions.iter().try_fold::<_, _, HealthResult<Health>>(
             Health::default(),
             |mut h, p| {
-                let collateral_value = p.collateral_amount.mul_decimal(p.price)?;
-                h.total_debt_value += p.debt_amount.mul_decimal(p.price)?;
+                let collateral_value = p.collateral_amount.mul_decimal_256(p.price)?;
+                h.total_debt_value += p.debt_amount.mul_decimal_256(p.price)?;
                 h.total_collateral_value += collateral_value;
-                h.max_ltv_adjusted_collateral += collateral_value.mul_decimal(p.max_ltv.into())?;
+                h.max_ltv_adjusted_collateral += collateral_value.mul_decimal(p.max_ltv)?;
                 h.liquidation_threshold_adjusted_collateral +=
-                    collateral_value.mul_decimal(p.liquidation_threshold.into())?;
+                    collateral_value.mul_decimal(p.liquidation_threshold)?;
                 Ok(h)
             },
         )?;

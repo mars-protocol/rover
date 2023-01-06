@@ -3,11 +3,11 @@ use cosmwasm_std::{
     StdError, Uint128,
 };
 use mars_health::health::HealthError;
+use mars_math::DecimalMathError;
 use mars_owner::OwnerError;
 use thiserror::Error;
 
 use crate::coins::Coins;
-use crate::math::DecimalMathError;
 
 pub type ContractResult<T> = Result<T, ContractError>;
 

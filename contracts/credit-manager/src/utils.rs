@@ -8,15 +8,15 @@ use cosmwasm_std::{
 };
 use cw721::OwnerOfResponse;
 use cw721_base::QueryMsg;
+use mars_math::CeilRatio;
 
 use mars_rover::error::{ContractError, ContractResult};
-use mars_rover::math::CeilRatio;
 use mars_rover::msg::execute::CallbackMsg;
 use mars_rover::msg::ExecuteMsg;
 
 use crate::state::{
-    ACCOUNT_NFT, ALLOWED_COINS, COIN_BALANCES, ORACLE_ADAPTER, RED_BANK, SWAPPER, TOTAL_DEBT_SHARES,
-    VAULT_CONFIGS, ZAPPER,
+    ACCOUNT_NFT, ALLOWED_COINS, COIN_BALANCES, ORACLE_ADAPTER, RED_BANK, SWAPPER,
+    TOTAL_DEBT_SHARES, VAULT_CONFIGS, ZAPPER,
 };
 use crate::update_coin_balances::query_balance;
 

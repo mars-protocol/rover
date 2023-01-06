@@ -2,11 +2,11 @@ use std::marker::PhantomData;
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal256, QuerierWrapper, StdResult, Uint128};
+use mars_math::MulDecimal;
 use serde::de::DeserializeOwned;
 
 use crate::adapters::oracle::{PriceResponse, QueryMsg};
 use crate::error::ContractResult;
-use crate::math::MulDecimal;
 
 #[cw_serde]
 pub struct OracleBase<T: Into<String> + Clone, R: Into<Decimal256>> {

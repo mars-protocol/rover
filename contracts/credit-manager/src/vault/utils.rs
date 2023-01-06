@@ -1,8 +1,8 @@
 use cosmwasm_std::{coin, Addr, Coin, Deps, StdResult, Storage, Uint128};
+use mars_math::DivDecimal;
 
 use mars_rover::adapters::vault::{Vault, VaultPositionAmount, VaultPositionUpdate};
 use mars_rover::error::{ContractError, ContractResult};
-use mars_rover::math::DivDecimal;
 
 use crate::state::{MAX_UNLOCKING_POSITIONS, ORACLE_ADAPTER, VAULT_CONFIGS, VAULT_POSITIONS};
 use crate::update_coin_balances::query_balance;

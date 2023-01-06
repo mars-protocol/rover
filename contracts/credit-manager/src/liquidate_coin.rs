@@ -4,15 +4,14 @@ use cosmwasm_std::{
     Coin, CosmosMsg, Decimal, DepsMut, Env, QuerierWrapper, Response, StdError, Storage, Uint128,
 };
 
-use mars_rover::adapters::oracle::OracleAdapter;
-use mars_rover::error::{ContractError, ContractResult};
-use mars_rover::math::{DivDecimal, MulDecimal};
-use mars_rover::msg::execute::CallbackMsg;
-
 use crate::health::{compute_health, val_or_na};
 use crate::repay::current_debt_for_denom;
 use crate::state::{COIN_BALANCES, MAX_CLOSE_FACTOR, ORACLE_ADAPTER, RED_BANK};
 use crate::utils::{decrement_coin_balance, increment_coin_balance};
+use mars_math::{DivDecimal, MulDecimal};
+use mars_rover::adapters::oracle::OracleAdapter;
+use mars_rover::error::{ContractError, ContractResult};
+use mars_rover::msg::execute::CallbackMsg;
 
 pub fn liquidate_coin(
     deps: DepsMut,

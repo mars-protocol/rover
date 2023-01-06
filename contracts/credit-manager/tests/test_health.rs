@@ -3,9 +3,9 @@ use std::ops::{Add, Mul};
 use cosmwasm_std::{coins, Addr, Coin, Decimal, Uint128};
 
 use mars_credit_manager::borrow::DEFAULT_DEBT_SHARES_PER_COIN_BORROWED;
+use mars_math::{CeilRatio, MulDecimal};
 use mars_mock_oracle::msg::CoinPrice;
 use mars_rover::error::ContractError;
-use mars_rover::math::{CeilRatio, MulDecimal};
 use mars_rover::msg::execute::Action::{Borrow, Deposit};
 use mars_rover::msg::instantiate::ConfigUpdates;
 use mars_rover::msg::query::DebtAmount;

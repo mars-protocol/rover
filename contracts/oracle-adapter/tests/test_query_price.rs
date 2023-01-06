@@ -1,12 +1,10 @@
 use cosmwasm_std::{Decimal, Decimal256, Empty, Uint128};
 use cosmwasm_vault_standard::VaultStandardQueryMsg::{PreviewRedeem, TotalVaultTokenSupply};
 use cw_multi_test::App;
-
-use mars_rover::adapters::oracle::{ConfigResponse, PriceResponse, QueryMsg, VaultPricingInfo};
-use mars_rover::math::MulDecimal;
+use mars_math::MulDecimal;
 
 use crate::helpers::{instantiate_oracle_adapter, mock_vault_info};
-
+use mars_rover::adapters::oracle::{ConfigResponse, PriceResponse, QueryMsg, VaultPricingInfo};
 pub mod helpers;
 
 #[test]
