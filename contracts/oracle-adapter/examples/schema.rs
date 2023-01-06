@@ -1,5 +1,5 @@
 use cosmwasm_schema::write_api;
-use mars_oracle_adapter::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use mars_rover::adapters::oracle::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
 fn main() {
     write_api! {

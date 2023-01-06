@@ -6,6 +6,7 @@ use mars_owner::OwnerError;
 use thiserror::Error;
 
 use crate::coins::Coins;
+use crate::math::DecimalMathError;
 
 pub type ContractResult<T> = Result<T, ContractError>;
 
@@ -31,6 +32,9 @@ pub enum ContractError {
 
     #[error("{0}")]
     CheckedMultiply(#[from] CheckedMultiplyRatioError),
+
+    #[error("{0}")]
+    DecimalMathError(#[from] DecimalMathError),
 
     #[error("{0}")]
     DecimalRangeExceeded(#[from] DecimalRangeExceeded),

@@ -1,9 +1,9 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Addr, Api, Coin, Decimal, QuerierWrapper, StdResult};
+use cosmwasm_std::{Addr, Api, Coin, QuerierWrapper, StdResult, Uint128};
 
 use crate::adapters::oracle::{PriceResponse, QueryMsg};
 use crate::error::ContractResult;
-use crate::traits::IntoDecimal;
+use crate::math::MulDecimal256;
 
 #[cw_serde]
 pub struct OracleBase<T>(T);
@@ -47,12 +47,12 @@ impl Oracle {
         &self,
         querier: &QuerierWrapper,
         coins: &[Coin],
-    ) -> ContractResult<Decimal> {
+    ) -> ContractResult<Uint128> {
         Ok(coins
             .iter()
             .map(|coin| {
                 let res = self.query_price(querier, &coin.denom)?;
-                Ok(res.price.checked_mul(coin.amount.to_dec()?)?)
+                Ok(coin.amount.mul_decimal(res.price)?)
             })
             .collect::<ContractResult<Vec<_>>>()?
             .iter()

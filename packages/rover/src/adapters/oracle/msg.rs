@@ -1,5 +1,5 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Addr, Decimal};
+use cosmwasm_std::{Addr, Decimal256};
 use mars_owner::OwnerUpdate;
 
 use crate::adapters::oracle::{Oracle, OracleUnchecked};
@@ -40,7 +40,7 @@ pub enum QueryMsg {
 #[cw_serde]
 pub struct PriceResponse {
     pub denom: String,
-    pub price: Decimal,
+    pub price: Decimal256,
 }
 
 #[cw_serde]
