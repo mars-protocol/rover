@@ -82,7 +82,8 @@ pub fn withdraw_liquidity(
     }
 
     let zapper = ZAPPER.load(deps.storage)?;
-    let coins_out = zapper.estimate_withdraw_liquidity(&deps.querier, &lp_token.try_into()?)?;
+    let coins_out =
+        zapper.estimate_withdraw_liquidity(&deps.querier, &lp_token.clone().try_into()?)?;
     assert_coins_are_whitelisted(deps.storage, coins_out.to_denoms())?;
 
     decrement_coin_balance(deps.storage, account_id, &lp_token)?;

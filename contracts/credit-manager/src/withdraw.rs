@@ -20,7 +20,7 @@ pub fn withdraw(
     // send coin to recipient
     let transfer_msg = CosmosMsg::Bank(BankMsg::Send {
         to_address: recipient.to_string(),
-        amount: vec![coin.try_into()?],
+        amount: vec![coin.clone().try_into()?],
     });
 
     Ok(Response::new()
