@@ -4,8 +4,8 @@ use cosmwasm_std::{Empty, Uint128};
 use cosmwasm_vault_standard::VaultStandardQueryMsg::{PreviewRedeem, TotalVaultTokenSupply};
 use cw_multi_test::App;
 
-use mars_oracle_adapter::msg::{ConfigResponse, QueryMsg, VaultPricingInfo};
 use mars_outpost::oracle::PriceResponse;
+use mars_rover::adapters::oracle::{ConfigResponse, QueryMsg, VaultPricingInfo};
 use mars_rover::traits::IntoDecimal;
 
 use crate::helpers::{instantiate_oracle_adapter, mock_vault_info};

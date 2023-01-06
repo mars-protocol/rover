@@ -14,9 +14,10 @@ use mars_mock_vault::contract::{
 use mars_mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
 use mars_oracle_adapter::contract::{execute, instantiate, query};
 use mars_oracle_adapter::error::ContractError;
-use mars_oracle_adapter::msg::{InstantiateMsg, PricingMethod, VaultPricingInfo};
+use mars_rover::adapters::oracle::{
+    InstantiateMsg, OracleBase, OracleUnchecked, PricingMethod, VaultPricingInfo,
+};
 use mars_rover::adapters::vault::VaultBase;
-use mars_rover::adapters::{OracleBase, OracleUnchecked};
 
 pub fn mock_vault_info() -> VaultTestInfo {
     VaultTestInfo {

@@ -1,8 +1,7 @@
 use cosmwasm_std::Addr;
 use cw_multi_test::{App, Executor};
 use mars_owner::OwnerUpdate;
-
-use mars_oracle_adapter::msg::{ConfigResponse, ExecuteMsg, QueryMsg};
+use mars_rover::adapters::oracle::{ConfigResponse, ExecuteMsg, QueryMsg};
 
 use crate::helpers::instantiate_oracle_adapter;
 

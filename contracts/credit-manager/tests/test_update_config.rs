@@ -3,9 +3,10 @@ use cw_multi_test::{BasicApp, Executor};
 
 use mars_mock_oracle::msg::{CoinPrice, InstantiateMsg as OracleInstantiateMsg};
 use mars_mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
+use mars_rover::adapters::oracle::OracleBase;
 use mars_rover::adapters::swap::SwapperBase;
 use mars_rover::adapters::vault::{VaultBase, VaultConfig};
-use mars_rover::adapters::{OracleBase, ZapperBase};
+use mars_rover::adapters::zapper::ZapperBase;
 use mars_rover::error::ContractError::InvalidConfig;
 use mars_rover::msg::instantiate::{ConfigUpdates, VaultInstantiateConfig};
 use mars_rover::msg::query::VaultInfoResponse;

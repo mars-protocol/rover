@@ -18,17 +18,19 @@ use mars_mock_oracle::msg::{
 use mars_mock_red_bank::msg::{CoinMarketInfo, InstantiateMsg as RedBankInstantiateMsg};
 use mars_mock_vault::contract::DEFAULT_VAULT_TOKEN_PREFUND;
 use mars_mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
-use mars_oracle_adapter::msg::{
-    InstantiateMsg as OracleAdapterInstantiateMsg, PricingMethod, VaultPricingInfo,
-};
 use mars_outpost::red_bank::QueryMsg::UserDebt;
 use mars_outpost::red_bank::UserDebtResponse;
+use mars_rover::adapters::oracle::{
+    InstantiateMsg as OracleAdapterInstantiateMsg, OracleBase, OracleUnchecked, PricingMethod,
+    VaultPricingInfo,
+};
+use mars_rover::adapters::red_bank::RedBankBase;
 use mars_rover::adapters::swap::QueryMsg::EstimateExactInSwap;
 use mars_rover::adapters::swap::{
     EstimateExactInSwapResponse, InstantiateMsg as SwapperInstantiateMsg, Swapper, SwapperBase,
 };
 use mars_rover::adapters::vault::{VaultBase, VaultConfig, VaultUnchecked};
-use mars_rover::adapters::{OracleBase, OracleUnchecked, RedBankBase, Zapper, ZapperBase};
+use mars_rover::adapters::zapper::{Zapper, ZapperBase};
 use mars_rover::msg::execute::{Action, CallbackMsg};
 use mars_rover::msg::instantiate::{ConfigUpdates, VaultInstantiateConfig};
 use mars_rover::msg::query::{

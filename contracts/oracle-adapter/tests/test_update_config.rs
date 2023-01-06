@@ -3,10 +3,10 @@ use cw_multi_test::{App, Executor};
 use mars_owner::OwnerError::NotOwner;
 
 use mars_oracle_adapter::error::ContractError::OwnerError;
-use mars_oracle_adapter::msg::{
-    ConfigResponse, ConfigUpdates, ExecuteMsg, QueryMsg, VaultPricingInfo,
+use mars_rover::adapters::oracle::{
+    ConfigResponse, ConfigUpdates, ExecuteMsg, OracleBase, OracleUnchecked, QueryMsg,
+    VaultPricingInfo,
 };
-use mars_rover::adapters::{OracleBase, OracleUnchecked};
 
 use crate::helpers::{assert_err, instantiate_oracle_adapter};
 
