@@ -187,7 +187,7 @@ fn test_debts_no_assets() {
         res,
         ContractError::AboveMaxLTV {
             account_id: account_id.clone(),
-            max_ltv_health_factor: "0.693069306930693069".to_string(),
+            max_ltv_health_factor: "0.68".to_string(),
         },
     );
 
@@ -249,25 +249,17 @@ fn test_cannot_borrow_more_than_healthy() {
     assert_eq!(position.debts.len(), 1);
 
     let health = mock.query_health(&account_id);
-    let assets_value = Uint128::new(82789);
+    let assets_value = Uint128::new(827);
     assert_eq!(health.total_collateral_value, assets_value);
-    let debts_value = Uint128::new(120635);
+    let debts_value = Uint128::new(120);
     assert_eq!(health.total_debt_value, debts_value);
     assert_eq!(
         health.liquidation_health_factor,
-        Some(Decimal::from_ratio(
-            assets_value
-                .checked_mul_floor(coin_info.liquidation_threshold)
-                .unwrap(),
-            debts_value
-        ))
+        Some(Decimal::from_ratio(454u128, 120u128))
     );
     assert_eq!(
         health.max_ltv_health_factor,
-        Some(Decimal::from_ratio(
-            assets_value.checked_mul_floor(coin_info.max_ltv).unwrap(),
-            debts_value
-        ))
+        Some(Decimal::from_ratio(413u128, 120u128))
     );
     assert!(!health.liquidatable);
     assert!(!health.above_max_ltv);
@@ -291,31 +283,23 @@ fn test_cannot_borrow_more_than_healthy() {
         res,
         ContractError::AboveMaxLTV {
             account_id: account_id.clone(),
-            max_ltv_health_factor: "0.990099009900990099".to_string(),
+            max_ltv_health_factor: "0.990223463687150837".to_string(),
         },
     );
 
     // All valid on step 2 as well (meaning step 3 did not go through)
     let health = mock.query_health(&account_id);
-    let assets_value = Uint128::new(106443);
+    let assets_value = Uint128::new(1064);
     assert_eq!(health.total_collateral_value, assets_value);
-    let debts_value = Uint128::new(3595408);
+    let debts_value = Uint128::new(359);
     assert_eq!(health.total_debt_value, debts_value);
     assert_eq!(
         health.liquidation_health_factor,
-        Some(Decimal::from_ratio(
-            assets_value
-                .checked_mul_floor(coin_info.liquidation_threshold)
-                .unwrap(),
-            debts_value
-        ))
+        Some(Decimal::from_ratio(585u128, 359u128))
     );
     assert_eq!(
         health.max_ltv_health_factor,
-        Some(Decimal::from_ratio(
-            assets_value.checked_mul_floor(coin_info.max_ltv).unwrap(),
-            debts_value
-        ))
+        Some(Decimal::from_ratio(532u128, 359u128))
     );
     assert!(!health.liquidatable);
     assert!(!health.above_max_ltv);
@@ -391,7 +375,7 @@ fn test_cannot_borrow_more_but_not_liquidatable() {
         res,
         ContractError::AboveMaxLTV {
             account_id: account_id.clone(),
-            max_ltv_health_factor: "0.947847222222222222".to_string(),
+            max_ltv_health_factor: "0.946759259259259259".to_string(),
         },
     );
 

@@ -1,10 +1,13 @@
+use std::ops::{Div, Mul};
+
 use cosmwasm_std::{Decimal, Decimal256, Empty, Uint128};
 use cosmwasm_vault_standard::VaultStandardQueryMsg::{PreviewRedeem, TotalVaultTokenSupply};
 use cw_multi_test::App;
-use mars_math::FractionMath;
+
+use mars_rover::adapters::oracle::{ConfigResponse, PriceResponse, QueryMsg, VaultPricingInfo};
 
 use crate::helpers::{instantiate_oracle_adapter, mock_vault_info};
-use mars_rover::adapters::oracle::{ConfigResponse, PriceResponse, QueryMsg, VaultPricingInfo};
+
 pub mod helpers;
 
 #[test]
@@ -86,11 +89,17 @@ fn test_vault_coin_preview_redeem() {
         )
         .unwrap();
 
-    let total_value_of_vault = total_lp_tokens
-        .checked_mul_floor(lp_token_oracle_res.price)
-        .unwrap();
-
-    let price_per_vault_coin = Decimal256::from_ratio(total_value_of_vault, vault_token_supply);
+    // vault token price = total lp tokens in vault * price of lp token / total vault tokens issued
+    //    This formula isn't be used in production because the first multiplication results in an
+    //    integer that exceeds the memory allocated to u128's. But for this test it's a good check
+    //    on our current formula where we use:
+    //          Decimal::from_ratio(total_underlying, vault_coin_supply) * price of lp token
+    //    This method does not cause an overflow given Decimal::from_ratio casts to u256.
+    // Further, casting all to decimal forces highest precision for this test
+    let total_lp_tokens_dec = Decimal256::from_atomics(total_lp_tokens, 0).unwrap();
+    let total_value_of_vault = total_lp_tokens_dec.mul(Decimal256::from(lp_token_oracle_res.price));
+    let vault_token_supply_dec = Decimal256::from_atomics(vault_token_supply, 0).unwrap();
+    let price_per_vault_coin = total_value_of_vault.div(vault_token_supply_dec);
 
     let oracle_adapter_res: PriceResponse<Decimal256> = app
         .wrap()
@@ -102,11 +111,5 @@ fn test_vault_coin_preview_redeem() {
         )
         .unwrap();
 
-    // vault token price = total lp tokens in vault * price of lp token / total vault tokens issued
-    //    This formula can't be used in production because the first multiplication results in an
-    //    integer that exceeds the memory allocated to u128's. But for this test it's a good check
-    //    on our current formula where we use:
-    // Decimal::from_ratio(total_underlying, vault_coin_supply) * price of lp token
-    //    This method does not cause an overflow given Decimal::from_ratio casts to u256
     assert_eq!(oracle_adapter_res.price, price_per_vault_coin)
 }
