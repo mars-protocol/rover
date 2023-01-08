@@ -1,5 +1,3 @@
-mod ceil_ratio;
-mod decimal;
+mod fraction;
 
-pub use self::ceil_ratio::*;
-pub use self::decimal::*;
+pub use self::fraction::*;

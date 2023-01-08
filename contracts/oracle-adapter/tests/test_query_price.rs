@@ -1,7 +1,7 @@
 use cosmwasm_std::{Decimal, Decimal256, Empty, Uint128};
 use cosmwasm_vault_standard::VaultStandardQueryMsg::{PreviewRedeem, TotalVaultTokenSupply};
 use cw_multi_test::App;
-use mars_math::MulDecimal;
+use mars_math::FractionMath;
 
 use crate::helpers::{instantiate_oracle_adapter, mock_vault_info};
 use mars_rover::adapters::oracle::{ConfigResponse, PriceResponse, QueryMsg, VaultPricingInfo};
@@ -87,7 +87,7 @@ fn test_vault_coin_preview_redeem() {
         .unwrap();
 
     let total_value_of_vault = total_lp_tokens
-        .mul_decimal(lp_token_oracle_res.price)
+        .checked_mul_floor(lp_token_oracle_res.price)
         .unwrap();
 
     let price_per_vault_coin = Decimal256::from_ratio(total_value_of_vault, vault_token_supply);

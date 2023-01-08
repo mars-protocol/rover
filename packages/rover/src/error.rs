@@ -3,7 +3,7 @@ use cosmwasm_std::{
     StdError, Uint128,
 };
 use mars_health::health::HealthError;
-use mars_math::DecimalMathError;
+use mars_math::CheckedMultiplyFractionError;
 use mars_owner::OwnerError;
 use thiserror::Error;
 
@@ -35,7 +35,7 @@ pub enum ContractError {
     CheckedMultiply(#[from] CheckedMultiplyRatioError),
 
     #[error("{0}")]
-    DecimalMathError(#[from] DecimalMathError),
+    CheckedMultiplyFractio(#[from] CheckedMultiplyFractionError),
 
     #[error("{0}")]
     DecimalRangeExceeded(#[from] DecimalRangeExceeded),

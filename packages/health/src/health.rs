@@ -1,7 +1,7 @@
 use std::{collections::HashMap, fmt};
 
 use cosmwasm_std::{Addr, Coin, Decimal, Decimal256, QuerierWrapper, StdError, StdResult, Uint128};
-use mars_math::{DecimalMathError, MulDecimal};
+use mars_math::{CheckedMultiplyFractionError, FractionMath, FractionMath256};
 use thiserror::Error;
 
 use mars_outpost::red_bank::Market;
@@ -13,7 +13,7 @@ pub type HealthResult<T> = Result<T, HealthError>;
 #[derive(Error, Debug, PartialEq)]
 pub enum HealthError {
     #[error("{0}")]
-    DecimalMathError(#[from] DecimalMathError),
+    CheckedMultiplyFraction(#[from] CheckedMultiplyFractionError),
 
     #[error("{0}")]
     Std(#[from] StdError),
@@ -79,12 +79,12 @@ impl Health {
         let mut health = positions.iter().try_fold::<_, _, HealthResult<Health>>(
             Health::default(),
             |mut h, p| {
-                let collateral_value = p.collateral_amount.mul_decimal_256(p.price)?;
-                h.total_debt_value += p.debt_amount.mul_decimal_256(p.price)?;
+                let collateral_value = p.collateral_amount.checked_mul_floor_256(p.price)?;
+                h.total_debt_value += p.debt_amount.checked_mul_floor_256(p.price)?;
                 h.total_collateral_value += collateral_value;
-                h.max_ltv_adjusted_collateral += collateral_value.mul_decimal(p.max_ltv)?;
+                h.max_ltv_adjusted_collateral += collateral_value.checked_mul_floor(p.max_ltv)?;
                 h.liquidation_threshold_adjusted_collateral +=
-                    collateral_value.mul_decimal(p.liquidation_threshold)?;
+                    collateral_value.checked_mul_floor(p.liquidation_threshold)?;
                 Ok(h)
             },
         )?;

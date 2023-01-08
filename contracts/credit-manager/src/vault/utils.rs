@@ -1,5 +1,5 @@
 use cosmwasm_std::{coin, Addr, Coin, Deps, StdResult, Storage, Uint128};
-use mars_math::DivDecimal;
+use mars_math::FractionMath256;
 
 use mars_rover::adapters::vault::{Vault, VaultPositionAmount, VaultPositionUpdate};
 use mars_rover::error::{ContractError, ContractResult};
@@ -84,7 +84,7 @@ pub fn vault_utilization_in_deposit_cap_denom(
 
     Ok(Coin {
         denom: config.deposit_cap.denom,
-        amount: rover_vault_balance_value.div_decimal_256(deposit_cap_denom_price)?,
+        amount: rover_vault_balance_value.checked_div_floor_256(deposit_cap_denom_price)?,
     })
 }
 

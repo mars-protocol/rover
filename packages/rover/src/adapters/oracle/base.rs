@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal256, QuerierWrapper, StdResult, Uint128};
-use mars_math::MulDecimal;
+use mars_math::FractionMath256;
 use serde::de::DeserializeOwned;
 
 use crate::adapters::oracle::{PriceResponse, QueryMsg};
@@ -50,7 +50,7 @@ impl<T: Into<String> + Clone, R: DeserializeOwned + Into<Decimal256>> OracleBase
             .iter()
             .map(|coin| {
                 let res = self.query_price(querier, &coin.denom)?;
-                Ok(coin.amount.mul_decimal_256(res.price.into())?)
+                Ok(coin.amount.checked_mul_floor_256(res.price.into())?)
             })
             .collect::<ContractResult<Vec<_>>>()?
             .iter()
