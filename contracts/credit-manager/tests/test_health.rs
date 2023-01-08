@@ -16,6 +16,9 @@ use crate::helpers::{
 
 pub mod helpers;
 
+// Health scenarios:
+// https://docs.google.com/spreadsheets/d/1YhydvetAkLywgyFjpzLIdRe-_z-KbjFOigiPuQBh-ac/edit#gid=1394903922
+
 /// Action: User deposits 300 osmo (.25 price)
 /// Health: assets_value: 75
 ///         debt value 0
@@ -451,7 +454,7 @@ fn test_assets_and_ltv_lqdt_adjusted_value() {
     );
     assert_eq!(
         health.total_debt_value,
-        borrowed_amount.checked_mul_floor(uatom_info.price).unwrap() + Uint128::one() // simulated interest
+        Uint128::new(350_615_100) // with simulated interest
     );
     let lqdt_adjusted_assets_value = deposit_amount
         .checked_mul_floor(uosmo_info.price)
@@ -629,6 +632,7 @@ fn test_debt_value() {
     assert_eq!(health.total_debt_value, total_debt_value);
 
     let lqdt_adjusted_assets_value = user_a_deposit_amount_osmo
+        .add(user_a_borrowed_amount_osmo)
         .checked_mul_floor(uosmo_info.price)
         .unwrap()
         .checked_mul_floor(uosmo_info.liquidation_threshold)
@@ -638,13 +642,6 @@ fn test_debt_value() {
                 .checked_mul_floor(uatom_info.price)
                 .unwrap()
                 .checked_mul_floor(uatom_info.liquidation_threshold)
-                .unwrap(),
-        )
-        .add(
-            user_a_borrowed_amount_osmo
-                .checked_mul_floor(uosmo_info.price)
-                .unwrap()
-                .checked_mul_floor(uosmo_info.liquidation_threshold)
                 .unwrap(),
         );
 
@@ -657,6 +654,7 @@ fn test_debt_value() {
     );
 
     let ltv_adjusted_assets_value = user_a_deposit_amount_osmo
+        .add(user_a_borrowed_amount_osmo)
         .checked_mul_floor(uosmo_info.price)
         .unwrap()
         .checked_mul_floor(uosmo_info.max_ltv)
@@ -666,13 +664,6 @@ fn test_debt_value() {
                 .checked_mul_floor(uatom_info.price)
                 .unwrap()
                 .checked_mul_floor(uatom_info.max_ltv)
-                .unwrap(),
-        )
-        .add(
-            user_a_borrowed_amount_osmo
-                .checked_mul_floor(uosmo_info.price)
-                .unwrap()
-                .checked_mul_floor(uosmo_info.max_ltv)
                 .unwrap(),
         );
     assert_eq!(
