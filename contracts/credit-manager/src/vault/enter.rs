@@ -8,7 +8,7 @@ use mars_rover::msg::execute::{ActionAmount, ActionCoin, CallbackMsg};
 use mars_rover::msg::ExecuteMsg;
 
 use crate::query::query_vault_positions;
-use crate::state::{COIN_BALANCES, ORACLE_ADAPTER, VAULT_CONFIGS};
+use crate::state::{COIN_BALANCES, ORACLE, VAULT_CONFIGS};
 use crate::utils::{assert_coin_is_whitelisted, decrement_coin_balance};
 use crate::vault::rover_vault_balance_value;
 use crate::vault::utils::{assert_vault_is_whitelisted, update_vault_position};
@@ -110,7 +110,7 @@ pub fn assert_deposit_is_under_cap(
     coin_to_add: &Coin,
     rover_addr: &Addr,
 ) -> ContractResult<()> {
-    let oracle = ORACLE_ADAPTER.load(deps.storage)?;
+    let oracle = ORACLE.load(deps.storage)?;
     let deposit_request_value = oracle.query_total_value(&deps.querier, &[coin_to_add.clone()])?;
     let rover_vault_balance_value = rover_vault_balance_value(&deps, vault, rover_addr)?;
 

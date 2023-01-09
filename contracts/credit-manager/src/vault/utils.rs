@@ -4,7 +4,7 @@ use mars_math::FractionMath256;
 use mars_rover::adapters::vault::{Vault, VaultPositionAmount, VaultPositionUpdate};
 use mars_rover::error::{ContractError, ContractResult};
 
-use crate::state::{MAX_UNLOCKING_POSITIONS, ORACLE_ADAPTER, VAULT_CONFIGS, VAULT_POSITIONS};
+use crate::state::{MAX_UNLOCKING_POSITIONS, ORACLE, VAULT_CONFIGS, VAULT_POSITIONS};
 use crate::update_coin_balances::query_balance;
 
 pub fn assert_vault_is_whitelisted(storage: &mut dyn Storage, vault: &Vault) -> ContractResult<()> {
@@ -77,7 +77,7 @@ pub fn vault_utilization_in_deposit_cap_denom(
 ) -> ContractResult<Coin> {
     let rover_vault_balance_value = rover_vault_balance_value(deps, vault, rover_addr)?;
     let config = VAULT_CONFIGS.load(deps.storage, &vault.address)?;
-    let oracle = ORACLE_ADAPTER.load(deps.storage)?;
+    let oracle = ORACLE.load(deps.storage)?;
     let deposit_cap_denom_price = oracle
         .query_price(&deps.querier, &config.deposit_cap.denom)?
         .price;
@@ -94,7 +94,7 @@ pub fn rover_vault_balance_value(
     vault: &Vault,
     rover_addr: &Addr,
 ) -> ContractResult<Uint128> {
-    let oracle = ORACLE_ADAPTER.load(deps.storage)?;
+    let oracle = ORACLE.load(deps.storage)?;
     let vault_info = vault.query_info(&deps.querier)?;
     let rover_vault_coin_balance = vault.query_balance(&deps.querier, rover_addr)?;
     let balance_value = oracle.query_total_value(

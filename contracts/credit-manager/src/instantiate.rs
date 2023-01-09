@@ -10,7 +10,7 @@ use mars_rover::msg::InstantiateMsg;
 
 use crate::state::OWNER;
 use crate::state::{
-    ALLOWED_COINS, MAX_CLOSE_FACTOR, MAX_UNLOCKING_POSITIONS, ORACLE_ADAPTER, RED_BANK, SWAPPER,
+    ALLOWED_COINS, MAX_CLOSE_FACTOR, MAX_UNLOCKING_POSITIONS, ORACLE, RED_BANK, SWAPPER,
     VAULT_CONFIGS, ZAPPER,
 };
 
@@ -24,7 +24,7 @@ pub fn store_config(deps: DepsMut, msg: &InstantiateMsg) -> ContractResult<()> {
     )?;
 
     RED_BANK.save(deps.storage, &msg.red_bank.check(deps.api)?)?;
-    ORACLE_ADAPTER.save(deps.storage, &msg.oracle_adapter.check(deps.api)?)?;
+    ORACLE.save(deps.storage, &msg.oracle.check(deps.api)?)?;
     SWAPPER.save(deps.storage, &msg.swapper.check(deps.api)?)?;
     ZAPPER.save(deps.storage, &msg.zapper.check(deps.api)?)?;
     MAX_UNLOCKING_POSITIONS.save(deps.storage, &msg.max_unlocking_positions)?;

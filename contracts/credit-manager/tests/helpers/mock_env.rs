@@ -553,7 +553,7 @@ impl MockEnvBuilder {
                 allowed_coins,
                 vault_configs,
                 red_bank,
-                oracle_adapter,
+                oracle_adapter: oracle,
                 max_close_factor,
                 max_unlocking_positions,
                 swapper,

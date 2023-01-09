@@ -3,7 +3,7 @@ use cw_multi_test::{BasicApp, Executor};
 
 use mars_mock_oracle::msg::{CoinPrice, InstantiateMsg as OracleInstantiateMsg};
 use mars_mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
-use mars_rover::adapters::oracle::{OracleAdapterUnchecked, OracleBase};
+use mars_rover::adapters::oracle::{OracleBase, OracleUnchecked};
 use mars_rover::adapters::swap::SwapperBase;
 use mars_rover::adapters::vault::{VaultBase, VaultConfig};
 use mars_rover::adapters::zapper::ZapperBase;
@@ -28,7 +28,7 @@ fn test_only_owner_can_update_config() {
         ConfigUpdates {
             account_nft: None,
             allowed_coins: None,
-            oracle_adapter: None,
+            oracle: None,
             max_close_factor: None,
             max_unlocking_positions: None,
             swapper: None,
@@ -51,7 +51,7 @@ fn test_raises_on_invalid_vaults_config() {
         ConfigUpdates {
             account_nft: None,
             allowed_coins: None,
-            oracle_adapter: None,
+            oracle: None,
             max_close_factor: None,
             max_unlocking_positions: None,
             swapper: None,
@@ -80,7 +80,7 @@ fn test_raises_on_invalid_vaults_config() {
         ConfigUpdates {
             account_nft: None,
             allowed_coins: None,
-            oracle_adapter: None,
+            oracle: None,
             max_close_factor: None,
             max_unlocking_positions: None,
             swapper: None,
@@ -126,7 +126,7 @@ fn test_update_config_works_with_full_config() {
         ConfigUpdates {
             account_nft: Some(new_nft_contract.to_string()),
             allowed_coins: Some(new_allowed_coins.clone()),
-            oracle_adapter: Some(new_oracle.clone()),
+            oracle: Some(new_oracle.clone()),
             max_close_factor: Some(new_close_factor),
             max_unlocking_positions: Some(new_unlocking_max),
             swapper: Some(new_swapper.clone()),
@@ -334,7 +334,7 @@ fn test_raises_on_duplicate_vault_configs() {
         ConfigUpdates {
             account_nft: None,
             allowed_coins: None,
-            oracle_adapter: None,
+            oracle: None,
             max_close_factor: None,
             max_unlocking_positions: None,
             swapper: None,
@@ -383,7 +383,7 @@ fn test_raises_on_duplicate_coin_configs() {
                 "uatom".to_string(),
                 "uosmo".to_string(),
             ]),
-            oracle_adapter: None,
+            oracle: None,
             max_close_factor: None,
             max_unlocking_positions: None,
             swapper: None,
@@ -400,7 +400,7 @@ fn test_raises_on_duplicate_coin_configs() {
     );
 }
 
-fn deploy_new_oracle(app: &mut BasicApp) -> OracleAdapterUnchecked {
+fn deploy_new_oracle(app: &mut BasicApp) -> OracleUnchecked {
     let contract_code_id = app.store_code(mock_oracle_contract());
     let addr = app
         .instantiate_contract(
@@ -423,7 +423,7 @@ fn deploy_new_oracle(app: &mut BasicApp) -> OracleAdapterUnchecked {
             None,
         )
         .unwrap();
-    OracleAdapterUnchecked::new(addr.to_string())
+    OracleUnchecked::new(addr.to_string())
 }
 
 fn deploy_vault(app: &mut BasicApp) -> VaultInstantiateConfig {

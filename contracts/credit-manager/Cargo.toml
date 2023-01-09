@@ -38,7 +38,6 @@ anyhow              = { workspace = true }
 cw-multi-test       = { workspace = true }
 cw-utils            = { workspace = true }
 itertools           = { workspace = true }
-mars-oracle-adapter = { workspace = true }
 mars-mock-oracle    = { workspace = true }
 mars-mock-red-bank  = { workspace = true }
 mars-mock-vault     = { workspace = true }

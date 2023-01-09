@@ -3,7 +3,7 @@ use cw_item_set::Set;
 use cw_storage_plus::{Item, Map};
 use mars_owner::Owner;
 
-use mars_rover::adapters::oracle::OracleAdapter;
+use mars_rover::adapters::oracle::Oracle;
 use mars_rover::adapters::red_bank::RedBank;
 use mars_rover::adapters::swap::Swapper;
 use mars_rover::adapters::vault::{VaultConfig, VaultPositionAmount};
@@ -14,7 +14,7 @@ use crate::vault::RequestTempStorage;
 // Contract dependencies
 // NOTE: Ensure assert_not_contract_in_config() is updated when an external contract is added here
 pub const ACCOUNT_NFT: Item<Addr> = Item::new("account_nft");
-pub const ORACLE_ADAPTER: Item<OracleAdapter> = Item::new("oracle_adapter");
+pub const ORACLE: Item<Oracle> = Item::new("oracle");
 pub const RED_BANK: Item<RedBank> = Item::new("red_bank");
 pub const SWAPPER: Item<Swapper> = Item::new("swapper");
 pub const VAULT_CONFIGS: Map<&Addr, VaultConfig> = Map::new("vault_configs");

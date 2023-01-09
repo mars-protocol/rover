@@ -2,6 +2,7 @@ use cosmwasm_std::{
     entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response,
 };
 use cw2::set_contract_version;
+use mars_health::health::HealthResponse;
 
 use mars_rover::adapters::vault::VAULT_REQUEST_REPLY_ID;
 use mars_rover::error::{ContractError, ContractResult};

@@ -172,30 +172,3 @@ pub struct ConfigResponse {
     pub swapper: String,
     pub zapper: String,
 }
-
-#[cw_serde]
-pub struct HealthResponse {
-    pub total_debt_value: Uint128,
-    pub total_collateral_value: Uint128,
-    pub max_ltv_adjusted_collateral: Uint128,
-    pub liquidation_threshold_adjusted_collateral: Uint128,
-    pub max_ltv_health_factor: Option<Decimal>,
-    pub liquidation_health_factor: Option<Decimal>,
-    pub liquidatable: bool,
-    pub above_max_ltv: bool,
-}
-
-impl From<Health> for HealthResponse {
-    fn from(h: Health) -> Self {
-        Self {
-            total_debt_value: h.total_debt_value,
-            total_collateral_value: h.total_collateral_value,
-            max_ltv_adjusted_collateral: h.max_ltv_adjusted_collateral,
-            liquidation_threshold_adjusted_collateral: h.liquidation_threshold_adjusted_collateral,
-            max_ltv_health_factor: h.max_ltv_health_factor,
-            liquidation_health_factor: h.liquidation_health_factor,
-            liquidatable: h.is_liquidatable(),
-            above_max_ltv: h.is_above_max_ltv(),
-        }
-    }
-}
