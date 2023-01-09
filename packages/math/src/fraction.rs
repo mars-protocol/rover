@@ -1,8 +1,7 @@
-use crate::CheckedMultiplyFractionError::DivideByZero;
-use cosmwasm_std::{
-    ConversionOverflowError, DivideByZeroError, Fraction, OverflowError, Uint128, Uint256,
-};
+use cosmwasm_std::{ConversionOverflowError, DivideByZeroError, Fraction, OverflowError, Uint128};
 use thiserror::Error;
+
+use crate::CheckedMultiplyFractionError::DivideByZero;
 
 // Delete when merged: https://github.com/CosmWasm/cosmwasm/pull/1566
 
@@ -98,48 +97,5 @@ impl FractionMath for Uint128 {
             })
         })?;
         self.checked_mul_floor(inverted)
-    }
-}
-
-/// Not likely to be included into cosmwasm-std.
-/// Including these to allow Uint128 to expand size to multiply Decimal256.
-pub trait FractionMath256 {
-    fn checked_mul_floor_256<F: Fraction<T>, T: Into<Uint256>>(
-        self,
-        rhs: F,
-    ) -> Result<Self, CheckedMultiplyFractionError>
-    where
-        Self: Sized;
-
-    fn checked_div_floor_256<F: Fraction<T>, T: Into<Uint256>>(
-        self,
-        rhs: F,
-    ) -> Result<Self, CheckedMultiplyFractionError>
-    where
-        Self: Sized;
-}
-
-impl FractionMath256 for Uint128 {
-    fn checked_mul_floor_256<F: Fraction<T>, T: Into<Uint256>>(
-        self,
-        rhs: F,
-    ) -> Result<Self, CheckedMultiplyFractionError> {
-        let divisor = rhs.denominator().into();
-        let res = Uint256::from(self.u128())
-            .full_mul(rhs.numerator().into())
-            .checked_div(divisor.into())?;
-        Ok(res.try_into()?)
-    }
-
-    fn checked_div_floor_256<F: Fraction<T>, T: Into<Uint256>>(
-        self,
-        rhs: F,
-    ) -> Result<Self, CheckedMultiplyFractionError> {
-        let inverted = rhs.inv().ok_or_else(|| {
-            DivideByZero(DivideByZeroError {
-                operand: self.to_string(),
-            })
-        })?;
-        self.checked_mul_floor_256(inverted)
     }
 }

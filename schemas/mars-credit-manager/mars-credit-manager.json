@@ -42,7 +42,7 @@
         ]
       },
       "oracle": {
-        "description": "The Mars oracle adapter contract. Proxies oracle calls to provide vault token price support.",
+        "description": "The Mars Protocol oracle contract. We read prices of assets here.",
         "allOf": [
           {
             "$ref": "#/definitions/OracleBase_for_String"

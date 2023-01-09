@@ -122,6 +122,8 @@ fn liquidate_unlocked(
         .add_attribute("vault_coin_liquidated", request.amount))
 }
 
+/// Converts vault coins to their underlying value. This allows for pricing and liquidation
+/// values to be determined. Afterward, the final amount is converted back into vault coins.
 fn calculate_vault_liquidation(
     deps: &DepsMut,
     env: &Env,

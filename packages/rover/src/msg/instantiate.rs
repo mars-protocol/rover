@@ -19,7 +19,7 @@ pub struct InstantiateMsg {
     pub vault_configs: Vec<VaultInstantiateConfig>,
     /// The Mars Protocol money market contract where we borrow assets from
     pub red_bank: RedBankUnchecked,
-    /// The Mars oracle adapter contract. Proxies oracle calls to provide vault token price support.
+    /// The Mars Protocol oracle contract. We read prices of assets here.
     pub oracle: OracleUnchecked,
     /// The maximum percent a liquidator can decrease the debt amount of the liquidatee
     pub max_close_factor: Decimal,
