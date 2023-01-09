@@ -219,7 +219,6 @@ pub fn assert_below_max_ltv(deps: Deps, env: Env, account_id: &str) -> ContractR
         .add_event(event))
 }
 
-// TODO: make this a trait
 pub fn val_or_na(opt: Option<Decimal>) -> String {
     opt.map_or_else(|| "n/a".to_string(), |dec| dec.to_string())
 }

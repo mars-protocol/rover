@@ -1,8 +1,7 @@
 use std::ops::Sub;
 
 use cosmwasm_std::Uint128;
-
-use mars_rover::msg::query::HealthResponse;
+use mars_health::HealthResponse;
 
 pub const MAX_VALUE_FOR_BURN: Uint128 = Uint128::new(1000);
 
