@@ -1,6 +1,6 @@
-use cosmwasm_std::{coin, Addr, Coin, Deps, StdResult, Storage, Uint128};
-use mars_math::FractionMath256;
+use cosmwasm_std::{Addr, Coin, Deps, StdResult, Storage, Uint128};
 
+use mars_math::FractionMath256;
 use mars_rover::adapters::vault::{Vault, VaultPositionAmount, VaultPositionUpdate};
 use mars_rover::error::{ContractError, ContractResult};
 
@@ -95,14 +95,7 @@ pub fn rover_vault_balance_value(
     rover_addr: &Addr,
 ) -> ContractResult<Uint128> {
     let oracle = ORACLE.load(deps.storage)?;
-    let vault_info = vault.query_info(&deps.querier)?;
     let rover_vault_coin_balance = vault.query_balance(&deps.querier, rover_addr)?;
-    let balance_value = oracle.query_total_value(
-        &deps.querier,
-        &[coin(
-            rover_vault_coin_balance.u128(),
-            vault_info.vault_token,
-        )],
-    )?;
+    let balance_value = vault.query_value(&deps.querier, &oracle, rover_vault_coin_balance)?;
     Ok(balance_value)
 }

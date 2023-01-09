@@ -236,6 +236,10 @@ impl Vault {
         amount: Uint128,
     ) -> StdResult<Uint128> {
         let total_supply = self.query_total_vault_coins_issued(querier)?;
+        if total_supply.is_zero() {
+            return Ok(Uint128::zero());
+        };
+
         let total_underlying = self.query_preview_redeem(querier, total_supply)?;
         let amount_in_underlying = amount
             .checked_multiply_ratio(total_underlying, total_supply)
