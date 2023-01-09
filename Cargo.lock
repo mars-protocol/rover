@@ -1015,6 +1015,7 @@ dependencies = [
  "cw2 1.0.1",
  "cw721",
  "cw721-base",
+ "mars-health",
  "mars-mock-credit-manager",
  "mars-rover",
  "thiserror",
@@ -1073,6 +1074,7 @@ dependencies = [
  "cosmwasm-std",
  "cw-storage-plus 1.0.1",
  "cw-utils 0.16.0",
+ "mars-health",
  "mars-rover",
  "thiserror",
 ]
@@ -1150,6 +1152,7 @@ dependencies = [
  "cosmwasm-vault-standard",
  "cw-storage-plus 1.0.1",
  "cw-utils 0.16.0",
+ "mars-health",
  "mars-math",
  "mars-outpost",
  "mars-owner",

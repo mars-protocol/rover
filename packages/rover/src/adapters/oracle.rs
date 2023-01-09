@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{coins, Addr, Api, Coin, QuerierWrapper, StdResult, Uint128};
+use cosmwasm_std::{Addr, Api, Coin, QuerierWrapper, StdResult, Uint128};
 
 use mars_math::FractionMath;
 use mars_outpost::oracle::{PriceResponse, QueryMsg};
@@ -45,7 +45,7 @@ impl Oracle {
     }
 
     pub fn query_value(&self, querier: &QuerierWrapper, coin: &Coin) -> ContractResult<Uint128> {
-        Ok(self.query_total_value(querier, &[coin.clone()])?)
+        self.query_total_value(querier, &[coin.clone()])
     }
 
     pub fn query_total_value(

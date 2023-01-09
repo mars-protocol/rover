@@ -22,6 +22,7 @@ cosmwasm-std            = { workspace = true }
 cosmwasm-vault-standard = { workspace = true }
 cw-storage-plus         = { workspace = true }
 cw-utils                = { workspace = true }
+mars-health             = { workspace = true }
 mars-math               = { workspace = true }
 mars-outpost            = { workspace = true }
 mars-owner              = { workspace = true }

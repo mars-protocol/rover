@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
 use std::fmt;
 
-use cosmwasm_std::Decimal;
+use cosmwasm_std::{Decimal, Uint128};
 
 #[cw_serde]
 pub struct Health {

@@ -1,8 +1,6 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Coin, Decimal, Uint128};
 
-use mars_health::health::Health;
-
 use crate::adapters::vault::{Vault, VaultConfig, VaultPosition, VaultUnchecked};
 use crate::traits::Coins;
 
@@ -28,7 +26,7 @@ pub enum QueryMsg {
     #[returns(Positions)]
     Positions { account_id: String },
     /// The health of the account represented by token
-    #[returns(HealthResponse)]
+    #[returns(mars_health::HealthResponse)]
     Health { account_id: String },
     /// Enumerate coin balances for all token positions; start_after accepts (account_id, denom)
     #[returns(Vec<CoinBalanceResponseItem>)]

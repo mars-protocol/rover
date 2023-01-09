@@ -1,6 +1,6 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, Deps, Env, Event, Response, Uint128};
-use mars_health::health::Health;
+use mars_health::Health;
 
 use mars_math::FractionMath;
 use mars_outpost::oracle::PriceResponse;
@@ -20,8 +20,6 @@ struct CollateralValue {
     pub liquidation_threshold_adjusted_collateral: Uint128,
 }
 
-// Given Red Bank and Mars-Oracle does not have knowledge of vaults,
-// we cannot use Health::compute_health_from_coins() and must assemble positions manually
 pub fn compute_health(deps: Deps, env: &Env, account_id: &str) -> ContractResult<Health> {
     let positions = query_positions(deps, env, account_id)?;
 
@@ -136,6 +134,7 @@ fn calculate_vaults_value(
 }
 
 fn calculate_deposits_value(deps: &Deps, deposits: &[Coin]) -> ContractResult<CollateralValue> {
+    let oracle = ORACLE.load(deps.storage)?;
     let red_bank = RED_BANK.load(deps.storage)?;
 
     let mut total_collateral_value = Uint128::zero();
@@ -143,7 +142,7 @@ fn calculate_deposits_value(deps: &Deps, deposits: &[Coin]) -> ContractResult<Co
     let mut liquidation_threshold_adjusted_collateral = Uint128::zero();
 
     for c in deposits {
-        let value = oracle.query_value(querier, &c)?;
+        let value = oracle.query_value(&deps.querier, c)?;
         total_collateral_value = total_collateral_value.checked_add(value)?;
 
         let Market {
