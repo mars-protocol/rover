@@ -9,7 +9,7 @@ fn div_floor_raises_with_zero() {
     assert_eq!(
         Uint128::new(123456).checked_div_floor(fraction),
         Err(DivideByZero(DivideByZeroError {
-            operand: "123456".to_string()
+            operand: "2592576".to_string()
         })),
     );
 }
@@ -51,6 +51,14 @@ fn div_floor_works_with_decimal() {
     let decimal = Decimal::from_ratio(21u128, 8u128);
     let res = Uint128::new(123456).checked_div_floor(decimal).unwrap(); // 47030.857
     assert_eq!(Uint128::new(47030), res)
+}
+
+#[test]
+fn div_floor_works_with_decimal_evenly() {
+    let res = Uint128::new(60)
+        .checked_div_floor(Decimal::from_atomics(6u128, 0).unwrap())
+        .unwrap();
+    assert_eq!(res, Uint128::new(10));
 }
 
 #[test]

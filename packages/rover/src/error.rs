@@ -34,7 +34,7 @@ pub enum ContractError {
     CheckedMultiply(#[from] CheckedMultiplyRatioError),
 
     #[error("{0}")]
-    CheckedMultiplyFractio(#[from] CheckedMultiplyFractionError),
+    CheckedMultiplyFraction(#[from] CheckedMultiplyFractionError),
 
     #[error("{0}")]
     DecimalRangeExceeded(#[from] DecimalRangeExceeded),

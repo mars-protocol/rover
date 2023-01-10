@@ -20,6 +20,8 @@ struct CollateralValue {
     pub liquidation_threshold_adjusted_collateral: Uint128,
 }
 
+/// The mars-health package, red bank, and oracle do not have knowledge of vault config or pricing.
+/// Cannot use the health package so forking and adjusting for rover internally here.
 pub fn compute_health(deps: Deps, env: &Env, account_id: &str) -> ContractResult<Health> {
     let positions = query_positions(deps, env, account_id)?;
 
@@ -34,19 +36,19 @@ pub fn compute_health(deps: Deps, env: &Env, account_id: &str) -> ContractResult
     let max_ltv_health_factor = if total_debt_value.is_zero() {
         None
     } else {
-        Some(Decimal::from_ratio(
+        Some(Decimal::checked_from_ratio(
             max_ltv_adjusted_collateral,
             total_debt_value,
-        ))
+        )?)
     };
 
     let liquidation_health_factor = if total_debt_value.is_zero() {
         None
     } else {
-        Some(Decimal::from_ratio(
+        Some(Decimal::checked_from_ratio(
             liquidation_threshold_adjusted_collateral,
             total_debt_value,
-        ))
+        )?)
     };
 
     Ok(Health {

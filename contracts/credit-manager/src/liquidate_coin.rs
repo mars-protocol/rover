@@ -89,7 +89,7 @@ pub fn calculate_liquidation(
     let max_close_value = health.total_debt_value.checked_mul_floor(close_factor)?;
     let oracle = ORACLE.load(deps.storage)?;
     let debt_res = oracle.query_price(&deps.querier, &debt_coin.denom)?;
-    let max_close_amount = max_close_value.checked_mul_floor(debt_res.price)?;
+    let max_close_amount = max_close_value.checked_div_floor(debt_res.price)?;
 
     // Calculate the maximum debt possible to repay given liquidatee's request coin balance
     // FORMULA: debt amount = request value / (1 + liquidation bonus %) / debt price

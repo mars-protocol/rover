@@ -1,9 +1,7 @@
 use cosmwasm_std::{ConversionOverflowError, DivideByZeroError, Fraction, OverflowError, Uint128};
 use thiserror::Error;
 
-use crate::CheckedMultiplyFractionError::DivideByZero;
-
-// Delete when merged: https://github.com/CosmWasm/cosmwasm/pull/1566
+// TODO: Delete when merged: https://github.com/CosmWasm/cosmwasm/pull/1566
 
 #[derive(Error, Debug, PartialEq, Eq)]
 pub enum CheckedMultiplyFractionError {
@@ -87,15 +85,16 @@ impl FractionMath for Uint128 {
         }
     }
 
+    // Note: Should not use .inv() on decimal and then just use self.checked_mul_floor(inverted).
+    //       Inverting a decimal does large number math and a loss of precision causing off by one bugs.
     fn checked_div_floor<F: Fraction<T>, T: Into<Uint128>>(
         self,
         rhs: F,
     ) -> Result<Self, CheckedMultiplyFractionError> {
-        let inverted = rhs.inv().ok_or_else(|| {
-            DivideByZero(DivideByZeroError {
-                operand: self.to_string(),
-            })
-        })?;
-        self.checked_mul_floor(inverted)
+        let divisor = rhs.numerator().into();
+        let res = self
+            .full_mul(rhs.denominator().into())
+            .checked_div(divisor.into())?;
+        Ok(res.try_into()?)
     }
 }
