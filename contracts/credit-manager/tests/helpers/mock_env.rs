@@ -21,6 +21,7 @@ use mars_rover::{
     adapters::{
         account_nft::{
             ExecuteMsg as NftExecuteMsg, InstantiateMsg as NftInstantiateMsg, NftConfigUpdates,
+            QueryMsg as NftQueryMsg, UncheckedNftConfig,
         },
         oracle::{Oracle, OracleBase, OracleUnchecked},
         red_bank::RedBankBase,
@@ -144,6 +145,21 @@ impl MockEnv {
         )
     }
 
+    pub fn update_nft_config(
+        &mut self,
+        sender: &Addr,
+        updates: NftConfigUpdates,
+    ) -> AnyResult<AppResponse> {
+        self.app.execute_contract(
+            sender.clone(),
+            self.rover.clone(),
+            &ExecuteMsg::UpdateNftConfig {
+                updates,
+            },
+            &[],
+        )
+    }
+
     pub fn deploy_new_nft_contract(&mut self) -> AnyResult<Addr> {
         let nft_minter = Addr::unchecked("original_nft_minter");
         let nft_contract = deploy_nft_contract(&mut self.app, &nft_minter);
@@ -242,6 +258,14 @@ impl MockEnv {
 
     pub fn query_config(&self) -> ConfigResponse {
         self.app.wrap().query_wasm_smart(self.rover.clone(), &QueryMsg::Config {}).unwrap()
+    }
+
+    pub fn query_nft_config(&self) -> UncheckedNftConfig {
+        let config = self.query_config();
+        self.app
+            .wrap()
+            .query_wasm_smart(config.account_nft.unwrap(), &NftQueryMsg::Config {})
+            .unwrap()
     }
 
     pub fn query_vault_configs(
@@ -484,6 +508,7 @@ impl MockEnvBuilder {
     pub fn build(&mut self) -> AnyResult<MockEnv> {
         let rover = self.get_rover()?;
         let mars_oracle = self.get_oracle();
+
         self.deploy_nft_contract(&rover);
         self.fund_users();
 
