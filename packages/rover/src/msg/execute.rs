@@ -2,10 +2,10 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{to_binary, Addr, Coin, CosmosMsg, Decimal, StdResult, Uint128, WasmMsg};
 use mars_owner::OwnerUpdate;
 
+use crate::adapters::account_nft::NftConfigUpdates;
 use crate::{
     adapters::vault::{Vault, VaultPositionType, VaultUnchecked},
     msg::instantiate::ConfigUpdates,
-    nft_config::NftConfigUpdates,
 };
 
 #[cw_serde]

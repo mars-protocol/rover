@@ -1,6 +1,7 @@
 use cosmwasm_std::{to_binary, CosmosMsg, DepsMut, MessageInfo, Response, WasmMsg};
-use mars_account_nft::msg::ExecuteMsg as NftExecuteMsg;
 use mars_owner::OwnerUpdate;
+use mars_rover::adapters::account_nft::ExecuteMsg as NftExecuteMsg;
+use mars_rover::adapters::account_nft::NftConfigUpdates;
 use mars_rover::{
     error::ContractResult,
     msg::instantiate::ConfigUpdates,
@@ -107,4 +108,26 @@ pub fn update_owner(
     update: OwnerUpdate,
 ) -> ContractResult<Response> {
     Ok(OWNER.update(deps, info, update)?)
+}
+
+pub fn update_nft_config(
+    deps: DepsMut,
+    info: MessageInfo,
+    updates: NftConfigUpdates,
+) -> ContractResult<Response> {
+    OWNER.assert_owner(deps.storage, &info.sender)?;
+
+    let nft_contract = ACCOUNT_NFT.load(deps.storage)?;
+
+    let update_config_msg = CosmosMsg::Wasm(WasmMsg::Execute {
+        contract_addr: nft_contract.to_string(),
+        funds: vec![],
+        msg: to_binary(&NftExecuteMsg::UpdateConfig {
+            updates,
+        })?,
+    });
+
+    Ok(Response::new()
+        .add_attribute("action", "rover/credit-manager/update_nft_config")
+        .add_message(update_config_msg))
 }

@@ -9,6 +9,7 @@ use mars_rover::{
     msg::{ExecuteMsg, InstantiateMsg, QueryMsg},
 };
 
+use crate::update_config::update_nft_config;
 use crate::{
     execute::{create_credit_account, dispatch_actions, execute_callback},
     health::compute_health,
@@ -51,6 +52,9 @@ pub fn execute(
         ExecuteMsg::UpdateConfig {
             updates,
         } => update_config(deps, info, updates),
+        ExecuteMsg::UpdateNftConfig {
+            updates,
+        } => update_nft_config(deps, info, updates),
         ExecuteMsg::UpdateOwner(update) => update_owner(deps, info, update),
         ExecuteMsg::Callback(callback) => execute_callback(deps, info, env, callback),
         ExecuteMsg::UpdateCreditAccount {

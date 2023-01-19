@@ -1,12 +1,10 @@
 use std::convert::TryInto;
 
+use crate::adapters::account_nft::{ContractError, NftConfigUpdates};
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Binary, Empty, StdError};
 use cw721::Expiration;
 use cw721_base::ExecuteMsg as ParentExecuteMsg;
-use mars_rover::nft_config::NftConfigUpdates;
-
-use crate::error::ContractError;
 
 #[cw_serde]
 pub enum ExecuteMsg {
