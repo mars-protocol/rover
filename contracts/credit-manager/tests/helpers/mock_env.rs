@@ -7,10 +7,6 @@ use cosmwasm_vault_standard::{
     msg::{ExtensionQueryMsg, VaultStandardQueryMsg::VaultExtension},
 };
 use cw_multi_test::{App, AppResponse, BankSudo, BasicApp, Executor, SudoMsg};
-use mars_account_nft::{
-    config::ConfigUpdates as NftConfigUpdates,
-    msg::{ExecuteMsg as NftExecuteMsg, InstantiateMsg as NftInstantiateMsg},
-};
 use mars_health::HealthResponse;
 use mars_mock_oracle::msg::{
     CoinPrice, ExecuteMsg as OracleExecuteMsg, InstantiateMsg as OracleInstantiateMsg,
@@ -23,6 +19,9 @@ use mars_outpost::red_bank::{QueryMsg::UserDebt, UserDebtResponse};
 use mars_owner::OwnerUpdate;
 use mars_rover::{
     adapters::{
+        account_nft::{
+            ExecuteMsg as NftExecuteMsg, InstantiateMsg as NftInstantiateMsg, NftConfigUpdates,
+        },
         oracle::{Oracle, OracleBase, OracleUnchecked},
         red_bank::RedBankBase,
         swap::{
@@ -133,13 +132,13 @@ impl MockEnv {
     pub fn update_config(
         &mut self,
         sender: &Addr,
-        new_config: ConfigUpdates,
+        updates: ConfigUpdates,
     ) -> AnyResult<AppResponse> {
         self.app.execute_contract(
             sender.clone(),
             self.rover.clone(),
             &ExecuteMsg::UpdateConfig {
-                new_config: updates,
+                updates,
             },
             &[],
         )
@@ -528,13 +527,13 @@ impl MockEnvBuilder {
         }
     }
 
-    pub fn update_config(&mut self, rover: &Addr, new_config: ConfigUpdates) {
+    pub fn update_config(&mut self, rover: &Addr, updates: ConfigUpdates) {
         self.app
             .execute_contract(
                 self.get_owner(),
                 rover.clone(),
                 &ExecuteMsg::UpdateConfig {
-                    new_config: updates,
+                    updates,
                 },
                 &[],
             )

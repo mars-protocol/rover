@@ -9,7 +9,6 @@ use mars_rover::{
     msg::{ExecuteMsg, InstantiateMsg, QueryMsg},
 };
 
-use crate::update_config::update_nft_config;
 use crate::{
     execute::{create_credit_account, dispatch_actions, execute_callback},
     health::compute_health,
@@ -20,7 +19,7 @@ use crate::{
         query_config, query_positions, query_total_debt_shares, query_total_vault_coin_balance,
         query_vaults_info,
     },
-    update_config::{update_config, update_owner},
+    update_config::{update_config, update_nft_config, update_owner},
     vault::handle_unlock_request_reply,
     zap::{estimate_provide_liquidity, estimate_withdraw_liquidity},
 };

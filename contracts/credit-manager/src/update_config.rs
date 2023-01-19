@@ -1,8 +1,7 @@
 use cosmwasm_std::{to_binary, CosmosMsg, DepsMut, MessageInfo, Response, WasmMsg};
 use mars_owner::OwnerUpdate;
-use mars_rover::adapters::account_nft::ExecuteMsg as NftExecuteMsg;
-use mars_rover::adapters::account_nft::NftConfigUpdates;
 use mars_rover::{
+    adapters::account_nft::{ExecuteMsg as NftExecuteMsg, NftConfigUpdates},
     error::ContractResult,
     msg::instantiate::ConfigUpdates,
     traits::{FallbackStr, Stringify},

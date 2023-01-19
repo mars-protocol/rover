@@ -4,9 +4,14 @@ use cosmwasm_std::{
 use cw721::Cw721Execute;
 use cw721_base::MintMsg;
 use mars_health::HealthResponse;
-use mars_rover::adapters::account_nft::ContractError::{BaseError, BurnNotAllowed};
-use mars_rover::adapters::account_nft::{ContractError, NftConfigUpdates};
-use mars_rover::msg::QueryMsg::Health;
+use mars_rover::{
+    adapters::account_nft::{
+        ContractError,
+        ContractError::{BaseError, BurnNotAllowed},
+        NftConfigUpdates,
+    },
+    msg::QueryMsg::Health,
+};
 
 use crate::{
     contract::Parent,
