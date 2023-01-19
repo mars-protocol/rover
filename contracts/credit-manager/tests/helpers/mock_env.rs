@@ -139,7 +139,7 @@ impl MockEnv {
             sender.clone(),
             self.rover.clone(),
             &ExecuteMsg::UpdateConfig {
-                new_config,
+                new_config: updates,
             },
             &[],
         )
@@ -534,7 +534,7 @@ impl MockEnvBuilder {
                 self.get_owner(),
                 rover.clone(),
                 &ExecuteMsg::UpdateConfig {
-                    new_config,
+                    new_config: updates,
                 },
                 &[],
             )

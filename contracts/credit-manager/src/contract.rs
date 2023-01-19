@@ -49,8 +49,8 @@ pub fn execute(
     match msg {
         ExecuteMsg::CreateCreditAccount {} => create_credit_account(deps, info.sender),
         ExecuteMsg::UpdateConfig {
-            new_config,
-        } => update_config(deps, info, new_config),
+            updates,
+        } => update_config(deps, info, updates),
         ExecuteMsg::UpdateOwner(update) => update_owner(deps, info, update),
         ExecuteMsg::Callback(callback) => execute_callback(deps, info, env, callback),
         ExecuteMsg::UpdateCreditAccount {

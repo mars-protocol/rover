@@ -5,6 +5,7 @@ use mars_owner::OwnerUpdate;
 use crate::{
     adapters::vault::{Vault, VaultPositionType, VaultUnchecked},
     msg::instantiate::ConfigUpdates,
+    nft_config::NftConfigUpdates,
 };
 
 #[cw_serde]
@@ -25,10 +26,14 @@ pub enum ExecuteMsg {
     //--------------------------------------------------------------------------------------------------
     /// Update contract config constants
     UpdateConfig {
-        new_config: ConfigUpdates,
+        updates: ConfigUpdates,
     },
     /// Manages owner role state
     UpdateOwner(OwnerUpdate),
+    /// Update nft contract config
+    UpdateNftConfig {
+        updates: NftConfigUpdates,
+    },
     /// Internal actions only callable by the contract itself
     Callback(CallbackMsg),
 }

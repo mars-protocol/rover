@@ -5,9 +5,9 @@ use cw721::Cw721Execute;
 use cw721_base::MintMsg;
 use mars_health::HealthResponse;
 use mars_rover::msg::QueryMsg::Health;
+use mars_rover::nft_config::NftConfigUpdates;
 
 use crate::{
-    config::ConfigUpdates,
     contract::Parent,
     error::{
         ContractError,
@@ -66,7 +66,7 @@ pub fn burn(
 pub fn update_config(
     deps: DepsMut,
     info: MessageInfo,
-    updates: ConfigUpdates,
+    updates: NftConfigUpdates,
 ) -> Result<Response, ContractError> {
     let current_minter = Parent::default().minter.load(deps.storage)?;
     if info.sender != current_minter {
