@@ -344,9 +344,9 @@ fn cannot_borrow_more_but_not_liquidatable() {
 
     assert_err(
         res,
-        ContractError::AboveMaxLTV {
-            account_id: account_id.clone(),
-            max_ltv_health_factor: "0.946759259259259259".to_string(),
+        ContractError::HealthNotImproved {
+            prev_hf: "0.975490196078431372".to_string(),
+            new_hf: "0.946759259259259259".to_string(),
         },
     );
 
@@ -815,6 +815,62 @@ fn vault_base_token_delisting_drops_max_ltv() {
     assert_ne!(prev_health.max_ltv_adjusted_collateral, curr_health.max_ltv_adjusted_collateral);
     assert_ne!(prev_health.max_ltv_health_factor, curr_health.max_ltv_health_factor);
     assert_eq!(curr_health.max_ltv_health_factor, Some(Decimal::raw(811881188118811881u128)));
+}
+
+#[test]
+fn can_take_actions_if_ltv_does_not_weaken() {
+    let uosmo_info = CoinInfo {
+        denom: "uosmo".to_string(),
+        price: Decimal::from_atomics(23654u128, 4).unwrap(),
+        max_ltv: Decimal::from_atomics(5u128, 1).unwrap(),
+        liquidation_threshold: Decimal::from_atomics(55u128, 2).unwrap(),
+        liquidation_bonus: Decimal::from_atomics(2u128, 1).unwrap(),
+    };
+    let uatom_info = CoinInfo {
+        denom: "uatom".to_string(),
+        price: Decimal::from_atomics(102u128, 1).unwrap(),
+        max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
+        liquidation_threshold: Decimal::from_atomics(75u128, 2).unwrap(),
+        liquidation_bonus: Decimal::from_atomics(2u128, 1).unwrap(),
+    };
+
+    let user = Addr::unchecked("user");
+    let mut mock = MockEnv::new()
+        .allowed_coins(&[uosmo_info.clone(), uatom_info.clone()])
+        .fund_account(AccountToFund {
+            addr: user.clone(),
+            funds: coins(400, uosmo_info.denom.clone()),
+        })
+        .build()
+        .unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
+
+    mock.update_credit_account(
+        &account_id,
+        &user,
+        vec![Deposit(uosmo_info.to_coin(300)), Borrow(uatom_info.to_coin(50))],
+        &[Coin::new(300, uosmo_info.denom.clone())],
+    )
+    .unwrap();
+
+    mock.price_change(CoinPrice {
+        denom: uatom_info.denom,
+        price: Decimal::from_atomics(24u128, 0).unwrap(),
+    });
+
+    let health = mock.query_health(&account_id);
+    assert!(!health.liquidatable);
+    assert!(health.above_max_ltv);
+
+    // Despite account in an unhealthy state (above max LTV),
+    // because the health factor improved, this transaction succeeds
+    mock.update_credit_account(
+        &account_id,
+        &user,
+        vec![Deposit(uosmo_info.to_coin(1))],
+        &[uosmo_info.to_coin(1)],
+    )
+    .unwrap();
 }
 
 fn find_by_denom<'a>(denom: &'a str, shares: &'a [DebtAmount]) -> &'a DebtAmount {
