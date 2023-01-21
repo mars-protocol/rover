@@ -72,12 +72,12 @@ mars-swapper-mock         = { version = "1.0.0", path = "./contracts/swapper/moc
 mars-zapper-mock          = { version = "1.0.0", path = "./contracts/zapper/mock", features = ["library"] }
 
 [profile.release]
-opt-level = 3
-debug = false
-rpath = false
-lto = true
+codegen-units    = 1
+debug            = false
 debug-assertions = false
-codegen-units = 1
-panic = 'abort'
-incremental = false
-overflow-checks = true
+incremental      = false
+lto              = true
+overflow-checks  = true
+opt-level        = 3
+panic            = "abort"
+rpath            = false
