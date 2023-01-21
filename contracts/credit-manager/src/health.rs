@@ -215,24 +215,25 @@ pub fn assert_max_ltv(
     account_id: &str,
     prev_health: Health,
 ) -> ContractResult<Response> {
-    let current_health = compute_health(deps, &env, account_id)?;
+    let new_health = compute_health(deps, &env, account_id)?;
 
     // If previous health was in a bad state, assert it did not further weaken
     if prev_health.is_above_max_ltv() {
-        if current_health.max_ltv_health_factor.is_some()
-            && prev_health.max_ltv_health_factor.unwrap()
-                > current_health.max_ltv_health_factor.unwrap()
+        if let (Some(prev_hf), Some(new_hf)) =
+            (prev_health.max_ltv_health_factor, new_health.max_ltv_health_factor)
         {
-            return Err(ContractError::HealthNotImproved {
-                prev_hf: prev_health.max_ltv_health_factor.to_string(),
-                new_hf: current_health.max_ltv_health_factor.to_string(),
-            });
+            if prev_hf > new_hf {
+                return Err(ContractError::HealthNotImproved {
+                    prev_hf: prev_hf.to_string(),
+                    new_hf: new_hf.to_string(),
+                });
+            }
         }
     // if previous health was in a good state, assert it's still healthy
-    } else if current_health.is_above_max_ltv() {
+    } else if new_health.is_above_max_ltv() {
         return Err(ContractError::AboveMaxLTV {
             account_id: account_id.to_string(),
-            max_ltv_health_factor: current_health.max_ltv_health_factor.to_string(),
+            max_ltv_health_factor: new_health.max_ltv_health_factor.to_string(),
         });
     }
 
@@ -240,12 +241,12 @@ pub fn assert_max_ltv(
         .add_attribute("timestamp", env.block.time.seconds().to_string())
         .add_attribute("height", env.block.height.to_string())
         .add_attribute("account_id", account_id)
-        .add_attribute("assets_value", current_health.total_collateral_value.to_string())
-        .add_attribute("debts_value", current_health.total_debt_value.to_string())
-        .add_attribute("lqdt_health_factor", current_health.liquidation_health_factor.to_string())
-        .add_attribute("liquidatable", current_health.is_liquidatable().to_string())
-        .add_attribute("max_ltv_health_factor", current_health.max_ltv_health_factor.to_string())
-        .add_attribute("above_max_ltv", current_health.is_above_max_ltv().to_string());
+        .add_attribute("collateral_value", new_health.total_collateral_value.to_string())
+        .add_attribute("debts_value", new_health.total_debt_value.to_string())
+        .add_attribute("lqdt_health_factor", new_health.liquidation_health_factor.to_string())
+        .add_attribute("liquidatable", new_health.is_liquidatable().to_string())
+        .add_attribute("max_ltv_health_factor", new_health.max_ltv_health_factor.to_string())
+        .add_attribute("above_max_ltv", new_health.is_above_max_ltv().to_string());
 
     Ok(Response::new()
         .add_attribute("action", "rover/credit-manager/callback/assert_health")
