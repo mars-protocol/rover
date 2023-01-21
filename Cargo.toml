@@ -59,17 +59,17 @@ mars-owner              = "1.0.0"
 mars-rover              = { version = "1.0.0", path = "./packages/rover" }
 
 # contracts
-mars-account-nft    = { version = "1.0.0", path = "./contracts/account-nft", features = ["library"] }
-mars-swapper-base   = { version = "1.0.0", path = "./contracts/swapper/base" }
-mars-zapper-base    = { version = "1.0.0", path = "./contracts/zapper/base" }
+mars-account-nft  = { version = "1.0.0", path = "./contracts/account-nft", features = ["library"] }
+mars-swapper-base = { version = "1.0.0", path = "./contracts/swapper/base" }
+mars-zapper-base  = { version = "1.0.0", path = "./contracts/zapper/base" }
 
 # mocks
-mars-mock-credit-manager  = { version = "1.0.0", path = "./contracts/mock-credit-manager", features = ["library"] }
-mars-mock-oracle          = { version = "1.0.0", path = "./contracts/mock-oracle", features = ["library"] }
-mars-mock-red-bank        = { version = "1.0.0", path = "./contracts/mock-red-bank", features = ["library"] }
-mars-mock-vault           = { version = "1.0.0", path = "./contracts/mock-vault", features = ["library"] }
-mars-swapper-mock         = { version = "1.0.0", path = "./contracts/swapper/mock", features = ["library"] }
-mars-zapper-mock          = { version = "1.0.0", path = "./contracts/zapper/mock", features = ["library"] }
+mars-mock-credit-manager = { version = "1.0.0", path = "./contracts/mock-credit-manager", features = ["library"] }
+mars-mock-oracle         = { version = "1.0.0", path = "./contracts/mock-oracle", features = ["library"] }
+mars-mock-red-bank       = { version = "1.0.0", path = "./contracts/mock-red-bank", features = ["library"] }
+mars-mock-vault          = { version = "1.0.0", path = "./contracts/mock-vault", features = ["library"] }
+mars-swapper-mock        = { version = "1.0.0", path = "./contracts/swapper/mock", features = ["library"] }
+mars-zapper-mock         = { version = "1.0.0", path = "./contracts/zapper/mock", features = ["library"] }
 
 [profile.release]
 codegen-units    = 1
