@@ -179,8 +179,8 @@ pub enum CallbackMsg {
         coin: ActionCoin,
     },
     /// Assert MaxLTV is either:
-    /// - Healthy, if prior to actions MaxLTV > 1 or None
-    /// - Improved, if prior to actions MaxLTV <= 1
+    /// - Healthy, if prior to actions MaxLTV health factor >= 1 or None
+    /// - Improved, if prior to actions MaxLTV health factor < 1
     /// Emits a `position_changed` event.
     AssertMaxLTV {
         prev_health: Health,

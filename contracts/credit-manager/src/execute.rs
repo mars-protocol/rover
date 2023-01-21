@@ -176,8 +176,8 @@ pub fn dispatch_actions(
             account_id: account_id.to_string(),
         },
         // after user selected actions, we assert LTV is either:
-        // - Healthy, if prior to actions MaxLTV >= 1 or None
-        // - Improved, if prior to actions MaxLTV < 1
+        // - Healthy, if prior to actions MaxLTV health factor >= 1 or None
+        // - Improved, if prior to actions MaxLTV health factor < 1
         // Else, throw error and revert all actions
         CallbackMsg::AssertMaxLTV {
             account_id: account_id.to_string(),

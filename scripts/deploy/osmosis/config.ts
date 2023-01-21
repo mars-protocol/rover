@@ -124,7 +124,7 @@ export const osmosisTestnetConfig: DeploymentConfig = {
     defaultCreditLine: '100000000000',
     depositAmount: '100',
     secondaryDenom: uatom,
-    startingAmountForTestUser: '2000000',
+    startingAmountForTestUser: '2500000',
     swap: {
       slippage: '0.4',
       amount: '40',
