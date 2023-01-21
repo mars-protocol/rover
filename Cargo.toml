@@ -1,28 +1,28 @@
 [workspace]
 members = [
-    "contracts/account-nft",
-    "contracts/credit-manager",
-    "contracts/swapper/*",
-    "contracts/zapper/*",
-    "packages/chains/*",
-    "packages/health",
-    "packages/outpost",
-    "packages/rover",
-    "packages/math",
+  "contracts/account-nft",
+  "contracts/credit-manager",
+  "contracts/swapper/*",
+  "contracts/zapper/*",
+  "packages/chains/*",
+  "packages/health",
+  "packages/outpost",
+  "packages/rover",
+  "packages/math",
 
-    # Mock contracts
-    "contracts/mock-oracle",
-    "contracts/mock-red-bank",
-    "contracts/mock-vault",
-    "contracts/mock-credit-manager",
+  # Mock contracts
+  "contracts/mock-oracle",
+  "contracts/mock-red-bank",
+  "contracts/mock-vault",
+  "contracts/mock-credit-manager",
 ]
 
 [workspace.package]
 version       = "1.0.0"
 authors       = [
-    "grod220 <gabe.r@delphilabs.io>",
-    "larry_0x <larry@delphidigital.io>",
-    "Piotr Babel <piotr@delphilabs.io>",
+  "grod220 <gabe.r@delphilabs.io>",
+  "Larry Engineer <larry@delphidigital.io>",
+  "Piotr Babel <piotr@delphilabs.io>",
 ]
 license       = "GPL-3.0-or-later"
 edition       = "2021"
