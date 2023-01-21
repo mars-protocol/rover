@@ -24,7 +24,7 @@ authors       = [
     "larry_0x <larry@delphidigital.io>",
     "Piotr Babel <piotr@delphilabs.io>",
 ]
-license       = "GPL-v3-or-later"
+license       = "GPL-3.0-or-later"
 edition       = "2021"
 repository    = "https://github.com/mars-protocol/rover"
 homepage      = "https://marsprotocol.io"
