@@ -759,10 +759,10 @@
             "description": "Assert MaxLTV is either: - Healthy, if prior to actions MaxLTV health factor >= 1 or None - Improved, if prior to actions MaxLTV health factor < 1 Emits a `position_changed` event.",
             "type": "object",
             "required": [
-              "assert_max_l_t_v"
+              "assert_max_ltv"
             ],
             "properties": {
-              "assert_max_l_t_v": {
+              "assert_max_ltv": {
                 "type": "object",
                 "required": [
                   "account_id",

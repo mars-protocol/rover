@@ -176,7 +176,7 @@ export type CallbackMsg =
       }
     }
   | {
-      assert_max_l_t_v: {
+      assert_max_ltv: {
         account_id: string
         prev_health: Health
       }
