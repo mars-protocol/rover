@@ -9,7 +9,7 @@ use mars_rover::{
     error::ContractError,
     msg::{
         execute::{
-            Action::{Borrow, Deposit, EnterVault, Repay},
+            Action::{Borrow, Deposit, EnterVault, Repay, Withdraw},
             ActionAmount, ActionCoin,
         },
         instantiate::{ConfigUpdates, VaultInstantiateConfig},
@@ -875,7 +875,16 @@ fn can_take_actions_if_ltv_does_not_weaken() {
     )
     .unwrap();
 
-    // Ensure success if next state does not have a health factor given all debt is paid
+    // Assert success if account update renders no health factor change
+    mock.update_credit_account(
+        &account_id,
+        &user,
+        vec![Deposit(uosmo_info.to_coin(1)), Withdraw(uosmo_info.to_coin(1))],
+        &[uosmo_info.to_coin(1)],
+    )
+    .unwrap();
+
+    // Assert success if next state does not have a health factor given all debt is paid
     mock.update_credit_account(
         &account_id,
         &user,

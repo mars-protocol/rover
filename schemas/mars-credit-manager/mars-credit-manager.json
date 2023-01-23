@@ -756,7 +756,7 @@
             "additionalProperties": false
           },
           {
-            "description": "Assert MaxLTV is either: - Healthy, if prior to actions MaxLTV health factor >= 1 or None - Improved, if prior to actions MaxLTV health factor < 1 Emits a `position_changed` event.",
+            "description": "Assert MaxLTV is either: - Healthy, if prior to actions MaxLTV health factor >= 1 or None - Not further weakened, if prior to actions MaxLTV health factor < 1 Emits a `position_changed` event.",
             "type": "object",
             "required": [
               "assert_max_ltv"
