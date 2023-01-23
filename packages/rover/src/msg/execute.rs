@@ -182,6 +182,7 @@ pub enum CallbackMsg {
     /// - Healthy, if prior to actions MaxLTV health factor >= 1 or None
     /// - Improved, if prior to actions MaxLTV health factor < 1
     /// Emits a `position_changed` event.
+    #[serde(rename = "assert_max_ltv")]
     AssertMaxLTV {
         prev_health: Health,
         account_id: String,

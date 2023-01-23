@@ -1,6 +1,6 @@
 use std::ops::{Add, Mul};
 
-use cosmwasm_std::{coins, Addr, Coin, Decimal, Uint128};
+use cosmwasm_std::{coin, coins, Addr, Coin, Decimal, Uint128};
 use mars_credit_manager::borrow::DEFAULT_DEBT_SHARES_PER_COIN_BORROWED;
 use mars_math::{FractionMath, Fractional};
 use mars_mock_oracle::msg::CoinPrice;
@@ -8,7 +8,10 @@ use mars_rover::{
     adapters::vault::VaultConfig,
     error::ContractError,
     msg::{
-        execute::Action::{Borrow, Deposit, EnterVault},
+        execute::{
+            Action::{Borrow, Deposit, EnterVault, Repay},
+            ActionAmount, ActionCoin,
+        },
         instantiate::{ConfigUpdates, VaultInstantiateConfig},
         query::DebtAmount,
     },
@@ -839,7 +842,7 @@ fn can_take_actions_if_ltv_does_not_weaken() {
         .allowed_coins(&[uosmo_info.clone(), uatom_info.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),
-            funds: coins(400, uosmo_info.denom.clone()),
+            funds: vec![coin(400, uosmo_info.denom.clone()), coin(50, uatom_info.denom.clone())],
         })
         .build()
         .unwrap();
@@ -854,7 +857,7 @@ fn can_take_actions_if_ltv_does_not_weaken() {
     .unwrap();
 
     mock.price_change(CoinPrice {
-        denom: uatom_info.denom,
+        denom: uatom_info.denom.clone(),
         price: Decimal::from_atomics(24u128, 0).unwrap(),
     });
 
@@ -869,6 +872,21 @@ fn can_take_actions_if_ltv_does_not_weaken() {
         &user,
         vec![Deposit(uosmo_info.to_coin(1))],
         &[uosmo_info.to_coin(1)],
+    )
+    .unwrap();
+
+    // Ensure success if next state does not have a health factor given all debt is paid
+    mock.update_credit_account(
+        &account_id,
+        &user,
+        vec![
+            Deposit(uatom_info.to_coin(50)),
+            Repay(ActionCoin {
+                denom: uatom_info.denom.clone(),
+                amount: ActionAmount::AccountBalance,
+            }),
+        ],
+        &[uatom_info.to_coin(50)],
     )
     .unwrap();
 }
