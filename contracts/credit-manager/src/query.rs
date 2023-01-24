@@ -150,17 +150,18 @@ pub fn query_all_lent_shares(
         .map(|(account_id, denom)| Bound::exclusive((account_id.as_str(), denom.as_str())));
     let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
 
-    Ok(LENT_SHARES
+    LENT_SHARES
         .range(deps.storage, start, None, Order::Ascending)
         .take(limit)
-        .collect::<StdResult<Vec<_>>>()?
-        .iter()
-        .map(|((account_id, denom), shares)| SharesResponseItem {
-            account_id: account_id.to_string(),
-            denom: denom.to_string(),
-            shares: *shares,
+        .map(|item| {
+            let ((account_id, denom), shares) = item?;
+            Ok(SharesResponseItem {
+                account_id,
+                denom,
+                shares,
+            })
         })
-        .collect())
+        .collect()
 }
 
 pub fn query_vaults_info(
@@ -303,19 +304,18 @@ pub fn query_all_total_lent_shares(
     limit: Option<u32>,
 ) -> StdResult<Vec<LentShares>> {
     let start = start_after.as_ref().map(|denom| Bound::exclusive(denom.as_str()));
-
     let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
-
-    Ok(TOTAL_LENT_SHARES
+    TOTAL_LENT_SHARES
         .range(deps.storage, start, None, Order::Ascending)
         .take(limit)
-        .collect::<StdResult<Vec<_>>>()?
-        .iter()
-        .map(|(denom, shares)| LentShares {
-            denom: denom.to_string(),
-            shares: *shares,
+        .map(|item| {
+            let (denom, shares) = item?;
+            Ok(LentShares {
+                denom,
+                shares,
+            })
         })
-        .collect())
+        .collect()
 }
 
 pub fn query_total_vault_coin_balance(

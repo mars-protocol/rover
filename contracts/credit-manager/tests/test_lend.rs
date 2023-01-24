@@ -14,7 +14,7 @@ use crate::helpers::{
 pub mod helpers;
 
 #[test]
-fn test_only_token_owner_can_lend() {
+fn only_token_owner_can_lend() {
     let coin_info = uosmo_info();
     let owner = Addr::unchecked("owner");
     let mut mock = MockEnv::new().build().unwrap();
@@ -38,7 +38,7 @@ fn test_only_token_owner_can_lend() {
 }
 
 #[test]
-fn test_can_only_lend_what_is_whitelisted() {
+fn can_only_lend_what_is_whitelisted() {
     let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new().allowed_coins(&[coin_info]).build().unwrap();
@@ -51,7 +51,7 @@ fn test_can_only_lend_what_is_whitelisted() {
 }
 
 #[test]
-fn test_lending_zero_raises() {
+fn lending_zero_raises() {
     let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new().allowed_coins(&[coin_info.clone()]).build().unwrap();
@@ -63,7 +63,7 @@ fn test_lending_zero_raises() {
 }
 
 #[test]
-fn test_raises_when_not_enough_assets_to_lend() {
+fn raises_when_not_enough_assets_to_lend() {
     let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
 
@@ -96,7 +96,7 @@ fn test_raises_when_not_enough_assets_to_lend() {
 }
 
 #[test]
-fn test_successful_lend() {
+fn successful_lend() {
     let coin_info = uosmo_info();
 
     let user_a = Addr::unchecked("user_a");

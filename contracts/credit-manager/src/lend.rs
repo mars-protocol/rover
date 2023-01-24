@@ -26,17 +26,11 @@ pub fn lend(deps: DepsMut, env: Env, account_id: &str, coin: Coin) -> ContractRe
             .checked_multiply_ratio(coin.amount, total_lent)?
     };
 
-    TOTAL_LENT_SHARES.update(deps.storage, &coin.denom, |shares| -> ContractResult<Uint128> {
+    let add_shares = |shares: Option<Uint128>| -> ContractResult<Uint128> {
         Ok(shares.unwrap_or_else(Uint128::zero).checked_add(lent_shares_to_add)?)
-    })?;
-
-    LENT_SHARES.update(
-        deps.storage,
-        (account_id, &coin.denom),
-        |shares| -> ContractResult<Uint128> {
-            Ok(shares.unwrap_or_else(Uint128::zero).checked_add(lent_shares_to_add)?)
-        },
-    )?;
+    };
+    TOTAL_LENT_SHARES.update(deps.storage, &coin.denom, add_shares)?;
+    LENT_SHARES.update(deps.storage, (account_id, &coin.denom), add_shares)?;
 
     decrement_coin_balance(deps.storage, account_id, &coin)?;
 
