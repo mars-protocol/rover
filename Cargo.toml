@@ -4,9 +4,7 @@ members = [
   "contracts/credit-manager",
   "contracts/swapper/*",
   "contracts/zapper/*",
-  "packages/chains/*",
   "packages/health",
-  "packages/outpost",
   "packages/rover",
   "packages/math",
 
@@ -53,8 +51,8 @@ thiserror       = "1.0.37"
 cosmwasm-vault-standard = { version = "0.1.0", features = ["lockup", "force-unlock"] }
 mars-health             = { version = "1.0.0", path = "./packages/health" }
 mars-math               = { version = "1.0.0", path = "./packages/math" }
-mars-osmosis            = { version = "1.0.0", path = "./packages/chains/osmosis" }
-mars-outpost            = { version = "1.0.0", path = "./packages/outpost" }
+mars-osmosis            = { git = "https://github.com/mars-protocol/red-bank", rev = "3e57365d82b96967ef1bc7ec183c4a86bc88d5e7" }
+mars-red-bank-types     = { git = "https://github.com/mars-protocol/red-bank", rev = "3e57365d82b96967ef1bc7ec183c4a86bc88d5e7" }
 mars-owner              = "1.0.0"
 mars-rover              = { version = "1.0.0", path = "./packages/rover" }
 

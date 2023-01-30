@@ -2,7 +2,7 @@ use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, Deps, Env, Event, Response, Uint128};
 use mars_health::Health;
 use mars_math::FractionMath;
-use mars_outpost::{oracle::PriceResponse, red_bank::Market};
+use mars_red_bank_types::{oracle::PriceResponse, red_bank::Market};
 use mars_rover::{
     adapters::vault::VaultPosition,
     error::{ContractError, ContractResult},
