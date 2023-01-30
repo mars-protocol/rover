@@ -248,7 +248,5 @@ pub fn assert_max_ltv(
         .add_attribute("max_ltv_health_factor", new_health.max_ltv_health_factor.to_string())
         .add_attribute("above_max_ltv", new_health.is_above_max_ltv().to_string());
 
-    Ok(Response::new()
-        .add_attribute("action", "rover/credit-manager/callback/assert_health")
-        .add_event(event))
+    Ok(Response::new().add_attribute("action", "callback/assert_health").add_event(event))
 }
