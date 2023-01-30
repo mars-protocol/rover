@@ -31,7 +31,7 @@ checksum = "2cb2f989d18dd141ab8ae82f64d1a8cdd37e0840f73a406896cf5e99502fab61"
 [[package]]
 name = "apollo-utils"
 version = "0.1.0"
-source = "git+https://github.com/apollodao/apollo-utils.git?rev=bfd1abd8cd9716dccad3e74aeb3704cad9f1f41a#bfd1abd8cd9716dccad3e74aeb3704cad9f1f41a"
+source = "git+https://github.com/apollodao/apollo-utils.git?rev=e12b38158778f6279525c4be96789a5f488d2659#e12b38158778f6279525c4be96789a5f488d2659"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
@@ -418,13 +418,13 @@ dependencies = [
 [[package]]
 name = "cw-dex"
 version = "0.0.1"
-source = "git+https://github.com/apollodao/cw-dex?rev=b9d18cfbba8aa09ae4ee9459d308cda87ae5ffb3#b9d18cfbba8aa09ae4ee9459d308cda87ae5ffb3"
+source = "git+https://github.com/apollodao/cw-dex?rev=1ce5566963851f7cab0eed117240654f3cb2d78d#1ce5566963851f7cab0eed117240654f3cb2d78d"
 dependencies = [
  "apollo-utils",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-asset",
- "cw-storage-plus 0.16.0",
+ "cw-storage-plus 1.0.1",
  "cw-utils 0.11.1",
  "cw-utils 0.16.0",
  "cw20",
@@ -1341,7 +1341,7 @@ checksum = "9b7820b9daea5457c9f21c69448905d723fbd21136ccf521748f23fd49e723ee"
 [[package]]
 name = "osmosis-std"
 version = "0.12.0"
-source = "git+https://github.com/apollodao/osmosis-rust?rev=52ca8eaa4b2926fea01a68f4d7e7253ad29d88b3#52ca8eaa4b2926fea01a68f4d7e7253ad29d88b3"
+source = "git+https://github.com/apollodao/osmosis-rust.git?branch=osmosis-v13#38a48533ed88243070b105cb9085e34c2b0c4eeb"
 dependencies = [
  "chrono",
  "cosmwasm-std",
@@ -1388,7 +1388,7 @@ dependencies = [
 [[package]]
 name = "osmosis-std-derive"
 version = "0.12.0"
-source = "git+https://github.com/apollodao/osmosis-rust?rev=52ca8eaa4b2926fea01a68f4d7e7253ad29d88b3#52ca8eaa4b2926fea01a68f4d7e7253ad29d88b3"
+source = "git+https://github.com/apollodao/osmosis-rust.git?branch=osmosis-v13#38a48533ed88243070b105cb9085e34c2b0c4eeb"
 dependencies = [
  "itertools",
  "proc-macro2",

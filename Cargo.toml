@@ -49,6 +49,8 @@ thiserror         = "1.0.37"
 
 # packages
 cosmwasm-vault-standard = { version = "0.1.0", features = ["lockup", "force-unlock"] }
+# FIXME: develop branch dependency till Apollo finish audit
+cw-dex                  = { git = "https://github.com/apollodao/cw-dex", rev = "1ce5566963851f7cab0eed117240654f3cb2d78d", features = ["osmosis"] }
 mars-health             = { version = "1.0.0", path = "./packages/health" }
 mars-math               = { version = "1.0.0", path = "./packages/math" }
 mars-osmosis            = { git = "https://github.com/mars-protocol/red-bank", rev = "3e57365d82b96967ef1bc7ec183c4a86bc88d5e7" }
