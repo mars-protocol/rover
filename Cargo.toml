@@ -30,22 +30,22 @@ documentation = "https://docs.marsprotocol.io/"
 keywords      = ["mars", "cosmos", "cosmwasm"]
 
 [workspace.dependencies]
-anyhow          = "1.0.66"
-cosmwasm-schema = "1.1.9"
-cosmwasm-std    = "1.1.9"
-cw2             = "1.0.0"
-cw721           = "0.16.0"
-cw721-base      = { version = "0.16.0", features = ["library"] }
-cw-item-set     = { version = "0.7.0", default-features = false, features = ["iterator"] }
-cw-multi-test   = "0.16.1"
-cw-utils        = "0.16.0"
-cw-storage-plus = "1.0.1"
-itertools       = "0.10.5"
-osmosis-std     = { git = "https://github.com/osmosis-labs/osmosis-rust", rev = "5f2493aa13569167431add6282916683b4aaf3c8" }
-osmosis-testing = { git = "https://github.com/osmosis-labs/osmosis-rust", rev = "5f2493aa13569167431add6282916683b4aaf3c8" }
-schemars        = "0.8.11"
-serde           = { version = "1.0.150", default-features = false, features = ["derive"] }
-thiserror       = "1.0.37"
+anyhow            = "1.0.66"
+cosmwasm-schema   = "1.1.9"
+cosmwasm-std      = "1.1.9"
+cw2               = "1.0.0"
+cw721             = "0.16.0"
+cw721-base        = { version = "0.16.0", features = ["library"] }
+cw-item-set       = { version = "0.7.0", default-features = false, features = ["iterator"] }
+cw-multi-test     = "0.16.1"
+cw-utils          = "0.16.0"
+cw-storage-plus   = "1.0.1"
+itertools         = "0.10.5"
+osmosis-std       = "0.14.0"
+osmosis-test-tube = "14.1.1"
+schemars          = "0.8.11"
+serde             = { version = "1.0.150", default-features = false, features = ["derive"] }
+thiserror         = "1.0.37"
 
 # packages
 cosmwasm-vault-standard = { version = "0.1.0", features = ["lockup", "force-unlock"] }
