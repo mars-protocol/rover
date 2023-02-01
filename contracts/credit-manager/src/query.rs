@@ -163,13 +163,13 @@ pub fn query_vaults_info(
     paginate_map(&VAULT_CONFIGS, deps.storage, start, limit, |addr, config| {
         let vault = VaultBase::new(addr);
         Ok(VaultInfoResponse {
-            vault: vault.clone().into(),
             config,
             utilization: vault_utilization_in_deposit_cap_denom(
                 &deps,
                 &vault,
                 &env.contract.address,
             )?,
+            vault: vault.into(),
         })
     })
 }
