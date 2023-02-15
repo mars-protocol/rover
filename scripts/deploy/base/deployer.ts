@@ -11,7 +11,6 @@ import { InstantiateMsg as ZapperInstantiateMsg } from '../../types/generated/ma
 import { InstantiateMsg as RoverInstantiateMsg } from '../../types/generated/mars-credit-manager/MarsCreditManager.types'
 import { ExecuteMsg as CreditManagerExecute } from '../../types/generated/mars-credit-manager/MarsCreditManager.types'
 import { ExecuteMsg as SwapperExecute } from '../../types/generated/mars-swapper-base/MarsSwapperBase.types'
-import { ExecuteMsg as NftExecute } from '../../types/generated/mars-account-nft/MarsAccountNft.types'
 import { Rover } from './rover'
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing'
 import { getAddress, getWallet, setupClient } from './setupDeployer'
