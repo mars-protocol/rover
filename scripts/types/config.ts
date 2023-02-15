@@ -21,6 +21,7 @@ export interface DeploymentConfig {
     baseDenom: string
   }
   deployerMnemonic: string
+  multisigAddr?: string
   oracle: { addr: string }
   redBank: { addr: string }
   vaults: VaultInstantiateConfig[]
@@ -30,6 +31,7 @@ export interface DeploymentConfig {
   maxUnlockingPositions: string
   swapRoutes: SwapRoute[]
   testActions?: TestActions
+  setMultisigOwner: boolean
 }
 
 export interface SwapRoute {

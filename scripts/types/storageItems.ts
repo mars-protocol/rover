@@ -25,4 +25,5 @@ export interface StorageItems {
     redBankMarketsSet?: boolean
   }
   owner?: string
+  admin?: string
 }
