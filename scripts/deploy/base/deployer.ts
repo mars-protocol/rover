@@ -374,7 +374,7 @@ export class Deployer {
     )
     printGreen('Owner updated to Multisig for Credit Manager Contract')
     const query: CreditManagerQuery = {
-      config:{},
+      config: {},
     }
     const creditManagerConfig = (await this.cwClient.queryContractSmart(
       this.storage.addresses['creditManager']!,
@@ -395,7 +395,7 @@ export class Deployer {
     printGreen('Owner updated to Multisig for Swapper Contract')
     const query: SwapperQuery = {
       owner: {
-        proposed: {}
+        proposed: {},
       },
     }
     const swapperConfig = (await this.cwClient.queryContractSmart(
