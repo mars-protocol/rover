@@ -63,7 +63,6 @@ export const taskRunner = async ({
     }
 
     if (config.setMultisigOwner) {
-      await deployer.updateAccountNFTOwner()
       await deployer.updateCreditManagerOwner()
       await deployer.updateSwapperOwner()
     }

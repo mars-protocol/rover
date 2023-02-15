@@ -357,32 +357,6 @@ export class Deployer {
     return new Rover(address, this.storage, this.config, client, testActions)
   }
 
-  // FIXME: updateAccountNFTOwner is only needed if this should be multisig owner, looks like its set earlier in the scripts for the Rover contract as owner.
-  // FIXME: Just want to verify who the owner should be. If its Rover, I'll delete this function.
-  async updateAccountNFTOwner() {
-    const msg: NftExecute = {
-      update_config: {
-        updates: {
-          proposed_new_minter: this.config.multisigAddr,
-        },
-      },
-    }
-    await this.cwClient.execute(
-      this.deployerAddr,
-      this.storage.addresses['accountNft']!,
-      msg,
-      'auto',
-    )
-    printGreen('Owner updated to Multisig for Account NFT Contract')
-    const accountNFTConfig = (await this.cwClient.queryContractSmart(
-      this.storage.addresses['accountNft']!,
-      {
-        config: {},
-      },
-    )) as { proposed_new_minter: string }
-    assert.equal(accountNFTConfig.proposed_new_minter, this.config.multisigAddr)
-  }
-
   async updateCreditManagerOwner() {
     const msg: CreditManagerExecute = {
       update_owner: {
