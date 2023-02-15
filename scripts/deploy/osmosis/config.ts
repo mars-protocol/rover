@@ -324,7 +324,7 @@ export const osmosisTestnetMultisigConfig: DeploymentConfig = {
     rpcEndpoint: 'https://rpc-test.osmosis.zone',
   },
   deployerMnemonic:
-      'rely wonder join knock during sudden slow plate segment state agree also arrest mandate grief ordinary lonely lawsuit hurt super banana rule velvet cart',
+    'rely wonder join knock during sudden slow plate segment state agree also arrest mandate grief ordinary lonely lawsuit hurt super banana rule velvet cart',
   maxCloseFactor: '0.6',
   maxUnlockingPositions: '10',
   maxValueForBurn: '1000000',
@@ -412,7 +412,7 @@ export const osmosisTestnetMultisigConfig: DeploymentConfig = {
       },
     },
     outpostsDeployerMnemonic:
-        'elevator august inherit simple buddy giggle zone despair marine rich swim danger blur people hundred faint ladder wet toe strong blade utility trial process',
+      'elevator august inherit simple buddy giggle zone despair marine rich swim danger blur people hundred faint ladder wet toe strong blade utility trial process',
     borrowAmount: '10',
     repayAmount: '11',
     defaultCreditLine: '100000000000',
