@@ -11,6 +11,8 @@ import { InstantiateMsg as ZapperInstantiateMsg } from '../../types/generated/ma
 import { InstantiateMsg as RoverInstantiateMsg } from '../../types/generated/mars-credit-manager/MarsCreditManager.types'
 import { ExecuteMsg as CreditManagerExecute } from '../../types/generated/mars-credit-manager/MarsCreditManager.types'
 import { ExecuteMsg as SwapperExecute } from '../../types/generated/mars-swapper-base/MarsSwapperBase.types'
+import { QueryMsg as CreditManagerQuery } from '../../types/generated/mars-credit-manager/MarsCreditManager.types'
+import { QueryMsg as SwapperQuery } from '../../types/generated/mars-swapper-base/MarsSwapperBase.types'
 import { Rover } from './rover'
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing'
 import { getAddress, getWallet, setupClient } from './setupDeployer'
@@ -371,11 +373,12 @@ export class Deployer {
       'auto',
     )
     printGreen('Owner updated to Multisig for Credit Manager Contract')
+    const query: CreditManagerQuery = {
+      config:{},
+    }
     const creditManagerConfig = (await this.cwClient.queryContractSmart(
       this.storage.addresses['creditManager']!,
-      {
-        config: {},
-      },
+      query,
     )) as { proposed_new_owner: string }
     assert.equal(creditManagerConfig.proposed_new_owner, this.config.multisigAddr)
   }
@@ -390,12 +393,15 @@ export class Deployer {
     }
     await this.cwClient.execute(this.deployerAddr, this.storage.addresses['swapper']!, msg, 'auto')
     printGreen('Owner updated to Multisig for Swapper Contract')
+    const query: SwapperQuery = {
+      owner: {
+        proposed: {}
+      },
+    }
     const swapperConfig = (await this.cwClient.queryContractSmart(
       this.storage.addresses['swapper']!,
-      {
-        config: {},
-      },
-    )) as { proposed_new_owner: string }
-    assert.equal(swapperConfig.proposed_new_owner, this.config.multisigAddr)
+      query,
+    )) as { proposed: string }
+    assert.equal(swapperConfig.proposed, this.config.multisigAddr)
   }
 }
