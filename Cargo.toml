@@ -14,7 +14,7 @@ members = [
     "contracts/mock-credit-manager",
 
     # packages
-    "packages/health", # to delete
+    "packages/health", # TODO: to delete
     "packages/health-computer",
     "packages/health-types",
     "packages/rover",
@@ -61,7 +61,7 @@ wasm-bindgen       = "0.2.83"
 cosmwasm-vault-standard    = { version = "0.1.0", features = ["lockup", "force-unlock"] }
 # FIXME: develop branch dependency till Apollo finish audit
 cw-dex                     = { git = "https://github.com/apollodao/cw-dex", rev = "1ce5566963851f7cab0eed117240654f3cb2d78d", features = ["osmosis"] }
-mars-health                = { version = "1.0.0", path = "./packages/health" } # to delete
+mars-health                = { version = "1.0.0", path = "./packages/health" } # TODO to delete
 mars-rover-health-computer = { version = "1.0.0", path = "./packages/health-computer" }
 mars-rover-health-types    = { version = "1.0.0", path = "./packages/health-types" }
 mars-math                  = { version = "1.0.0", path = "./packages/math" }

@@ -92,8 +92,8 @@ impl HealthComputer {
         for c in &self.positions.deposits {
             let coin_price =
                 self.denoms_data.prices.get(&c.denom).ok_or(MissingPrice(c.denom.clone()))?;
-            let value = c.amount.checked_mul_floor(*coin_price)?;
-            total_collateral_value = total_collateral_value.checked_add(value)?;
+            let deposit_value = c.amount.checked_mul_floor(*coin_price)?;
+            total_collateral_value = total_collateral_value.checked_add(deposit_value)?;
 
             let &Market {
                 max_loan_to_value,
@@ -107,11 +107,11 @@ impl HealthComputer {
             } else {
                 Decimal::zero()
             };
-            let max_ltv_adjusted = value.checked_mul_floor(checked_max_ltv)?;
+            let max_ltv_adjusted = deposit_value.checked_mul_floor(checked_max_ltv)?;
             max_ltv_adjusted_collateral =
                 max_ltv_adjusted_collateral.checked_add(max_ltv_adjusted)?;
 
-            let liq_adjusted = value.checked_mul_floor(liquidation_threshold)?;
+            let liq_adjusted = deposit_value.checked_mul_floor(liquidation_threshold)?;
             liquidation_threshold_adjusted_collateral =
                 liquidation_threshold_adjusted_collateral.checked_add(liq_adjusted)?;
         }
