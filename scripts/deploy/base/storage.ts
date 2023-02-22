@@ -27,8 +27,8 @@ export class Storage implements StorageItems {
 
   async save() {
     await writeFile(
-        path.join(ARTIFACTS_PATH, `${this.chainId}-${this.label}.json`),
-        JSON.stringify(this, null, 2),
+      path.join(ARTIFACTS_PATH, `${this.chainId}-${this.label}.json`),
+      JSON.stringify(this, null, 2),
     )
   }
 }

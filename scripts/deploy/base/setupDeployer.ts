@@ -22,9 +22,9 @@ export const setupClient = async (config: DeploymentConfig, wallet: DirectSecp25
     gasPrice: GasPrice.fromString(`${config.chain.defaultGasPrice}${config.chain.baseDenom}`),
   }
   return await SigningCosmWasmClient.connectWithSigner(
-      config.chain.rpcEndpoint,
-      wallet,
-      clientOption,
+    config.chain.rpcEndpoint,
+    wallet,
+    clientOption,
   )
 }
 
