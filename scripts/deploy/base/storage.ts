@@ -8,11 +8,13 @@ export class Storage implements StorageItems {
   public addresses: StorageItems['addresses']
   public codeIds: StorageItems['codeIds']
   public actions: StorageItems['actions']
+  public admin: StorageItems['admin']
 
   constructor(private chainId: string, items: StorageItems) {
     this.addresses = items.addresses
     this.codeIds = items.codeIds
     this.actions = items.actions
+    this.admin = items.admin
   }
 
   static async load(chainId: string): Promise<Storage> {

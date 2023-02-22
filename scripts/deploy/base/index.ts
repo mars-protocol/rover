@@ -16,6 +16,8 @@ export const taskRunner = async ({
 }: TaskRunnerProps) => {
   const deployer = await setupDeployer(config)
   try {
+    deployer.setAdminAddr()
+
     // Upload contracts
     await deployer.upload('accountNft', wasmFile('mars_account_nft'))
     await deployer.upload('mockVault', wasmFile('mars_mock_vault'))
@@ -61,6 +63,11 @@ export const taskRunner = async ({
         await rover.unzap(info.tokens.base_token)
       }
       await rover.refundAllBalances()
+    }
+
+    if (config.setMultisigOwner) {
+      await deployer.updateCreditManagerOwner()
+      await deployer.updateSwapperOwner()
     }
 
     printYellow('COMPLETE')

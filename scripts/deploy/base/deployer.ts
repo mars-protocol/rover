@@ -10,6 +10,10 @@ import { InstantiateMsg as VaultInstantiateMsg } from '../../types/generated/mar
 import { InstantiateMsg as SwapperInstantiateMsg } from '../../types/generated/mars-swapper-base/MarsSwapperBase.types'
 import { InstantiateMsg as ZapperInstantiateMsg } from '../../types/generated/mars-zapper-base/MarsZapperBase.types'
 import { InstantiateMsg as RoverInstantiateMsg } from '../../types/generated/mars-credit-manager/MarsCreditManager.types'
+import { ExecuteMsg as CreditManagerExecute } from '../../types/generated/mars-credit-manager/MarsCreditManager.types'
+import { ExecuteMsg as SwapperExecute } from '../../types/generated/mars-swapper-base/MarsSwapperBase.types'
+import { QueryMsg as CreditManagerQuery } from '../../types/generated/mars-credit-manager/MarsCreditManager.types'
+import { QueryMsg as SwapperQuery } from '../../types/generated/mars-swapper-base/MarsSwapperBase.types'
 import { Rover } from './rover'
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing'
 import { getAddress, getWallet, setupClient } from './setupDeployer'
@@ -52,6 +56,15 @@ export class Deployer {
     printGreen(`${this.config.chain.id} :: ${name} : ${this.storage.codeIds[name]}`)
   }
 
+  setAdminAddr() {
+    if (this.config.multisigAddr) {
+      this.storage.admin = this.config.multisigAddr
+    } else {
+      this.storage.admin = this.deployerAddr
+    }
+    printGreen(`Contract admins are set to: ${this.storage.admin}`)
+  }
+
   async instantiate(name: keyof Storage['addresses'], codeId: number, msg: InstantiateMsgs) {
     if (this.storage.addresses[name]) {
       printGray(`Contract already instantiated :: ${name} :: ${this.storage.addresses[name]}`)
@@ -63,7 +76,7 @@ export class Deployer {
       msg,
       `mars-${kebabCase(name)}`,
       'auto',
-      { admin: this.deployerAddr },
+      { admin: this.storage.admin },
     )
     this.storage.addresses[name] = contractAddress
     printGreen(
@@ -369,5 +382,52 @@ export class Deployer {
 
   private getRoverClient(address: string, client: SigningCosmWasmClient, testActions: TestActions) {
     return new Rover(address, this.storage, this.config, client, testActions)
+  }
+
+  async updateCreditManagerOwner() {
+    const msg: CreditManagerExecute = {
+      update_owner: {
+        propose_new_owner: {
+          proposed: this.config.multisigAddr!,
+        },
+      },
+    }
+    await this.cwClient.execute(
+      this.deployerAddr,
+      this.storage.addresses['creditManager']!,
+      msg,
+      'auto',
+    )
+    printGreen('Owner updated to Multisig for Credit Manager Contract')
+    const query: CreditManagerQuery = {
+      config: {},
+    }
+    const creditManagerConfig = (await this.cwClient.queryContractSmart(
+      this.storage.addresses['creditManager']!,
+      query,
+    )) as { proposed_new_owner: string }
+    assert.equal(creditManagerConfig.proposed_new_owner, this.config.multisigAddr)
+  }
+
+  async updateSwapperOwner() {
+    const msg: SwapperExecute = {
+      update_owner: {
+        propose_new_owner: {
+          proposed: this.config.multisigAddr!,
+        },
+      },
+    }
+    await this.cwClient.execute(this.deployerAddr, this.storage.addresses['swapper']!, msg, 'auto')
+    printGreen('Owner updated to Multisig for Swapper Contract')
+    const query: SwapperQuery = {
+      owner: {
+        proposed: {},
+      },
+    }
+    const swapperConfig = (await this.cwClient.queryContractSmart(
+      this.storage.addresses['swapper']!,
+      query,
+    )) as { proposed: string }
+    assert.equal(swapperConfig.proposed, this.config.multisigAddr)
   }
 }

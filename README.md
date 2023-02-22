@@ -130,7 +130,7 @@ Requires building the wasm binaries for the contracts:
 docker run --rm -v "$(pwd)":/code \
   --mount type=volume,source="$(basename "$(pwd)")_cache",target=/code/target \
   --mount type=volume,source=registry_cache,target=/usr/local/cargo/registry \
-  cosmwasm/rust-optimizer:0.12.10
+  cosmwasm/rust-optimizer:0.12.11
 ```
 
 For Rust cw-multi tests + osmosis-testing suite (requires mars_swapper_osmosis.wasm from previous step):
@@ -142,13 +142,37 @@ For Typescript end-to-end testnet deployment & tests against that deployment:
 ```shell
 cd scripts
 yarn install
-yarn deploy:osmosis
+yarn deploy:osmosis-testnet
+```
+
+For Typescript end-to-end mainnet deployment & tests against that deployment:
+```shell
+cd scripts
+yarn install
+yarn deploy:osmosis-mainnet
 ```
 
 ### Deployment
 
-Addresses published in [/scripts/deploy/addresses](https://github.com/mars-protocol/rover/tree/master/scripts/deploy/addresses)
+#### osmosis-1
 
+| Contract               | Address  |
+|------------------------|----------|
+| mars-account-nft       | `TBD`    |
+| mars-mock-vault        | `TBD`    |
+| mars-swapper-osmosis   | `TBD`    |
+| mars-zapper-osmosis    | `TBD`    |
+
+#### osmo-test-4
+
+| Contract               | Address  |
+|------------------------|----------|
+| mars-account-nft       | `TBD`    |
+| mars-mock-vault        | `TBD`    |
+| mars-swapper-osmosis   | `TBD`    |
+| mars-zapper-osmosis    | `TBD`    |
+
+Note: Latest deployed addresses published in [/scripts/deploy/addresses](https://github.com/mars-protocol/rover/tree/master/scripts/deploy/addresses)
 
 ## License
 

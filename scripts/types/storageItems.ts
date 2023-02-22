@@ -28,4 +28,5 @@ export interface StorageItems {
     healthContractConfigUpdate?: boolean
   }
   owner?: string
+  admin?: string
 }
