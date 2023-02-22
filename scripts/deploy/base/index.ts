@@ -22,8 +22,10 @@ export const taskRunner = async ({ config, label }: TaskRunnerProps) => {
     await deployer.instantiateMockVault()
     await deployer.instantiateSwapper()
     await deployer.instantiateZapper()
+    await deployer.instantiateHealthContract()
     await deployer.instantiateCreditManager()
     await deployer.instantiateNftContract()
+    await deployer.setCmOnHealthContract()
     await deployer.transferNftContractOwnership()
     await deployer.saveDeploymentAddrsToFile(label)
 
@@ -36,6 +38,7 @@ export const taskRunner = async ({ config, label }: TaskRunnerProps) => {
       const rover = await deployer.newUserRoverClient(config.testActions)
       await rover.createCreditAccount()
       await rover.deposit()
+      await rover.lend()
       await rover.borrow()
       await rover.swap()
       await rover.repay()
