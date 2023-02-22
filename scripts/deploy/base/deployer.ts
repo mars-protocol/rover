@@ -6,9 +6,15 @@ import fs from 'fs'
 import { InstantiateMsgs } from '../../types/instantiateMsgs'
 import { InstantiateMsg as NftInstantiateMsg } from '../../types/generated/mars-account-nft/MarsAccountNft.types'
 import { InstantiateMsg as VaultInstantiateMsg } from '../../types/generated/mars-mock-vault/MarsMockVault.types'
-import { InstantiateMsg as SwapperInstantiateMsg } from '../../types/generated/mars-swapper-base/MarsSwapperBase.types'
+import {
+  ExecuteMsg as SwapperExecute,
+  InstantiateMsg as SwapperInstantiateMsg,
+} from '../../types/generated/mars-swapper-base/MarsSwapperBase.types'
 import { InstantiateMsg as ZapperInstantiateMsg } from '../../types/generated/mars-zapper-base/MarsZapperBase.types'
-import { InstantiateMsg as RoverInstantiateMsg } from '../../types/generated/mars-credit-manager/MarsCreditManager.types'
+import {
+  ExecuteMsg as CreditManagerExecute,
+  InstantiateMsg as RoverInstantiateMsg,
+} from '../../types/generated/mars-credit-manager/MarsCreditManager.types'
 import { Rover } from './rover'
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing'
 import { getAddress, getWallet, setupClient } from './setupDeployer'
@@ -22,17 +28,20 @@ import {
   MarsSwapperBaseQueryClient,
 } from '../../types/generated/mars-swapper-base/MarsSwapperBase.client'
 import { MarsAccountNftClient } from '../../types/generated/mars-account-nft/MarsAccountNft.client'
-import { MarsCreditManagerClient } from '../../types/generated/mars-credit-manager/MarsCreditManager.client'
+import {
+  MarsCreditManagerClient,
+  MarsCreditManagerQueryClient,
+} from '../../types/generated/mars-credit-manager/MarsCreditManager.client'
 import { InitOrUpdateAssetParams } from '../../types/generated/mars-mock-red-bank/MarsMockRedBank.types'
-import { PriceSource } from '../../types/priceSource'
 import { kebabCase } from 'lodash'
+import { MarsMockOracleQueryClient } from '../../types/generated/mars-mock-oracle/MarsMockOracle.client'
 
 export class Deployer {
   constructor(
-    private config: DeploymentConfig,
-    public cwClient: SigningCosmWasmClient,
-    public deployerAddr: string,
-    public storage: Storage,
+      private config: DeploymentConfig,
+      public cwClient: SigningCosmWasmClient,
+      public deployerAddr: string,
+      public storage: Storage,
   ) {}
 
   async saveStorage() {
@@ -56,16 +65,16 @@ export class Deployer {
       return
     }
     const { contractAddress } = await this.cwClient.instantiate(
-      this.deployerAddr,
-      codeId,
-      msg,
-      `mars-${kebabCase(name)}`,
-      'auto',
-      { admin: this.deployerAddr },
+        this.deployerAddr,
+        codeId,
+        msg,
+        `mars-${kebabCase(name)}`,
+        'auto',
+        { admin: this.config.multisigAddr ? this.config.multisigAddr : this.deployerAddr },
     )
     this.storage.addresses[name] = contractAddress
     printGreen(
-      `${this.config.chain.id} :: ${name} Contract Address : ${this.storage.addresses[name]}`,
+        `${this.config.chain.id} :: ${name} Contract Address : ${this.storage.addresses[name]}`,
     )
   }
 
@@ -97,8 +106,8 @@ export class Deployer {
     if (!this.storage.actions.seedMockVault) {
       printBlue('Seeding mock vault')
       await this.transferCoin(
-        this.storage.addresses.mockVault!,
-        coin(10_000_000, this.config.testActions.vault.mock.vaultTokenDenom),
+          this.storage.addresses.mockVault!,
+          coin(10_000_000, this.config.testActions.vault.mock.vaultTokenDenom),
       )
       this.storage.actions.seedMockVault = true
     } else {
@@ -114,9 +123,9 @@ export class Deployer {
 
     if (!this.storage.actions.setRoutes) {
       const swapClient = new MarsSwapperBaseClient(
-        this.cwClient,
-        this.deployerAddr,
-        this.storage.addresses.swapper!,
+          this.cwClient,
+          this.deployerAddr,
+          this.storage.addresses.swapper!,
       )
 
       for (const route of this.config.swapRoutes) {
@@ -126,8 +135,8 @@ export class Deployer {
       }
 
       const swapQuery = new MarsSwapperBaseQueryClient(
-        this.cwClient,
-        this.storage.addresses.swapper!,
+          this.cwClient,
+          this.storage.addresses.swapper!,
       )
       const routes = await swapQuery.routes({})
       assert.equal(routes.length, this.config.swapRoutes.length)
@@ -145,7 +154,7 @@ export class Deployer {
   async instantiateCreditManager() {
     const msg: RoverInstantiateMsg = {
       max_unlocking_positions: this.config.maxUnlockingPositions,
-      allowed_coins: this.config.allowedCoins.map((c) => c.denom),
+      allowed_coins: this.config.allowedCoins,
       vault_configs: this.config.vaults.map((v) => ({ config: v.config, vault: v.vault })),
       oracle: this.config.oracle.addr,
       owner: this.deployerAddr,
@@ -170,9 +179,9 @@ export class Deployer {
   async transferNftContractOwnership() {
     if (!this.storage.actions.proposedNewOwner) {
       const nftClient = new MarsAccountNftClient(
-        this.cwClient,
-        this.deployerAddr,
-        this.storage.addresses.accountNft!,
+          this.cwClient,
+          this.deployerAddr,
+          this.storage.addresses.accountNft!,
       )
       await nftClient.updateConfig({
         updates: { proposed_new_minter: this.storage.addresses.creditManager! },
@@ -185,9 +194,9 @@ export class Deployer {
 
     if (!this.storage.actions.acceptedOwnership) {
       const client = new MarsCreditManagerClient(
-        this.cwClient,
-        this.deployerAddr,
-        this.storage.addresses.creditManager!,
+          this.cwClient,
+          this.deployerAddr,
+          this.storage.addresses.creditManager!,
       )
       await client.updateConfig({ updates: { account_nft: this.storage.addresses.accountNft } })
       this.storage.actions.acceptedOwnership = true
@@ -201,17 +210,17 @@ export class Deployer {
     const { client, address } = await this.generateNewAddress()
     printBlue(`New user: ${address}`)
     await this.transferCoin(
-      address,
-      coin(testActions.startingAmountForTestUser, this.config.chain.baseDenom),
+        address,
+        coin(testActions.startingAmountForTestUser, this.config.chain.baseDenom),
     )
     return this.getRoverClient(address, client, testActions)
   }
 
-  async saveDeploymentAddrsToFile() {
+  async saveDeploymentAddrsToFile(label: string) {
     const addressesDir = resolve(join(__dirname, '../../../deploy/addresses'))
     await writeFile(
-      `${addressesDir}/${this.config.chain.id}.json`,
-      JSON.stringify(this.storage.addresses),
+        `${addressesDir}/${this.config.chain.id}-${label}.json`,
+        JSON.stringify(this.storage.addresses),
     )
   }
 
@@ -222,15 +231,15 @@ export class Deployer {
     }
 
     const wallet = await getWallet(
-      this.config.testActions!.outpostsDeployerMnemonic,
-      this.config.chain.prefix,
+        this.config.testActions!.outpostsDeployerMnemonic,
+        this.config.chain.prefix,
     )
     const client = await setupClient(this.config, wallet)
     const addr = await getAddress(wallet)
 
-    for (const denom of this.config.allowedCoins
-      .filter((c) => c.grantCreditLine)
-      .map((c) => c.denom)) {
+    for (const denom of this.config.testActions?.allowedCoinsConfig
+        .filter((c) => c.grantCreditLine)
+        .map((c) => c.denom) ?? []) {
       const msg = {
         update_uncollateralized_loan_limit: {
           user: this.storage.addresses.creditManager,
@@ -239,7 +248,7 @@ export class Deployer {
         },
       }
       printBlue(
-        `Granting credit line to Rover for: ${this.config.testActions!.defaultCreditLine} ${denom}`,
+          `Granting credit line to Rover for: ${this.config.testActions!.defaultCreditLine} ${denom}`,
       )
       await client.execute(addr, this.config.redBank.addr, msg, 'auto')
     }
@@ -253,17 +262,22 @@ export class Deployer {
       return
     }
 
-    for (const coin of this.config.allowedCoins) {
-      const msg = {
-        set_price_source: {
-          denom: coin.denom,
-          price_source: coin.priceSource as PriceSource,
-        },
+    for (const coin of this.config.testActions?.allowedCoinsConfig ?? []) {
+      const oQuery = new MarsMockOracleQueryClient(this.cwClient, this.config.oracle.addr)
+      try {
+        await oQuery.price({ denom: coin.denom })
+        printGray(`Price source already set for ${coin.denom}`)
+      } catch (e) {
+        const msg = {
+          set_price_source: {
+            denom: coin.denom,
+            price_source: coin.priceSource,
+          },
+        }
+        printBlue(`Setting price source for ${coin.denom}: ${JSON.stringify(coin.priceSource)}`)
+        const { client, addr } = await this.getOutpostsDeployer()
+        await client.execute(addr, this.config.oracle.addr, msg, 'auto')
       }
-
-      printBlue(`Setting price source for ${coin.denom}: ${JSON.stringify(coin.priceSource)}`)
-      const { client, addr } = await this.getOutpostsDeployer()
-      await client.execute(addr, this.config.oracle.addr, msg, 'auto')
     }
     this.storage.actions.oraclePricesSet = true
   }
@@ -276,7 +290,7 @@ export class Deployer {
 
     const { client, addr } = await this.getOutpostsDeployer()
 
-    for (const denom of this.config.allowedCoins.map((c) => c.denom)) {
+    for (const denom of this.config.testActions?.allowedCoinsConfig.map((c) => c.denom) ?? []) {
       try {
         await client.queryContractSmart(this.config.redBank.addr, {
           market: {
@@ -317,10 +331,54 @@ export class Deployer {
     this.storage.actions.redBankMarketsSet = true
   }
 
+  async updateCreditManagerOwner() {
+    if (!this.config.multisigAddr) throw new Error('No multisig addresses to transfer ownership to')
+
+    const msg: CreditManagerExecute = {
+      update_owner: {
+        propose_new_owner: {
+          proposed: this.config.multisigAddr,
+        },
+      },
+    }
+    await this.cwClient.execute(
+        this.deployerAddr,
+        this.storage.addresses.creditManager!,
+        msg,
+        'auto',
+    )
+    printGreen('Owner updated to Multisig for Credit Manager Contract')
+
+    const cmQuery = new MarsCreditManagerQueryClient(
+        this.cwClient,
+        this.storage.addresses.creditManager!,
+    )
+    const creditManagerConfig = await cmQuery.config()
+    assert.equal(creditManagerConfig.proposed_new_owner, this.config.multisigAddr)
+  }
+
+  async updateSwapperOwner() {
+    if (!this.config.multisigAddr) throw new Error('No multisig addresses to transfer ownership to')
+
+    const msg: SwapperExecute = {
+      update_owner: {
+        propose_new_owner: {
+          proposed: this.config.multisigAddr,
+        },
+      },
+    }
+    await this.cwClient.execute(this.deployerAddr, this.storage.addresses.swapper!, msg, 'auto')
+    printGreen('Owner updated to Multisig for Swapper Contract')
+
+    const swQuery = new MarsSwapperBaseQueryClient(this.cwClient, this.storage.addresses.swapper!)
+    const swapperOwner = await swQuery.owner()
+    assert.equal(swapperOwner.proposed, this.config.multisigAddr)
+  }
+
   private async getOutpostsDeployer() {
     const wallet = await getWallet(
-      this.config.testActions!.outpostsDeployerMnemonic,
-      this.config.chain.prefix,
+        this.config.testActions!.outpostsDeployerMnemonic,
+        this.config.chain.prefix,
     )
     const client = await setupClient(this.config, wallet)
     const addr = await getAddress(wallet)
