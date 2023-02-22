@@ -36,7 +36,7 @@ import {
 import { InitOrUpdateAssetParams } from '../../types/generated/mars-mock-red-bank/MarsMockRedBank.types'
 import { kebabCase } from 'lodash'
 import { MarsMockOracleQueryClient } from '../../types/generated/mars-mock-oracle/MarsMockOracle.client'
-import {MarsRoverHealthTypesClient} from "../../types/generated/mars-rover-health-types/MarsRoverHealthTypes.client";
+import { MarsRoverHealthTypesClient } from '../../types/generated/mars-rover-health-types/MarsRoverHealthTypes.client'
 
 export class Deployer {
   constructor(
@@ -91,9 +91,9 @@ export class Deployer {
       printGray('Credit manager address')
     } else {
       let hExec = new MarsRoverHealthTypesClient(
-          this.cwClient,
-          this.deployerAddr,
-          this.storage.addresses.healthContract!,
+        this.cwClient,
+        this.deployerAddr,
+        this.storage.addresses.healthContract!,
       )
 
       printBlue('Setting credit manager address on health contract config')
