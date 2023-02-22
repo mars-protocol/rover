@@ -23,13 +23,13 @@ The Osmosis multisig being used for this project is `osmo14w4x949nwcrqgfe53pxs3k
 2. Download the wasm from the chain.
 
    ```bash
-   osmosisd query wasm code $CODEID -- $NODE download.wasm
+   osmosisd query wasm code <code id> --node <rpc url> download.wasm
    ```
 
 3. Verify that the diff is empty between them. If any value is returned, then the wasm files differ.
 
    ```bash
-   diff artifacts/$CONTRACTNAME.wasm download.wasm
+   diff artifacts/<contract-name>.wasm download.wasm
    ```
 
 ## Query contract configs
