@@ -11,12 +11,24 @@ import { toUtf8 } from '@cosmjs/encoding'
 import {
   InstantiateMsg,
   ExecuteMsg,
-  Decimal,
   Uint128,
-  HealthResponse,
+  VaultPositionAmount,
+  VaultAmount,
+  VaultAmount1,
+  UnlockingPositions,
+  Addr,
+  Decimal,
+  Positions,
+  DebtAmount,
+  Coin,
+  LentAmount,
+  VaultPosition,
+  LockingVaultAmount,
+  VaultUnlockingPosition,
+  VaultBaseForAddr,
+  VaultConfig,
   QueryMsg,
   VaultBaseForString,
-  Coin,
   ArrayOfCoinBalanceResponseItem,
   CoinBalanceResponseItem,
   ArrayOfSharesResponseItem,
@@ -25,39 +37,39 @@ import {
   DebtShares,
   ArrayOfLentShares,
   LentShares,
-  Addr,
   ArrayOfVaultWithBalance,
   VaultWithBalance,
-  VaultBaseForAddr,
-  VaultPositionAmount,
-  VaultAmount,
-  VaultAmount1,
-  UnlockingPositions,
   ArrayOfVaultPositionResponseItem,
   VaultPositionResponseItem,
-  VaultPosition,
-  LockingVaultAmount,
-  VaultUnlockingPosition,
   ArrayOfString,
   ConfigResponse,
   ArrayOfCoin,
-  Positions,
-  DebtAmount,
-  LentAmount,
-  ArrayOfVaultInfoResponse,
   VaultInfoResponse,
-  VaultConfig,
+  VaultPositionValue,
+  CoinValue,
+  ArrayOfVaultInfoResponse,
 } from './MarsMockCreditManager.types'
 export interface MarsMockCreditManagerMessage {
   contractAddress: string
   sender: string
-  setHealthResponse: (
+  setPositionsResponse: (
     {
       accountId,
-      response,
+      positions,
     }: {
       accountId: string
-      response: HealthResponse
+      positions: Positions
+    },
+    funds?: Coin[],
+  ) => MsgExecuteContractEncodeObject
+  setAllowedCoins: (funds?: Coin[]) => MsgExecuteContractEncodeObject
+  setVaultConfig: (
+    {
+      address,
+      config,
+    }: {
+      address: string
+      config: VaultConfig
     },
     funds?: Coin[],
   ) => MsgExecuteContractEncodeObject
@@ -69,16 +81,18 @@ export class MarsMockCreditManagerMessageComposer implements MarsMockCreditManag
   constructor(sender: string, contractAddress: string) {
     this.sender = sender
     this.contractAddress = contractAddress
-    this.setHealthResponse = this.setHealthResponse.bind(this)
+    this.setPositionsResponse = this.setPositionsResponse.bind(this)
+    this.setAllowedCoins = this.setAllowedCoins.bind(this)
+    this.setVaultConfig = this.setVaultConfig.bind(this)
   }
 
-  setHealthResponse = (
+  setPositionsResponse = (
     {
       accountId,
-      response,
+      positions,
     }: {
       accountId: string
-      response: HealthResponse
+      positions: Positions
     },
     funds?: Coin[],
   ): MsgExecuteContractEncodeObject => {
@@ -89,9 +103,51 @@ export class MarsMockCreditManagerMessageComposer implements MarsMockCreditManag
         contract: this.contractAddress,
         msg: toUtf8(
           JSON.stringify({
-            set_health_response: {
+            set_positions_response: {
               account_id: accountId,
-              response,
+              positions,
+            },
+          }),
+        ),
+        funds,
+      }),
+    }
+  }
+  setAllowedCoins = (funds?: Coin[]): MsgExecuteContractEncodeObject => {
+    return {
+      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+      value: MsgExecuteContract.fromPartial({
+        sender: this.sender,
+        contract: this.contractAddress,
+        msg: toUtf8(
+          JSON.stringify({
+            set_allowed_coins: {},
+          }),
+        ),
+        funds,
+      }),
+    }
+  }
+  setVaultConfig = (
+    {
+      address,
+      config,
+    }: {
+      address: string
+      config: VaultConfig
+    },
+    funds?: Coin[],
+  ): MsgExecuteContractEncodeObject => {
+    return {
+      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+      value: MsgExecuteContract.fromPartial({
+        sender: this.sender,
+        contract: this.contractAddress,
+        msg: toUtf8(
+          JSON.stringify({
+            set_vault_config: {
+              address,
+              config,
             },
           }),
         ),
