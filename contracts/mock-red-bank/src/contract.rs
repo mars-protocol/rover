@@ -4,7 +4,7 @@ use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response,
 use mars_red_bank_types::red_bank;
 
 use crate::{
-    execute::{borrow, deposit, repay, withdraw, update_asset},
+    execute::{borrow, deposit, repay, update_asset, withdraw},
     msg::InstantiateMsg,
     query::{query_collateral, query_debt, query_market},
     state::COIN_MARKET_INFO,

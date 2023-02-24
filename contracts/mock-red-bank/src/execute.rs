@@ -6,8 +6,8 @@ use mars_red_bank_types::red_bank::InitOrUpdateAssetParams;
 
 use crate::{
     helpers::{load_collateral_amount, load_debt_amount, load_lent_amount},
-    state::{COLLATERAL_AMOUNT, DEBT_AMOUNT, COIN_MARKET_INFO},
     msg::CoinMarketInfo,
+    state::{COIN_MARKET_INFO, COLLATERAL_AMOUNT, DEBT_AMOUNT},
 };
 
 pub fn borrow(
