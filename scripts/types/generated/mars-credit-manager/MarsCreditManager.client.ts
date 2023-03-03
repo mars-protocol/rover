@@ -433,6 +433,22 @@ export interface MarsCreditManagerInterface extends MarsCreditManagerReadOnlyInt
     memo?: string,
     funds?: Coin[],
   ) => Promise<ExecuteResult>
+  emergencyLockupIdUpdate: (
+    {
+      accountId,
+      currentLockupId,
+      newLockupId,
+      vault,
+    }: {
+      accountId: string
+      currentLockupId: number
+      newLockupId: number
+      vault: VaultBaseForString
+    },
+    fee?: number | StdFee | 'auto',
+    memo?: string,
+    funds?: Coin[],
+  ) => Promise<ExecuteResult>
 }
 export class MarsCreditManagerClient
   extends MarsCreditManagerQueryClient
@@ -453,6 +469,7 @@ export class MarsCreditManagerClient
     this.updateOwner = this.updateOwner.bind(this)
     this.updateNftConfig = this.updateNftConfig.bind(this)
     this.callback = this.callback.bind(this)
+    this.emergencyLockupIdUpdate = this.emergencyLockupIdUpdate.bind(this)
   }
 
   createCreditAccount = async (
@@ -569,6 +586,38 @@ export class MarsCreditManagerClient
       this.contractAddress,
       {
         callback: {},
+      },
+      fee,
+      memo,
+      funds,
+    )
+  }
+  emergencyLockupIdUpdate = async (
+    {
+      accountId,
+      currentLockupId,
+      newLockupId,
+      vault,
+    }: {
+      accountId: string
+      currentLockupId: number
+      newLockupId: number
+      vault: VaultBaseForString
+    },
+    fee: number | StdFee | 'auto' = 'auto',
+    memo?: string,
+    funds?: Coin[],
+  ): Promise<ExecuteResult> => {
+    return await this.client.execute(
+      this.sender,
+      this.contractAddress,
+      {
+        emergency_lockup_id_update: {
+          account_id: accountId,
+          current_lockup_id: currentLockupId,
+          new_lockup_id: newLockupId,
+          vault,
+        },
       },
       fee,
       memo,

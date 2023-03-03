@@ -68,6 +68,14 @@ export type ExecuteMsg =
   | {
       callback: CallbackMsg
     }
+  | {
+      emergency_lockup_id_update: {
+        account_id: string
+        current_lockup_id: number
+        new_lockup_id: number
+        vault: VaultBaseForString
+      }
+    }
 export type Action =
   | {
       deposit: Coin

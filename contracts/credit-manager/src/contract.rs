@@ -11,6 +11,7 @@ use mars_rover::{
 use crate::{
     execute::{create_credit_account, dispatch_actions, execute_callback},
     instantiate::store_config,
+    lockup_update::update_lockup_id,
     query::{
         query_all_coin_balances, query_all_debt_shares, query_all_lent_shares,
         query_all_total_debt_shares, query_all_total_lent_shares,
@@ -60,6 +61,12 @@ pub fn execute(
             account_id,
             actions,
         } => dispatch_actions(deps, env, info, &account_id, &actions),
+        ExecuteMsg::EmergencyLockupIdUpdate {
+            account_id,
+            vault,
+            current_lockup_id,
+            new_lockup_id,
+        } => update_lockup_id(deps, info, &account_id, vault, current_lockup_id, new_lockup_id),
     }
 }
 

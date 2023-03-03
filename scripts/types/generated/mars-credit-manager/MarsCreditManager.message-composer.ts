@@ -96,6 +96,20 @@ export interface MarsCreditManagerMessage {
     funds?: Coin[],
   ) => MsgExecuteContractEncodeObject
   callback: (funds?: Coin[]) => MsgExecuteContractEncodeObject
+  emergencyLockupIdUpdate: (
+    {
+      accountId,
+      currentLockupId,
+      newLockupId,
+      vault,
+    }: {
+      accountId: string
+      currentLockupId: number
+      newLockupId: number
+      vault: VaultBaseForString
+    },
+    funds?: Coin[],
+  ) => MsgExecuteContractEncodeObject
 }
 export class MarsCreditManagerMessageComposer implements MarsCreditManagerMessage {
   sender: string
@@ -110,6 +124,7 @@ export class MarsCreditManagerMessageComposer implements MarsCreditManagerMessag
     this.updateOwner = this.updateOwner.bind(this)
     this.updateNftConfig = this.updateNftConfig.bind(this)
     this.callback = this.callback.bind(this)
+    this.emergencyLockupIdUpdate = this.emergencyLockupIdUpdate.bind(this)
   }
 
   createCreditAccount = (funds?: Coin[]): MsgExecuteContractEncodeObject => {
@@ -226,6 +241,39 @@ export class MarsCreditManagerMessageComposer implements MarsCreditManagerMessag
         msg: toUtf8(
           JSON.stringify({
             callback: {},
+          }),
+        ),
+        funds,
+      }),
+    }
+  }
+  emergencyLockupIdUpdate = (
+    {
+      accountId,
+      currentLockupId,
+      newLockupId,
+      vault,
+    }: {
+      accountId: string
+      currentLockupId: number
+      newLockupId: number
+      vault: VaultBaseForString
+    },
+    funds?: Coin[],
+  ): MsgExecuteContractEncodeObject => {
+    return {
+      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+      value: MsgExecuteContract.fromPartial({
+        sender: this.sender,
+        contract: this.contractAddress,
+        msg: toUtf8(
+          JSON.stringify({
+            emergency_lockup_id_update: {
+              account_id: accountId,
+              current_lockup_id: currentLockupId,
+              new_lockup_id: newLockupId,
+              vault,
+            },
           }),
         ),
         funds,

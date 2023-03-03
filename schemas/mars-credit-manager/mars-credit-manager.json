@@ -304,6 +304,44 @@
           }
         },
         "additionalProperties": false
+      },
+      {
+        "description": "Temporary measure to correct incorrect lockup ids sent from vault",
+        "type": "object",
+        "required": [
+          "emergency_lockup_id_update"
+        ],
+        "properties": {
+          "emergency_lockup_id_update": {
+            "type": "object",
+            "required": [
+              "account_id",
+              "current_lockup_id",
+              "new_lockup_id",
+              "vault"
+            ],
+            "properties": {
+              "account_id": {
+                "type": "string"
+              },
+              "current_lockup_id": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              },
+              "new_lockup_id": {
+                "type": "integer",
+                "format": "uint64",
+                "minimum": 0.0
+              },
+              "vault": {
+                "$ref": "#/definitions/VaultBase_for_String"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
       }
     ],
     "definitions": {

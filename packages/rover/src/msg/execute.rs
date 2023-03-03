@@ -36,6 +36,13 @@ pub enum ExecuteMsg {
     },
     /// Internal actions only callable by the contract itself
     Callback(CallbackMsg),
+    /// Temporary measure to correct incorrect lockup ids sent from vault
+    EmergencyLockupIdUpdate {
+        account_id: String,
+        vault: VaultUnchecked,
+        current_lockup_id: u64,
+        new_lockup_id: u64,
+    },
 }
 
 #[cw_serde]

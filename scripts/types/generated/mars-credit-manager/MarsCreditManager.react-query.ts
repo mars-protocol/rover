@@ -625,6 +625,32 @@ export function useMarsCreditManagerConfigQuery<TData = ConfigResponse>({
     { ...options, enabled: !!client && (options?.enabled != undefined ? options.enabled : true) },
   )
 }
+export interface MarsCreditManagerEmergencyLockupIdUpdateMutation {
+  client: MarsCreditManagerClient
+  msg: {
+    accountId: string
+    currentLockupId: number
+    newLockupId: number
+    vault: VaultBaseForString
+  }
+  args?: {
+    fee?: number | StdFee | 'auto'
+    memo?: string
+    funds?: Coin[]
+  }
+}
+export function useMarsCreditManagerEmergencyLockupIdUpdateMutation(
+  options?: Omit<
+    UseMutationOptions<ExecuteResult, Error, MarsCreditManagerEmergencyLockupIdUpdateMutation>,
+    'mutationFn'
+  >,
+) {
+  return useMutation<ExecuteResult, Error, MarsCreditManagerEmergencyLockupIdUpdateMutation>(
+    ({ client, msg, args: { fee, memo, funds } = {} }) =>
+      client.emergencyLockupIdUpdate(msg, fee, memo, funds),
+    options,
+  )
+}
 export interface MarsCreditManagerCallbackMutation {
   client: MarsCreditManagerClient
   args?: {

@@ -161,6 +161,27 @@ impl MockEnv {
         )
     }
 
+    pub fn update_lockup_id(
+        &mut self,
+        sender: &Addr,
+        account_id: &str,
+        vault: &VaultUnchecked,
+        current_lockup_id: u64,
+        new_lockup_id: u64,
+    ) -> AnyResult<AppResponse> {
+        self.app.execute_contract(
+            sender.clone(),
+            self.rover.clone(),
+            &ExecuteMsg::EmergencyLockupIdUpdate {
+                account_id: account_id.to_string(),
+                vault: vault.clone(),
+                current_lockup_id,
+                new_lockup_id,
+            },
+            &[],
+        )
+    }
+
     pub fn update_nft_config(
         &mut self,
         sender: &Addr,
