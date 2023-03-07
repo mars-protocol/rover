@@ -13,7 +13,7 @@ use crate::{
     deposit::deposit,
     health::{assert_max_ltv, query_health},
     lend::lend,
-    liquidate_coin::liquidate_coin,
+    liquidate_coin::{liquidate_coin, liquidate_lent_coin},
     reclaim::reclaim,
     refund::refund_coin_balances,
     repay::repay,
@@ -101,6 +101,16 @@ pub fn dispatch_actions(
                 liquidatee_account_id: liquidatee_account_id.to_string(),
                 debt_coin: debt_coin.clone(),
                 request_coin_denom: request_coin_denom.clone(),
+            }),
+            Action::LiquidateLentCoin {
+                liquidatee_account_id,
+                debt_coin,
+                request_lent_coin_denom,
+            } => callbacks.push(CallbackMsg::LiquidateLentCoin {
+                liquidator_account_id: account_id.to_string(),
+                liquidatee_account_id: liquidatee_account_id.to_string(),
+                debt_coin: debt_coin.clone(),
+                request_lent_coin_denom: request_lent_coin_denom.clone(),
             }),
             Action::LiquidateVault {
                 liquidatee_account_id,
@@ -263,6 +273,19 @@ pub fn execute_callback(
             &liquidatee_account_id,
             debt_coin,
             &request_coin_denom,
+        ),
+        CallbackMsg::LiquidateLentCoin {
+            liquidator_account_id,
+            liquidatee_account_id,
+            debt_coin,
+            request_lent_coin_denom,
+        } => liquidate_lent_coin(
+            deps,
+            env,
+            &liquidator_account_id,
+            &liquidatee_account_id,
+            debt_coin,
+            &request_lent_coin_denom,
         ),
         CallbackMsg::LiquidateVault {
             liquidator_account_id,

@@ -122,6 +122,21 @@ pub enum Action {
         /// The coin they wish to acquire from the liquidatee (amount returned will include the bonus)
         request_coin_denom: String,
     },
+    /// Pay back debt of a liquidatable rover account for a bonus. Requires specifying 1) the debt
+    /// denom/amount of what the liquidator wants to payoff and 2) the lent coin denom which the
+    /// liquidatee should have a balance of. The amount returned to liquidator will be the lent coin
+    /// of the amount that precisely matches the value of the debt + a liquidation bonus.
+    /// Liquidation should prioritize first the not lent coin and if more needs to be serviced to the liquidator
+    /// it should reclaim (withdrawn from Red Bank).
+    LiquidateLentCoin {
+        /// The credit account id of the one with a liquidation threshold health factor 1 or below
+        liquidatee_account_id: String,
+        /// The coin debt that the liquidator wishes to pay back on behalf of the liquidatee.
+        /// The liquidator must already have these assets in their credit account.
+        debt_coin: Coin,
+        /// The lent coin they wish to acquire from the liquidatee (amount returned will include the bonus)
+        request_lent_coin_denom: String,
+    },
     /// Pay back debt of a liquidatable rover account for a via liquidating a vault position.
     /// Similar to LiquidateCoin {} msg and will make similar adjustments to the request.
     /// The vault position will be withdrawn (and force withdrawn if a locked vault position) and
@@ -237,6 +252,12 @@ pub enum CallbackMsg {
         liquidatee_account_id: String,
         debt_coin: Coin,
         request_coin_denom: String,
+    },
+    LiquidateLentCoin {
+        liquidator_account_id: String,
+        liquidatee_account_id: String,
+        debt_coin: Coin,
+        request_lent_coin_denom: String,
     },
     LiquidateVault {
         liquidator_account_id: String,
