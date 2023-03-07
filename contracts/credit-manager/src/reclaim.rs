@@ -65,9 +65,9 @@ pub fn reclaim(
 
     Ok(Response::new()
         .add_message(red_bank_reclaim_msg)
-        .add_attribute("action", "rover/credit-manager/reclaim")
+        .add_attribute("action", "reclaim")
         .add_attribute("lent_shares_reclaimed", shares_to_reclaim)
-        .add_attribute("coins_reclaimed", amount_to_reclaim))
+        .add_attribute("coin_reclaimed", format!("{}{}", amount_to_reclaim, &coin.denom)))
 }
 
 fn lent_amount_to_shares(deps: Deps, env: &Env, coin: &Coin) -> ContractResult<Uint128> {

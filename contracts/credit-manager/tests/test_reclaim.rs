@@ -115,68 +115,6 @@ fn test_when_trying_to_reclaim_more_than_lent() {
 }
 
 #[test]
-fn test_successful_reclaim() {
-    let coin_info = uosmo_info();
-    let user = Addr::unchecked("user");
-
-    let mut mock = MockEnv::new()
-        .allowed_coins(&[coin_info.clone()])
-        .fund_account(AccountToFund {
-            addr: user.clone(),
-            funds: coins(300, coin_info.denom.clone()),
-        })
-        .build()
-        .unwrap();
-
-    let account_id = mock.create_credit_account(&user).unwrap();
-
-    let position = mock.query_positions(&account_id);
-    assert_eq!(position.deposits.len(), 0);
-    assert_eq!(position.lends.len(), 0);
-
-    mock.update_credit_account(
-        &account_id,
-        &user,
-        vec![Deposit(coin_info.to_coin(300)), Lend(coin_info.to_coin(50))],
-        &[coin(300, coin_info.denom.clone())],
-    )
-    .unwrap();
-
-    // Assert account id's position
-    let position = mock.query_positions(&account_id);
-    assert_eq!(position.deposits.len(), 1);
-    assert_eq!(position.lends.len(), 1);
-    assert_eq!(get_coin(&coin_info.denom, &position.deposits), coin_info.to_coin(250));
-
-    // Assert Rover's balances
-    let coin = mock.query_balance(&mock.rover, &coin_info.denom);
-    assert_eq!(coin.amount, Uint128::new(250));
-
-    mock.update_credit_account(&account_id, &user, vec![Lend(coin_info.to_coin(50))], &[]).unwrap();
-
-    let coin = mock.query_balance(&mock.rover, &coin_info.denom);
-    assert_eq!(coin.amount, Uint128::new(200));
-
-    mock.update_credit_account(
-        &account_id,
-        &user,
-        vec![Reclaim(coin_info.to_action_coin(100))],
-        &[],
-    )
-    .unwrap();
-
-    // Assert account id's position
-    let position = mock.query_positions(&account_id);
-    assert_eq!(position.deposits.len(), 1);
-    assert_eq!(position.lends.len(), 1);
-    assert_eq!(get_coin(&coin_info.denom, &position.deposits), coin_info.to_coin(300));
-
-    // Assert Rover's balances
-    let coin = mock.query_balance(&mock.rover, &coin_info.denom);
-    assert_eq!(coin.amount, Uint128::new(300));
-}
-
-#[test]
 fn reclaiming_less_than_entire_lent_share() {
     let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
@@ -225,7 +163,7 @@ fn reclaiming_less_than_entire_lent_share() {
     assert_eq!(position.deposits.len(), 1);
     assert_eq!(position.lends.len(), 1);
     assert_eq!(get_coin(&coin_info.denom, &position.deposits), coin_info.to_coin(200));
-
+    assert_eq!(position.lends.first().unwrap().amount, Uint128::new(101));
     // Assert Rover's balances
     let coin = mock.query_balance(&mock.rover, &coin_info.denom);
     assert_eq!(coin.amount, Uint128::new(200));
@@ -260,6 +198,7 @@ fn reclaiming_the_entire_lent_share() {
     assert_eq!(position.deposits.len(), 1);
     assert_eq!(position.lends.len(), 1);
     assert_eq!(get_coin(&coin_info.denom, &position.deposits), coin_info.to_coin(200));
+    assert_eq!(position.lends.first().unwrap().amount, Uint128::new(101));
 
     // Assert Rover's balances
     let coin = mock.query_balance(&mock.rover, &coin_info.denom);
