@@ -56,12 +56,29 @@ impl HealthComputer {
     }
 
     fn calculate_total_debt_value(&self) -> HealthResult<Uint128> {
+        let debts = self.calculate_debts_value()?;
+        let lends = self.calculate_lends_value()?;
+        Ok(debts.checked_add(lends)?)
+    }
+
+    fn calculate_debts_value(&self) -> HealthResult<Uint128> {
         let mut total = Uint128::zero();
         for debt in &self.positions.debts {
             let coin_price =
                 self.denoms_data.prices.get(&debt.denom).ok_or(MissingPrice(debt.denom.clone()))?;
             let debt_value = debt.amount.checked_mul_floor(*coin_price)?;
             total = total.checked_add(debt_value)?;
+        }
+        Ok(total)
+    }
+
+    fn calculate_lends_value(&self) -> HealthResult<Uint128> {
+        let mut total = Uint128::zero();
+        for lend in &self.positions.lends {
+            let coin_price =
+                self.denoms_data.prices.get(&lend.denom).ok_or(MissingPrice(lend.denom.clone()))?;
+            let lend_value = lend.amount.checked_mul_floor(*coin_price)?;
+            total = total.checked_add(lend_value)?;
         }
         Ok(total)
     }
