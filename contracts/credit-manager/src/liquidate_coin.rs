@@ -12,7 +12,7 @@ use mars_rover::{
 
 use crate::{
     health::query_health,
-    reclaim::current_lent_amount_for_denom,
+    reclaim::{current_lent_amount_for_denom, reclaim_msg},
     repay::current_debt_for_denom,
     state::{COIN_BALANCES, MAX_CLOSE_FACTOR, ORACLE, RED_BANK},
     utils::{decrement_coin_balance, increment_coin_balance},
@@ -56,7 +56,7 @@ pub fn liquidate_coin(
 }
 
 pub fn liquidate_lent_coin(
-    deps: DepsMut,
+    mut deps: DepsMut,
     env: Env,
     liquidator_account_id: &str,
     liquidatee_account_id: &str,
@@ -96,14 +96,23 @@ pub fn liquidate_lent_coin(
     // Check if we have to reclaim remaining amount
     if request.amount > lent_coin_balance {
         let reclaim_amount = request.amount - lent_coin_balance;
-        let msg = (CallbackMsg::Reclaim {
+        /*let msg = (CallbackMsg::Reclaim {
             account_id: liquidatee_account_id.to_string(),
             coin: ActionCoin {
                 denom: request_lent_coin_denom.to_string(),
                 amount: ActionAmount::Exact(reclaim_amount),
             },
         })
-        .into_cosmos_msg(&env.contract.address)?;
+        .into_cosmos_msg(&env.contract.address)?;*/
+        let msg = reclaim_msg(
+            deps.branch(),
+            env,
+            liquidatee_account_id,
+            &ActionCoin {
+                denom: request_lent_coin_denom.to_string(),
+                amount: ActionAmount::Exact(reclaim_amount),
+            },
+        )?;
         response = response.add_message(msg);
     }
 
