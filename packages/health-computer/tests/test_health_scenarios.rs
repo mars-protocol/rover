@@ -1189,7 +1189,7 @@ fn allowed_lent_coins_influence_max_ltv() {
                     amount: Uint128::new(10),
                 },
                 LentAmount {
-                    denom: uluna.market.denom.clone(),
+                    denom: uluna.market.denom,
                     shares: Default::default(),
                     amount: Uint128::new(2),
                 },

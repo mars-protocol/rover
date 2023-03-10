@@ -1,16 +1,13 @@
-use cosmwasm_std::{coins, Addr, Coin, Decimal, OverflowError, OverflowOperation, Uint128};
+use cosmwasm_std::{coins, Addr, Decimal, Uint128};
 use mars_mock_oracle::msg::CoinPrice;
 use mars_rover::{
-    error::{
-        ContractError,
-        ContractError::{AboveMaxLTV, LiquidationNotProfitable, NotLiquidatable},
-    },
-    msg::execute::Action::{Borrow, Deposit, EnterVault, Lend, LiquidateCoin},
+    error::{ContractError, ContractError::NotLiquidatable},
+    msg::execute::Action::{Borrow, Deposit, Lend, LiquidateCoin},
 };
 
 use crate::helpers::{
-    assert_err, get_coin, get_debt, get_lent, lp_token_info, uatom_info, ujake_info,
-    unlocked_vault_info, uosmo_info, AccountToFund, MockEnv,
+    assert_err, get_coin, get_debt, get_lent, uatom_info, ujake_info, uosmo_info, AccountToFund,
+    MockEnv,
 };
 
 pub mod helpers;
