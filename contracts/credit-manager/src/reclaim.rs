@@ -11,82 +11,28 @@ use crate::{
     utils::{increment_coin_balance, lent_shares_to_amount},
 };
 
-/*pub fn reclaim(
-    deps: DepsMut,
-    env: Env,
-    account_id: &str,
-    coin: &ActionCoin,
-) -> ContractResult<Response> {
-    let (lent_amount, lent_shares) =
-        current_lent_amount_for_denom(deps.as_ref(), &env, account_id, &coin.denom)?;
-    let amount_to_reclaim = min(lent_amount, coin.amount.value().unwrap_or(Uint128::MAX));
-    let shares_to_reclaim = lent_amount_to_shares(
-        deps.as_ref(),
-        &env,
-        &Coin {
-            denom: coin.denom.to_string(),
-            amount: amount_to_reclaim,
-        },
-    )?;
-
-    // Decrement token's lent position
-    if amount_to_reclaim == lent_amount {
-        LENT_SHARES.remove(deps.storage, (account_id, &coin.denom));
-    } else {
-        LENT_SHARES.save(
-            deps.storage,
-            (account_id, &coin.denom),
-            &lent_shares.checked_sub(shares_to_reclaim)?,
-        )?;
-    }
-
-    // Decrement total lent shares for coin
-    let total_lent_shares = TOTAL_LENT_SHARES.load(deps.storage, &coin.denom)?;
-    TOTAL_LENT_SHARES.save(
-        deps.storage,
-        &coin.denom,
-        &total_lent_shares.checked_sub(shares_to_reclaim)?,
-    )?;
-
-    increment_coin_balance(
-        deps.storage,
-        account_id,
-        &Coin {
-            denom: coin.denom.to_string(),
-            amount: amount_to_reclaim,
-        },
-    )?;
-
-    let red_bank = RED_BANK.load(deps.storage)?;
-    let red_bank_reclaim_msg = red_bank.reclaim_msg(&Coin {
-        denom: coin.denom.to_string(),
-        amount: amount_to_reclaim,
-    })?;
-
-    Ok(Response::new()
-        .add_message(red_bank_reclaim_msg)
-        .add_attribute("action", "reclaim")
-        .add_attribute("lent_shares_reclaimed", shares_to_reclaim)
-        .add_attribute("coin_reclaimed", format!("{}{}", amount_to_reclaim, &coin.denom)))
-}*/
-
 pub fn reclaim(
     deps: DepsMut,
     env: Env,
     account_id: &str,
     coin: &ActionCoin,
 ) -> ContractResult<Response> {
-    let red_bank_reclaim_msg = reclaim_msg(deps, env, account_id, coin)?;
+    let (red_bank_reclaim_msg, denom, amount_to_reclaim, shares_to_reclaim) =
+        prepare_reclaim_state_and_msg(deps, env, account_id, coin)?;
 
-    Ok(Response::new().add_message(red_bank_reclaim_msg))
+    Ok(Response::new()
+        .add_message(red_bank_reclaim_msg)
+        .add_attribute("action", "reclaim")
+        .add_attribute("lent_shares_reclaimed", shares_to_reclaim)
+        .add_attribute("coin_reclaimed", format!("{}{}", amount_to_reclaim, denom)))
 }
 
-pub fn reclaim_msg(
+pub fn prepare_reclaim_state_and_msg(
     deps: DepsMut,
     env: Env,
     account_id: &str,
     coin: &ActionCoin,
-) -> ContractResult<CosmosMsg> {
+) -> ContractResult<(CosmosMsg, String, Uint128, Uint128)> {
     let (lent_amount, lent_shares) =
         current_lent_amount_for_denom(deps.as_ref(), &env, account_id, &coin.denom)?;
     let amount_to_reclaim = min(lent_amount, coin.amount.value().unwrap_or(Uint128::MAX));
@@ -133,7 +79,7 @@ pub fn reclaim_msg(
         amount: amount_to_reclaim,
     })?;
 
-    Ok(red_bank_reclaim_msg)
+    Ok((red_bank_reclaim_msg, coin.denom.to_string(), amount_to_reclaim, shares_to_reclaim))
 }
 
 fn lent_amount_to_shares(deps: Deps, env: &Env, coin: &Coin) -> ContractResult<Uint128> {

@@ -5,7 +5,7 @@ use mars_rover::{
         ContractError,
         ContractError::{AboveMaxLTV, LiquidationNotProfitable, NotLiquidatable},
     },
-    msg::execute::Action::{Borrow, Deposit, EnterVault, Lend, LiquidateCoin, LiquidateLentCoin},
+    msg::execute::Action::{Borrow, Deposit, EnterVault, Lend, LiquidateCoin},
 };
 
 use crate::helpers::{
@@ -68,10 +68,10 @@ fn lent_positions_contribute_to_health() {
     let res = mock.update_credit_account(
         &liquidator_account_id,
         &liquidator,
-        vec![LiquidateLentCoin {
+        vec![LiquidateCoin {
             liquidatee_account_id: liquidatee_account_id.clone(),
             debt_coin: uosmo_info.to_coin(10),
-            request_lent_coin_denom: uatom_info.denom,
+            request_coin_denom: uatom_info.denom,
         }],
         &[],
     );
@@ -136,79 +136,16 @@ fn liquidatee_does_not_have_requested_lent_coin() {
         &liquidator,
         vec![
             Deposit(uosmo_info.to_coin(10)),
-            LiquidateLentCoin {
+            LiquidateCoin {
                 liquidatee_account_id: liquidatee_account_id.clone(),
                 debt_coin: uosmo_info.to_coin(10),
-                request_lent_coin_denom: ujake_info.denom.clone(),
+                request_coin_denom: ujake_info.denom.clone(),
             },
         ],
         &[uosmo_info.to_coin(10)],
     );
 
     assert_err(res, ContractError::CoinNotAvailable(ujake_info.denom));
-}
-
-#[test]
-fn liquidatee_does_not_have_debt_coin() {
-    let uatom_info = uatom_info();
-    let uosmo_info = uosmo_info();
-    let ujake_info = ujake_info();
-
-    let liquidatee = Addr::unchecked("liquidatee");
-    let liquidator = Addr::unchecked("liquidator");
-
-    let mut mock = MockEnv::new()
-        .allowed_coins(&[uatom_info.clone(), uosmo_info.clone(), ujake_info.clone()])
-        .fund_account(AccountToFund {
-            addr: liquidatee.clone(),
-            funds: vec![uatom_info.to_coin(500)],
-        })
-        .fund_account(AccountToFund {
-            addr: liquidator.clone(),
-            funds: vec![ujake_info.to_coin(500)],
-        })
-        .build()
-        .unwrap();
-
-    let liquidatee_account_id = mock.create_credit_account(&liquidatee).unwrap();
-
-    mock.update_credit_account(
-        &liquidatee_account_id,
-        &liquidatee,
-        vec![
-            Deposit(uatom_info.to_coin(100)),
-            Lend(uatom_info.to_coin(50)),
-            Borrow(uosmo_info.to_coin(100)),
-        ],
-        &[uatom_info.to_coin(100)],
-    )
-    .unwrap();
-
-    mock.price_change(CoinPrice {
-        denom: uosmo_info.denom.clone(),
-        price: Decimal::from_atomics(20u128, 0).unwrap(),
-    });
-
-    let health = mock.query_health(&liquidatee_account_id);
-    assert!(health.liquidatable);
-
-    let liquidator_account_id = mock.create_credit_account(&liquidator).unwrap();
-
-    let res = mock.update_credit_account(
-        &liquidator_account_id,
-        &liquidator,
-        vec![
-            Deposit(ujake_info.to_coin(10)),
-            LiquidateLentCoin {
-                liquidatee_account_id: liquidatee_account_id.clone(),
-                debt_coin: ujake_info.to_coin(10),
-                request_lent_coin_denom: uatom_info.denom.clone(),
-            },
-        ],
-        &[ujake_info.to_coin(10)],
-    );
-
-    assert_err(res, ContractError::NoDebt)
 }
 
 #[test]
@@ -264,10 +201,10 @@ fn liquidate_without_reclaiming() {
         &liquidator,
         vec![
             Deposit(uatom_info.to_coin(10)),
-            LiquidateLentCoin {
+            LiquidateCoin {
                 liquidatee_account_id: liquidatee_account_id.clone(),
                 debt_coin: uatom_info.to_coin(10),
-                request_lent_coin_denom: uosmo_info.denom,
+                request_coin_denom: uosmo_info.denom,
             },
         ],
         &[uatom_info.to_coin(10)],
@@ -351,10 +288,10 @@ fn liquidate_with_reclaiming() {
         &liquidator,
         vec![
             Deposit(uatom_info.to_coin(10)),
-            LiquidateLentCoin {
+            LiquidateCoin {
                 liquidatee_account_id: liquidatee_account_id.clone(),
                 debt_coin: uatom_info.to_coin(10),
-                request_lent_coin_denom: uosmo_info.denom,
+                request_coin_denom: uosmo_info.denom,
             },
         ],
         &[uatom_info.to_coin(10)],
