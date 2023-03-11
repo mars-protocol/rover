@@ -4,7 +4,7 @@ use mars_rover::{
     msg::execute::Action::{Deposit, Lend, Reclaim},
 };
 
-use crate::helpers::{assert_err, get_coin, uosmo_info, AccountToFund, MockEnv, uatom_info};
+use crate::helpers::{assert_err, get_coin, uatom_info, uosmo_info, AccountToFund, MockEnv};
 
 pub mod helpers;
 
@@ -251,7 +251,7 @@ fn reclaiming_multiple_assets() {
         vec![Deposit(uatom_info.to_coin(300)), Lend(uatom_info.to_coin(100))],
         &[coin(300, uatom_info.denom.clone())],
     )
-        .unwrap();
+    .unwrap();
 
     mock.update_credit_account(
         &account_id,
@@ -259,7 +259,7 @@ fn reclaiming_multiple_assets() {
         vec![Deposit(uosmo_info.to_coin(200)), Lend(uosmo_info.to_coin(100))],
         &[coin(200, uosmo_info.denom.clone())],
     )
-        .unwrap();
+    .unwrap();
     // Assert account id's position
     let position = mock.query_positions(&account_id);
     assert_eq!(position.deposits.len(), 2);
@@ -274,7 +274,7 @@ fn reclaiming_multiple_assets() {
         vec![Reclaim(uosmo_info.to_action_coin(101))],
         &[],
     )
-        .unwrap();
+    .unwrap();
 
     // 1 lent share should be removed and 1 should stay
 
