@@ -1,7 +1,7 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Decimal, Uint128};
+use cosmwasm_std::{Coin, Decimal, Uint128};
 use mars_red_bank_types::red_bank::Market;
-use mars_rover::msg::query::Positions;
+use mars_rover::{msg::query::Positions, traits::Coins};
 use mars_rover_health_types::{
     Health,
     HealthError::{MissingMarket, MissingPrice, MissingVaultConfig, MissingVaultValues},
@@ -67,9 +67,8 @@ impl HealthComputer {
     }
 
     fn calculate_collateral_value(&self) -> HealthResult<CollateralValue> {
-        // FIXME: refactor deposits and lends function to use common codebase
-        let deposits = self.calculate_deposits_value()?;
-        let lends = self.calculate_lends_value()?;
+        let deposits = self.calculate_coins_value(&self.positions.deposits)?;
+        let lends = self.calculate_coins_value(&self.positions.lends.to_coins())?;
         let vaults = self.calculate_vaults_value()?;
 
         Ok(CollateralValue {
@@ -88,12 +87,12 @@ impl HealthComputer {
         })
     }
 
-    fn calculate_deposits_value(&self) -> HealthResult<CollateralValue> {
+    fn calculate_coins_value(&self, coins: &[Coin]) -> HealthResult<CollateralValue> {
         let mut total_collateral_value = Uint128::zero();
         let mut max_ltv_adjusted_collateral = Uint128::zero();
         let mut liquidation_threshold_adjusted_collateral = Uint128::zero();
 
-        for c in &self.positions.deposits {
+        for c in coins {
             let coin_price =
                 self.denoms_data.prices.get(&c.denom).ok_or(MissingPrice(c.denom.clone()))?;
             let coin_value = c.amount.checked_mul_floor(*coin_price)?;
@@ -116,44 +115,6 @@ impl HealthComputer {
                 max_ltv_adjusted_collateral.checked_add(max_ltv_adjusted)?;
 
             let liq_adjusted = coin_value.checked_mul_floor(liquidation_threshold)?;
-            liquidation_threshold_adjusted_collateral =
-                liquidation_threshold_adjusted_collateral.checked_add(liq_adjusted)?;
-        }
-        Ok(CollateralValue {
-            total_collateral_value,
-            max_ltv_adjusted_collateral,
-            liquidation_threshold_adjusted_collateral,
-        })
-    }
-
-    fn calculate_lends_value(&self) -> HealthResult<CollateralValue> {
-        let mut total_collateral_value = Uint128::zero();
-        let mut max_ltv_adjusted_collateral = Uint128::zero();
-        let mut liquidation_threshold_adjusted_collateral = Uint128::zero();
-
-        for c in &self.positions.lends {
-            let coin_price =
-                self.denoms_data.prices.get(&c.denom).ok_or(MissingPrice(c.denom.clone()))?;
-            let deposit_value = c.amount.checked_mul_floor(*coin_price)?;
-            total_collateral_value = total_collateral_value.checked_add(deposit_value)?;
-
-            let &Market {
-                max_loan_to_value,
-                liquidation_threshold,
-                ..
-            } = self.denoms_data.markets.get(&c.denom).ok_or(MissingMarket(c.denom.clone()))?;
-
-            // If coin has been de-listed, drop MaxLTV to zero
-            let checked_max_ltv = if self.allowed_coins.contains(&c.denom) {
-                max_loan_to_value
-            } else {
-                Decimal::zero()
-            };
-            let max_ltv_adjusted = deposit_value.checked_mul_floor(checked_max_ltv)?;
-            max_ltv_adjusted_collateral =
-                max_ltv_adjusted_collateral.checked_add(max_ltv_adjusted)?;
-
-            let liq_adjusted = deposit_value.checked_mul_floor(liquidation_threshold)?;
             liquidation_threshold_adjusted_collateral =
                 liquidation_threshold_adjusted_collateral.checked_add(liq_adjusted)?;
         }
