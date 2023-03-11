@@ -53,23 +53,18 @@ fn successful_repay_from_non_owner() {
     mock.update_credit_account(
         &account_id,
         &owner,
-        vec![
-            Deposit(coin_info.to_coin(300)),
-            Borrow(coin_info.to_coin(50)),
-        ],
+        vec![Deposit(coin_info.to_coin(300)), Borrow(coin_info.to_coin(50))],
         &[coin(300, coin_info.denom.clone())],
     )
-        .unwrap();
+    .unwrap();
 
     mock.update_credit_account(
         &account_id,
         &another_user,
-        vec![
-            Repay(coin_info.to_action_coin(75)),
-        ],
+        vec![Repay(coin_info.to_action_coin(75))],
         &[],
     )
-        .unwrap();
+    .unwrap();
 
     let position = mock.query_positions(&account_id);
     assert_eq!(position.deposits.len(), 1);
