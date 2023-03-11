@@ -2,6 +2,7 @@ use cosmwasm_std::{
     to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdResult, WasmMsg,
 };
 use mars_account_nft::msg::ExecuteMsg as NftExecuteMsg;
+use mars_rover::msg::execute::Action::Repay;
 use mars_rover::{
     coins::Coins,
     error::{ContractError, ContractResult},
@@ -50,7 +51,6 @@ pub fn dispatch_actions(
     account_id: &str,
     actions: &[Action],
 ) -> ContractResult<Response> {
-    assert_is_token_owner(&deps, &info.sender, account_id)?;
     assert_not_contract_in_config(&deps.as_ref(), &info.sender)?;
 
     let mut response = Response::new();
@@ -59,6 +59,10 @@ pub fn dispatch_actions(
     let prev_health = query_health(deps.as_ref(), account_id)?;
 
     for action in actions {
+        if let Repay(..) = action {
+        } else {
+            assert_is_token_owner(&deps, &info.sender, account_id)?;
+        };
         match action {
             Action::Deposit(coin) => {
                 response = deposit(deps.storage, response, account_id, coin, &mut received_coins)?;

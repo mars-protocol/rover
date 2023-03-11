@@ -14,7 +14,7 @@ use crate::helpers::{
 pub mod helpers;
 
 #[test]
-fn only_token_owner_can_repay() {
+fn anyone_can_repay_debt() {
     let coin_info = uosmo_info();
     let owner = Addr::unchecked("owner");
     let mut mock = MockEnv::new().build().unwrap();
@@ -28,13 +28,7 @@ fn only_token_owner_can_repay() {
         &[],
     );
 
-    assert_err(
-        res,
-        ContractError::NotTokenOwner {
-            user: another_user.into(),
-            account_id,
-        },
-    )
+    assert_err(res, ContractError::NoDebt {})
 }
 
 #[test]
