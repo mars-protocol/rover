@@ -287,4 +287,24 @@ fn reclaiming_multiple_assets() {
     // Assert Rover's balances
     let coin = mock.query_balance(&mock.rover, &uosmo_info.denom);
     assert_eq!(coin.amount, Uint128::new(201));
+
+    mock.update_credit_account(
+        &account_id,
+        &user,
+        vec![Reclaim(uatom_info.to_action_coin(101))],
+        &[],
+    )
+        .unwrap();
+
+    // last lent share should be removed
+
+    // Assert account id's position
+    let position = mock.query_positions(&account_id);
+    assert_eq!(position.deposits.len(), 2);
+    assert_eq!(position.lends.len(), 0);
+    assert_eq!(get_coin(&uatom_info.denom, &position.deposits), uatom_info.to_coin(301));
+
+    // Assert Rover's balances
+    let coin = mock.query_balance(&mock.rover, &uatom_info.denom);
+    assert_eq!(coin.amount, Uint128::new(301));
 }
