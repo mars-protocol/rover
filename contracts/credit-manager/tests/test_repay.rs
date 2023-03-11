@@ -32,6 +32,65 @@ fn anyone_can_repay_debt() {
 }
 
 #[test]
+fn successful_repay_from_non_owner() {
+    let coin_info = uosmo_info();
+    let owner = Addr::unchecked("owner");
+    let another_user = Addr::unchecked("another_user");
+    let mut mock = MockEnv::new()
+        .allowed_coins(&[coin_info.clone()])
+        .fund_account(AccountToFund {
+            addr: owner.clone(),
+            funds: coins(300, coin_info.denom.clone()),
+        })
+        .fund_account(AccountToFund {
+            addr: another_user.clone(),
+            funds: coins(300, coin_info.denom.clone()),
+        })
+        .build()
+        .unwrap();
+    let account_id = mock.create_credit_account(&owner).unwrap();
+
+    mock.update_credit_account(
+        &account_id,
+        &owner,
+        vec![
+            Deposit(coin_info.to_coin(300)),
+            Borrow(coin_info.to_coin(50)),
+        ],
+        &[coin(300, coin_info.denom.clone())],
+    )
+        .unwrap();
+
+    mock.update_credit_account(
+        &account_id,
+        &another_user,
+        vec![
+            Repay(coin_info.to_action_coin(75)),
+        ],
+        &[],
+    )
+        .unwrap();
+
+    let position = mock.query_positions(&account_id);
+    assert_eq!(position.deposits.len(), 1);
+    let asset_res = position.deposits.first().unwrap();
+    let expected_net_asset_amount = Uint128::new(299); // Deposit + Borrow - Repay - interest
+    assert_eq!(asset_res.amount, expected_net_asset_amount);
+
+    assert_eq!(position.debts.len(), 0);
+
+    let res = mock.query_total_debt_shares(&coin_info.denom);
+    assert_eq!(res.shares, Uint128::zero());
+
+    let coin = mock.query_balance(&mock.rover, &coin_info.denom);
+    assert_eq!(coin.amount, Uint128::new(299));
+
+    let config = mock.query_config();
+    let coin = mock.query_balance(&Addr::unchecked(config.red_bank), &coin_info.denom);
+    assert_eq!(coin.amount, DEFAULT_RED_BANK_COIN_BALANCE.add(Uint128::new(1)));
+}
+
+#[test]
 fn repaying_with_zero_debt_raises() {
     let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
