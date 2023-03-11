@@ -294,7 +294,7 @@ fn reclaiming_multiple_assets() {
         vec![Reclaim(uatom_info.to_action_coin(101))],
         &[],
     )
-        .unwrap();
+    .unwrap();
 
     // last lent share should be removed
 
