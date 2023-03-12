@@ -9,7 +9,7 @@ use crate::helpers::{assert_err, get_coin, uatom_info, uosmo_info, AccountToFund
 pub mod helpers;
 
 #[test]
-fn test_only_token_owner_can_reclaim() {
+fn only_token_owner_can_reclaim() {
     let coin_info = uosmo_info();
     let owner = Addr::unchecked("owner");
     let mut mock = MockEnv::new().build().unwrap();
@@ -33,7 +33,7 @@ fn test_only_token_owner_can_reclaim() {
 }
 
 #[test]
-fn test_reclaiming_with_zero_lent() {
+fn reclaiming_with_zero_lent() {
     let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new().allowed_coins(&[coin_info.clone()]).build().unwrap();
@@ -61,7 +61,7 @@ fn test_reclaiming_with_zero_lent() {
 }
 
 #[test]
-fn test_when_trying_to_reclaim_more_than_lent() {
+fn when_trying_to_reclaim_more_than_lent() {
     let coin_info = uosmo_info();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
