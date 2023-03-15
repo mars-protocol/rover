@@ -1,26 +1,24 @@
 use std::ops::Add;
 
 use cosmwasm_std::{
-    Coin, CosmosMsg, Decimal, Deps, DepsMut, Env, QuerierWrapper, Response, StdError, Storage,
-    Uint128,
+    Coin, CosmosMsg, Decimal, DepsMut, Env, QuerierWrapper, Response, StdError, Storage, Uint128,
 };
 use mars_rover::{
     adapters::oracle::Oracle,
     error::{ContractError, ContractResult},
-    msg::execute::{ActionAmount, ActionCoin, CallbackMsg},
+    msg::execute::CallbackMsg,
     traits::Stringify,
 };
 
 use crate::{
     health::query_health,
-    reclaim::prepare_reclaim_state_and_msg,
     repay::current_debt_for_denom,
-    state::{COIN_BALANCES, LENT_SHARES, MAX_CLOSE_FACTOR, ORACLE, RED_BANK},
-    utils::{decrement_coin_balance, increment_coin_balance, lent_shares_to_amount},
+    state::{COIN_BALANCES, MAX_CLOSE_FACTOR, ORACLE, RED_BANK},
+    utils::{decrement_coin_balance, increment_coin_balance},
 };
 
-pub fn liquidate_coin(
-    mut deps: DepsMut,
+pub fn liquidate_deposit(
+    deps: DepsMut,
     env: Env,
     liquidator_account_id: &str,
     liquidatee_account_id: &str,
@@ -31,55 +29,25 @@ pub fn liquidate_coin(
         .load(deps.storage, (liquidatee_account_id, request_coin_denom))
         .map_err(|_| ContractError::CoinNotAvailable(request_coin_denom.to_string()))?;
 
-    // Check how much lent coin is available for reclaim (can be withdrawn from Red Bank)
-    let (total_lent_amount, _) =
-        current_lent(deps.as_ref(), &env, liquidatee_account_id, request_coin_denom)?;
-
-    // Check total amount of requested coin in liquidatee account and lent to Red Bank
-    let request_coin_total_amt = request_coin_balance.checked_add(total_lent_amount)?;
-
     let (debt, request) = calculate_liquidation(
         &deps,
         &env,
         liquidatee_account_id,
         &debt_coin,
         request_coin_denom,
-        request_coin_total_amt,
+        request_coin_balance,
     )?;
-
-    let mut response = Response::new();
 
     let repay_msg =
         repay_debt(deps.storage, &env, liquidator_account_id, liquidatee_account_id, &debt)?;
-    response = response.add_message(repay_msg);
-
-    // Check if we have to reclaim remaining amount
-    if request.amount > request_coin_balance {
-        let reclaim_amount = request.amount - request_coin_balance;
-        // Using Reclaim callback and:
-        // - subtracting reclaimed amount (which is later incremented in Reclaim action)
-        //   from current liquidatee coin balance could result with balance below 0 (not possible).
-        // - adding Transfer callback (transferring requested coin from liquidatee to liquidator)
-        //   could leave liquidator in unhealthy state (liquidated coin will be transferred
-        //   to the liquidator after CallbackMsg::AssertMaxLTV check).
-        let (msg, _, _, _) = prepare_reclaim_state_and_msg(
-            deps.branch(),
-            env,
-            liquidatee_account_id,
-            &ActionCoin {
-                denom: request_coin_denom.to_string(),
-                amount: ActionAmount::Exact(reclaim_amount),
-            },
-        )?;
-        response = response.add_message(msg);
-    }
 
     // Transfer requested coin from liquidatee to liquidator
     decrement_coin_balance(deps.storage, liquidatee_account_id, &request)?;
     increment_coin_balance(deps.storage, liquidator_account_id, &request)?;
 
-    Ok(response
-        .add_attribute("action", "liquidate_coin")
+    Ok(Response::new()
+        .add_message(repay_msg)
+        .add_attribute("action", "liquidate_deposit")
         .add_attribute("account_id", liquidator_account_id)
         .add_attribute("liquidatee_account_id", liquidatee_account_id)
         .add_attribute("coin_debt_repaid", debt.to_string())
@@ -203,20 +171,4 @@ fn assert_liquidation_profitable(
     }
 
     Ok(())
-}
-
-fn current_lent(
-    deps: Deps,
-    env: &Env,
-    account_id: &str,
-    denom: &str,
-) -> ContractResult<(Uint128, Uint128)> {
-    let lent_shares_opt = LENT_SHARES.may_load(deps.storage, (account_id, denom))?;
-    match lent_shares_opt {
-        Some(lent_shares) => {
-            let coin = lent_shares_to_amount(deps, &env.contract.address, denom, lent_shares)?;
-            Ok((coin.amount, lent_shares))
-        }
-        None => Ok((Uint128::zero(), Uint128::zero())),
-    }
 }

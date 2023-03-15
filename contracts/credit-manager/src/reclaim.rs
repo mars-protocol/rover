@@ -1,6 +1,6 @@
 use std::cmp::min;
 
-use cosmwasm_std::{Coin, CosmosMsg, Deps, DepsMut, Env, Response, Uint128};
+use cosmwasm_std::{Coin, Deps, DepsMut, Env, Response, Uint128};
 use mars_rover::{
     error::{ContractError, ContractResult},
     msg::execute::ActionCoin,
@@ -17,22 +17,6 @@ pub fn reclaim(
     account_id: &str,
     coin: &ActionCoin,
 ) -> ContractResult<Response> {
-    let (red_bank_reclaim_msg, denom, amount_to_reclaim, shares_to_reclaim) =
-        prepare_reclaim_state_and_msg(deps, env, account_id, coin)?;
-
-    Ok(Response::new()
-        .add_message(red_bank_reclaim_msg)
-        .add_attribute("action", "reclaim")
-        .add_attribute("lent_shares_reclaimed", shares_to_reclaim)
-        .add_attribute("coin_reclaimed", format!("{}{}", amount_to_reclaim, denom)))
-}
-
-pub fn prepare_reclaim_state_and_msg(
-    deps: DepsMut,
-    env: Env,
-    account_id: &str,
-    coin: &ActionCoin,
-) -> ContractResult<(CosmosMsg, String, Uint128, Uint128)> {
     let (lent_amount, lent_shares) =
         current_lent_amount_for_denom(deps.as_ref(), &env, account_id, &coin.denom)?;
     let amount_to_reclaim = min(lent_amount, coin.amount.value().unwrap_or(Uint128::MAX));
@@ -79,10 +63,14 @@ pub fn prepare_reclaim_state_and_msg(
         amount: amount_to_reclaim,
     })?;
 
-    Ok((red_bank_reclaim_msg, coin.denom.to_string(), amount_to_reclaim, shares_to_reclaim))
+    Ok(Response::new()
+        .add_message(red_bank_reclaim_msg)
+        .add_attribute("action", "reclaim")
+        .add_attribute("lent_shares_reclaimed", shares_to_reclaim)
+        .add_attribute("coin_reclaimed", format!("{}{}", amount_to_reclaim, &coin.denom)))
 }
 
-fn lent_amount_to_shares(deps: Deps, env: &Env, coin: &Coin) -> ContractResult<Uint128> {
+pub fn lent_amount_to_shares(deps: Deps, env: &Env, coin: &Coin) -> ContractResult<Uint128> {
     let red_bank = RED_BANK.load(deps.storage)?;
     let total_lent_shares = TOTAL_LENT_SHARES.load(deps.storage, &coin.denom)?;
     let total_lent = red_bank.query_lent(&deps.querier, &env.contract.address, &coin.denom)?;
