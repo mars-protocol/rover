@@ -1,3 +1,5 @@
+use std::cmp::min;
+
 use cosmwasm_std::{
     to_binary, Addr, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdResult, Uint128,
     WasmMsg,
@@ -8,10 +10,7 @@ use mars_rover::{
     error::{ContractError, ContractResult},
     msg::execute::{Action, CallbackMsg, LiquidateRequest},
 };
-use std::cmp::min;
 
-use crate::repay::current_debt_for_denom;
-use crate::utils::{decrement_coin_balance, increment_coin_balance};
 use crate::{
     borrow::borrow,
     deposit::deposit,
@@ -21,11 +20,14 @@ use crate::{
     liquidate_lend::liquidate_lend,
     reclaim::reclaim,
     refund::refund_coin_balances,
-    repay::repay,
+    repay::{current_debt_for_denom, repay},
     state::ACCOUNT_NFT,
     swap::swap_exact_in,
     update_coin_balances::update_coin_balance,
-    utils::{assert_is_token_owner, assert_not_contract_in_config},
+    utils::{
+        assert_is_token_owner, assert_not_contract_in_config, decrement_coin_balance,
+        increment_coin_balance,
+    },
     vault::{
         enter_vault, exit_vault, exit_vault_unlocked, liquidate_vault, request_vault_unlock,
         update_vault_coin_balance,
