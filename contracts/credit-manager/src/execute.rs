@@ -1,12 +1,17 @@
-use std::cmp::min;
-use cosmwasm_std::{to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdResult, WasmMsg, Coin, Uint128, Deps};
+use cosmwasm_std::{
+    to_binary, Addr, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdResult, Uint128,
+    WasmMsg,
+};
 use mars_account_nft::msg::ExecuteMsg as NftExecuteMsg;
 use mars_rover::{
     coins::Coins,
     error::{ContractError, ContractResult},
     msg::execute::{Action, CallbackMsg, LiquidateRequest},
 };
+use std::cmp::min;
 
+use crate::repay::current_debt_for_denom;
+use crate::utils::{decrement_coin_balance, increment_coin_balance};
 use crate::{
     borrow::borrow,
     deposit::deposit,
@@ -28,9 +33,6 @@ use crate::{
     withdraw::withdraw,
     zap::{provide_liquidity, withdraw_liquidity},
 };
-use crate::repay::current_debt_for_denom;
-use crate::state::{DEBT_SHARES, RED_BANK, TOTAL_DEBT_SHARES};
-use crate::utils::{decrement_coin_balance, increment_coin_balance};
 
 pub fn create_credit_account(deps: DepsMut, user: Addr) -> ContractResult<Response> {
     let contract_addr = ACCOUNT_NFT.load(deps.storage)?;
@@ -44,15 +46,6 @@ pub fn create_credit_account(deps: DepsMut, user: Addr) -> ContractResult<Respon
     });
 
     Ok(Response::new().add_message(nft_mint_msg).add_attribute("action", "create_credit_account"))
-}
-
-fn debt_amount_to_shares(deps: Deps, env: &Env, coin: &Coin) -> ContractResult<Uint128> {
-    let red_bank = RED_BANK.load(deps.storage)?;
-    let total_debt_shares = TOTAL_DEBT_SHARES.load(deps.storage, &coin.denom)?;
-    let total_debt_amount =
-        red_bank.query_debt(&deps.querier, &env.contract.address, &coin.denom)?;
-    let shares = total_debt_shares.checked_multiply_ratio(coin.amount, total_debt_amount)?;
-    Ok(shares)
 }
 
 pub fn dispatch_actions(
@@ -89,8 +82,12 @@ pub fn dispatch_actions(
                 coin,
             } => {
                 if let Some(recipient) = recipient_account_id {
-                    let (debt_amount, _debt_shares) =
-                        current_debt_for_denom(deps.as_ref(), &env, &recipient.clone(), &coin.denom)?;
+                    let (debt_amount, _debt_shares) = current_debt_for_denom(
+                        deps.as_ref(),
+                        &env,
+                        &recipient.clone(),
+                        &coin.denom,
+                    )?;
                     let amount_to_repay =
                         min(debt_amount, coin.amount.value().unwrap_or(Uint128::MAX));
                     let coin_to_repay = Coin {
@@ -99,7 +96,8 @@ pub fn dispatch_actions(
                     };
 
                     decrement_coin_balance(deps.storage, account_id, &coin_to_repay)?;
-                    // increment_coin_balance(deps.storage, recipient, &coin_to_repay)?;
+                    increment_coin_balance(deps.storage, recipient, &coin_to_repay)?;
+
                     callbacks.push(CallbackMsg::Repay {
                         account_id: recipient.to_string(),
                         coin: coin.clone(),
