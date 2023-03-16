@@ -24,7 +24,7 @@ fn only_token_owner_can_repay() {
     let res = mock.update_credit_account(
         &account_id,
         &another_user,
-        vec![Repay(coin_info.to_action_coin(12312))],
+        vec![Repay {recipient_account_id: None, coin: coin_info.to_action_coin(12312)}],
         &[],
     );
 
@@ -48,7 +48,7 @@ fn repaying_with_zero_debt_raises() {
     let res = mock.update_credit_account(
         &account_id,
         &user,
-        vec![Repay(coin_info.to_action_coin(0))],
+        vec![Repay {recipient_account_id: None, coin:coin_info.to_action_coin(0)}],
         &[],
     );
 
@@ -58,7 +58,7 @@ fn repaying_with_zero_debt_raises() {
     let res = mock.update_credit_account(
         &account_id,
         &user,
-        vec![Repay(coin_info.to_action_coin_full_balance())],
+        vec![Repay {recipient_account_id: None, coin:coin_info.to_action_coin_full_balance()}],
         &[],
     );
 
@@ -111,7 +111,7 @@ fn raises_when_repaying_what_is_not_owed() {
         vec![
             Deposit(uatom_info.to_coin(300)),
             Borrow(uosmo_info.to_coin(42)),
-            Repay(uatom_info.to_action_coin(42)),
+            Repay {recipient_account_id: None, coin:uatom_info.to_action_coin(42)},
         ],
         &[uatom_info.to_coin(300)],
     );
@@ -151,7 +151,7 @@ fn raises_when_not_enough_assets_to_repay() {
             Deposit(uatom_info.to_coin(300)),
             Borrow(uosmo_info.to_coin(50)),
             Withdraw(uosmo_info.to_coin(10)),
-            Repay(uosmo_info.to_action_coin(50)),
+            Repay {recipient_account_id: None, coin:uosmo_info.to_action_coin(50)},
         ],
         &[uatom_info.to_coin(300)],
     );
@@ -197,7 +197,7 @@ fn repay_less_than_total_debt() {
 
     let interim_red_bank_debt = mock.query_red_bank_debt(&coin_info.denom);
 
-    mock.update_credit_account(&account_id, &user, vec![Repay(coin_info.to_action_coin(20))], &[])
+    mock.update_credit_account(&account_id, &user,vec![Repay {recipient_account_id: None, coin:coin_info.to_action_coin(20)}], &[])
         .unwrap();
 
     let position = mock.query_positions(&account_id);
@@ -230,7 +230,7 @@ fn repay_less_than_total_debt() {
     mock.update_credit_account(
         &account_id,
         &user,
-        vec![Repay(coin_info.to_action_coin(31))], // Interest accrued paid back as well
+        vec![Repay {recipient_account_id: None, coin:coin_info.to_action_coin(31)}], // Interest accrued paid back as well
         &[],
     )
     .unwrap();
@@ -276,7 +276,7 @@ fn pays_max_debt_when_attempting_to_repay_more_than_owed() {
         vec![
             Deposit(coin_info.to_coin(300)),
             Borrow(coin_info.to_coin(50)),
-            Repay(coin_info.to_action_coin(75)),
+            Repay {recipient_account_id: None, coin:coin_info.to_action_coin(75)},
         ],
         &[coin(300, coin_info.denom.clone())],
     )
@@ -324,7 +324,7 @@ fn amount_none_repays_total_debt() {
         vec![
             Deposit(coin_info.to_coin(300)),
             Borrow(coin_info.to_coin(50)),
-            Repay(coin_info.to_action_coin_full_balance()),
+            Repay {recipient_account_id: None, coin:coin_info.to_action_coin_full_balance()},
         ],
         &[coin(300, coin_info.denom.clone())],
     )
@@ -342,4 +342,74 @@ fn amount_none_repays_total_debt() {
     let config = mock.query_config();
     let coin = mock.query_balance(&Addr::unchecked(config.red_bank), &coin_info.denom);
     assert_eq!(coin.amount, DEFAULT_RED_BANK_COIN_BALANCE.add(Uint128::new(1)));
+}
+
+#[test]
+fn other_account_repays_debt() {
+    let coin_info = uosmo_info();
+
+    let owner = Addr::unchecked("owner");
+    let another_account = Addr::unchecked("other_account");
+
+    let mut mock = MockEnv::new()
+        .allowed_coins(&[coin_info.clone()])
+        .fund_account(AccountToFund {
+            addr: another_account.clone(),
+            funds: coins(300, coin_info.denom.clone()),
+        })
+        .fund_account(AccountToFund {
+            addr: owner.clone(),
+            funds: coins(300, coin_info.denom.clone()),
+        })
+        .build()
+        .unwrap();
+
+    let owner_account_id = mock.create_credit_account(&owner).unwrap();
+    let another_account_id = mock.create_credit_account(&another_account).unwrap();
+
+    mock.update_credit_account(
+        &owner_account_id,
+        &owner,
+        vec![
+            Deposit(coin_info.to_coin(300)),
+            Borrow(coin_info.to_coin(50)),
+        ],
+        &[coin(300, coin_info.denom.clone())],
+    )
+        .unwrap();
+
+    mock.update_credit_account(
+        &another_account_id,
+        &another_account,
+        vec![
+            Deposit(coin_info.to_coin(300)),
+            Borrow(coin_info.to_coin(50)),
+        ],
+        &[coin(300, coin_info.denom.clone())],
+    )
+        .unwrap();
+
+    mock.update_credit_account(
+        &another_account_id,
+        &another_account,
+        vec![
+            Repay {recipient_account_id: Some(owner_account_id.clone()), coin:coin_info.to_action_coin(52)}, // +1 for interest
+        ],
+        &[],
+    )
+        .unwrap();
+
+    let owner_position = mock.query_positions(&owner_account_id.clone());
+    assert_eq!(owner_position.deposits.len(), 1);
+    let another_account_position = mock.query_positions(&another_account_id.clone());
+    assert_eq!(another_account_position.deposits.len(), 1);
+
+    let owner_position = mock.query_positions(&owner_account_id.clone());
+    assert_eq!(owner_position.debts.len(), 0);
+    let another_account_position = mock.query_positions(&another_account_id.clone());
+    assert_eq!(another_account_position.debts.len(), 1);
+
+    let config = mock.query_config();
+    let coin = mock.query_balance(&Addr::unchecked(config.red_bank), &coin_info.denom);
+    assert_eq!(coin.amount, DEFAULT_RED_BANK_COIN_BALANCE.sub(Uint128::new(48))); // borrow amount = (50+50)-52
 }
