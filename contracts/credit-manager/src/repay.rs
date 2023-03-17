@@ -91,10 +91,10 @@ pub fn check_for_recipient(
 ) -> ContractResult<(String, ActionCoin)> {
     if let Some(recipient) = recipient_account_id {
         let (debt_amount, _) =
-            current_debt_for_denom(deps.as_ref(), &env, &recipient.clone(), &coin.denom)?;
+            current_debt_for_denom(deps.as_ref(), env, &recipient.clone(), &coin.denom)?;
         let amount_to_repay = min(debt_amount, coin.amount.value().unwrap_or(Uint128::MAX));
         let coin_to_repay = &Coin {
-            denom: coin.denom.to_string(),
+            denom: coin.denom,
             amount: amount_to_repay,
         };
 
