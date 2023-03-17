@@ -380,47 +380,47 @@ fn amount_none_repays_total_debt() {
 fn benefactor_repays_recipient() {
     let coin_info = uosmo_info();
 
-    let owner = Addr::unchecked("owner");
-    let another_account = Addr::unchecked("other_account");
+    let recipient = Addr::unchecked("recipient");
+    let benefactor = Addr::unchecked("benefactor");
 
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
-            addr: another_account.clone(),
+            addr: benefactor.clone(),
             funds: coins(300, coin_info.denom.clone()),
         })
         .fund_account(AccountToFund {
-            addr: owner.clone(),
+            addr: recipient.clone(),
             funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
 
-    let owner_account_id = mock.create_credit_account(&owner).unwrap();
-    let another_account_id = mock.create_credit_account(&another_account).unwrap();
+    let recipient_account_id = mock.create_credit_account(&recipient).unwrap();
+    let benefactor_account_id = mock.create_credit_account(&benefactor).unwrap();
 
     mock.update_credit_account(
-        &owner_account_id,
-        &owner,
+        &recipient_account_id,
+        &recipient,
         vec![Deposit(coin_info.to_coin(300)), Borrow(coin_info.to_coin(50))],
         &[coin(300, coin_info.denom.clone())],
     )
     .unwrap();
 
     mock.update_credit_account(
-        &another_account_id,
-        &another_account,
+        &benefactor_account_id,
+        &benefactor,
         vec![Deposit(coin_info.to_coin(300))],
         &[coin(300, coin_info.denom.clone())],
     )
     .unwrap();
 
     mock.update_credit_account(
-        &another_account_id,
-        &another_account,
+        &benefactor_account_id,
+        &benefactor,
         vec![
             Repay {
-                recipient_account_id: Some(owner_account_id.clone()),
+                recipient_account_id: Some(recipient_account_id.clone()),
                 coin: coin_info.to_action_coin(51),
             }, // +1 for interest
         ],
@@ -428,15 +428,15 @@ fn benefactor_repays_recipient() {
     )
     .unwrap();
 
-    let owner_position = mock.query_positions(&owner_account_id.clone());
-    assert_eq!(owner_position.deposits.len(), 1);
-    let another_account_position = mock.query_positions(&another_account_id.clone());
-    assert_eq!(another_account_position.deposits.len(), 1);
+    let recipient_position = mock.query_positions(&recipient_account_id.clone());
+    assert_eq!(recipient_position.deposits.len(), 1);
+    let benefactor_position = mock.query_positions(&benefactor_account_id.clone());
+    assert_eq!(benefactor_position.deposits.len(), 1);
 
-    let owner_position = mock.query_positions(&owner_account_id.clone());
-    assert_eq!(owner_position.debts.len(), 0);
-    let another_account_position = mock.query_positions(&another_account_id.clone());
-    assert_eq!(another_account_position.debts.len(), 0);
+    let recipient_position = mock.query_positions(&recipient_account_id.clone());
+    assert_eq!(recipient_position.debts.len(), 0);
+    let benefactor_position = mock.query_positions(&benefactor_account_id.clone());
+    assert_eq!(benefactor_position.debts.len(), 0);
 
     let config = mock.query_config();
     let coin = mock.query_balance(&Addr::unchecked(config.red_bank), &coin_info.denom);
@@ -447,35 +447,35 @@ fn benefactor_repays_recipient() {
 fn raises_when_benefactor_has_no_funds() {
     let coin_info = uosmo_info();
 
-    let owner = Addr::unchecked("owner");
-    let another_account = Addr::unchecked("other_account");
+    let recipient = Addr::unchecked("recipient");
+    let benefactor = Addr::unchecked("benefactor");
 
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
-            addr: owner.clone(),
+            addr: recipient.clone(),
             funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
 
-    let owner_account_id = mock.create_credit_account(&owner).unwrap();
-    let another_account_id = mock.create_credit_account(&another_account).unwrap();
+    let recipient_account_id = mock.create_credit_account(&recipient).unwrap();
+    let benefactor_account_id = mock.create_credit_account(&benefactor).unwrap();
 
     mock.update_credit_account(
-        &owner_account_id,
-        &owner,
+        &recipient_account_id,
+        &recipient,
         vec![Deposit(coin_info.to_coin(300)), Borrow(coin_info.to_coin(50))],
         &[coin(300, coin_info.denom.clone())],
     )
     .unwrap();
 
     let res = mock.update_credit_account(
-        &another_account_id,
-        &another_account,
+        &benefactor_account_id,
+        &benefactor,
         vec![
             Repay {
-                recipient_account_id: Some(owner_account_id.clone()),
+                recipient_account_id: Some(recipient_account_id.clone()),
                 coin: coin_info.to_action_coin(51),
             }, // +1 for interest
         ],
@@ -496,47 +496,47 @@ fn raises_when_benefactor_has_no_funds() {
 fn raises_when_non_owner_of_benefactor_account_repays() {
     let coin_info = uosmo_info();
 
-    let owner = Addr::unchecked("owner");
-    let another_account = Addr::unchecked("other_account");
+    let recipient = Addr::unchecked("recipient");
+    let benefactor = Addr::unchecked("benefactor");
 
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
-            addr: another_account.clone(),
+            addr: benefactor.clone(),
             funds: coins(300, coin_info.denom.clone()),
         })
         .fund_account(AccountToFund {
-            addr: owner.clone(),
+            addr: recipient.clone(),
             funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
 
-    let owner_account_id = mock.create_credit_account(&owner).unwrap();
-    let another_account_id = mock.create_credit_account(&another_account).unwrap();
+    let recipient_account_id = mock.create_credit_account(&recipient).unwrap();
+    let benefactor_account_id = mock.create_credit_account(&benefactor).unwrap();
 
     mock.update_credit_account(
-        &owner_account_id,
-        &owner,
+        &recipient_account_id,
+        &recipient,
         vec![Deposit(coin_info.to_coin(300)), Borrow(coin_info.to_coin(50))],
         &[coin(300, coin_info.denom.clone())],
     )
     .unwrap();
 
     mock.update_credit_account(
-        &another_account_id,
-        &another_account,
+        &benefactor_account_id,
+        &benefactor,
         vec![Deposit(coin_info.to_coin(300))],
         &[coin(300, coin_info.denom.clone())],
     )
     .unwrap();
 
     let res = mock.update_credit_account(
-        &owner_account_id,
-        &another_account,
+        &recipient_account_id,
+        &benefactor,
         vec![
             Repay {
-                recipient_account_id: Some(owner_account_id.clone()),
+                recipient_account_id: Some(recipient_account_id.clone()),
                 coin: coin_info.to_action_coin(51),
             }, // +1 for interest
         ],
@@ -546,8 +546,8 @@ fn raises_when_non_owner_of_benefactor_account_repays() {
     assert_err(
         res,
         ContractError::NotTokenOwner {
-            user: another_account.to_string(),
-            account_id: owner_account_id,
+            user: benefactor.to_string(),
+            account_id: recipient_account_id,
         },
     )
 }
@@ -556,47 +556,47 @@ fn raises_when_non_owner_of_benefactor_account_repays() {
 fn raises_when_benefactor_repays_account_with_no_debt() {
     let coin_info = uosmo_info();
 
-    let owner = Addr::unchecked("owner");
-    let another_account = Addr::unchecked("other_account");
+    let recipient = Addr::unchecked("recipient");
+    let benefactor = Addr::unchecked("benefactor");
 
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
-            addr: another_account.clone(),
+            addr: benefactor.clone(),
             funds: coins(300, coin_info.denom.clone()),
         })
         .fund_account(AccountToFund {
-            addr: owner.clone(),
+            addr: recipient.clone(),
             funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
 
-    let owner_account_id = mock.create_credit_account(&owner).unwrap();
-    let another_account_id = mock.create_credit_account(&another_account).unwrap();
+    let recipient_account_id = mock.create_credit_account(&recipient).unwrap();
+    let benefactor_account_id = mock.create_credit_account(&benefactor).unwrap();
 
     mock.update_credit_account(
-        &owner_account_id,
-        &owner,
+        &recipient_account_id,
+        &recipient,
         vec![Deposit(coin_info.to_coin(300))],
         &[coin(300, coin_info.denom.clone())],
     )
     .unwrap();
 
     mock.update_credit_account(
-        &another_account_id,
-        &another_account,
+        &benefactor_account_id,
+        &benefactor,
         vec![Deposit(coin_info.to_coin(300))],
         &[coin(300, coin_info.denom.clone())],
     )
     .unwrap();
 
     let res = mock.update_credit_account(
-        &another_account_id,
-        &another_account,
+        &benefactor_account_id,
+        &benefactor,
         vec![
             Repay {
-                recipient_account_id: Some(owner_account_id.clone()),
+                recipient_account_id: Some(recipient_account_id.clone()),
                 coin: coin_info.to_action_coin(51),
             }, // +1 for interest
         ],
@@ -610,56 +610,56 @@ fn raises_when_benefactor_repays_account_with_no_debt() {
 fn benefactor_pays_some_of_recipient_debt() {
     let coin_info = uosmo_info();
 
-    let owner = Addr::unchecked("owner");
-    let another_account = Addr::unchecked("other_account");
+    let recipient = Addr::unchecked("recipient");
+    let benefactor = Addr::unchecked("benefactor");
 
     let mut mock = MockEnv::new()
         .allowed_coins(&[coin_info.clone()])
         .fund_account(AccountToFund {
-            addr: another_account.clone(),
+            addr: benefactor.clone(),
             funds: coins(300, coin_info.denom.clone()),
         })
         .fund_account(AccountToFund {
-            addr: owner.clone(),
+            addr: recipient.clone(),
             funds: coins(300, coin_info.denom.clone()),
         })
         .build()
         .unwrap();
 
-    let owner_account_id = mock.create_credit_account(&owner).unwrap();
-    let another_account_id = mock.create_credit_account(&another_account).unwrap();
+    let recipient_account_id = mock.create_credit_account(&recipient).unwrap();
+    let benefactor_account_id = mock.create_credit_account(&benefactor).unwrap();
 
     mock.update_credit_account(
-        &owner_account_id,
-        &owner,
+        &recipient_account_id,
+        &recipient,
         vec![Deposit(coin_info.to_coin(300)), Borrow(coin_info.to_coin(100))],
         &[coin(300, coin_info.denom.clone())],
     )
     .unwrap();
 
     mock.update_credit_account(
-        &another_account_id,
-        &another_account,
+        &benefactor_account_id,
+        &benefactor,
         vec![Deposit(coin_info.to_coin(50))],
         &[coin(50, coin_info.denom.clone())],
     )
     .unwrap();
 
     mock.update_credit_account(
-        &another_account_id,
-        &another_account,
+        &benefactor_account_id,
+        &benefactor,
         vec![Repay {
-            recipient_account_id: Some(owner_account_id.clone()),
+            recipient_account_id: Some(recipient_account_id.clone()),
             coin: coin_info.to_action_coin(50),
         }],
         &[],
     )
     .unwrap();
 
-    let owner_position = mock.query_positions(&owner_account_id.clone());
-    assert_eq!(owner_position.debts.len(), 1);
-    let another_account_position = mock.query_positions(&another_account_id.clone());
-    assert_eq!(another_account_position.debts.len(), 0);
+    let recipient_position = mock.query_positions(&recipient_account_id.clone());
+    assert_eq!(recipient_position.debts.len(), 1);
+    let benefactor_account_position = mock.query_positions(&benefactor_account_id.clone());
+    assert_eq!(benefactor_account_position.debts.len(), 0);
 
     let config = mock.query_config();
     let coin = mock.query_balance(&Addr::unchecked(config.red_bank), &coin_info.denom);

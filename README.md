@@ -33,6 +33,8 @@ pub enum Action {
     Deposit(Coin),
     Withdraw(Coin),
     Borrow(Coin),
+    /// The sender will repay on behalf of the recipient account. If 'recipient_account_id: None',
+    /// the sender repays to its own account.
     Repay {
         recipient_account_id: Option<String>,
         coin: ActionCoin,
