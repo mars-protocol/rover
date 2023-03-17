@@ -132,6 +132,8 @@ pub enum Action {
     Reclaim(ActionCoin),
     /// Repay coin of specified amount back to Red Bank. If `amount: AccountBalance` is passed,
     /// the repaid amount will be the minimum between account balance for denom and total owed.
+    /// The sender will repay on behalf of the recipient account. If 'recipient_account_id: None',
+    /// the sender repays to its own account.
     Repay {
         recipient_account_id: Option<String>,
         coin: ActionCoin,

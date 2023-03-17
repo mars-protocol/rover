@@ -377,7 +377,7 @@ fn amount_none_repays_total_debt() {
 }
 
 #[test]
-fn other_account_repays_debt() {
+fn benefactor_repays_recipient() {
     let coin_info = uosmo_info();
 
     let owner = Addr::unchecked("owner");
@@ -444,7 +444,7 @@ fn other_account_repays_debt() {
 }
 
 #[test]
-fn raises_when_second_account_to_repay_has_no_funds() {
+fn raises_when_benefactor_has_no_funds() {
     let coin_info = uosmo_info();
 
     let owner = Addr::unchecked("owner");
@@ -493,7 +493,7 @@ fn raises_when_second_account_to_repay_has_no_funds() {
 }
 
 #[test]
-fn raises_when_non_owner_of_second_account_repays() {
+fn raises_when_non_owner_of_benefactor_account_repays() {
     let coin_info = uosmo_info();
 
     let owner = Addr::unchecked("owner");
@@ -553,7 +553,7 @@ fn raises_when_non_owner_of_second_account_repays() {
 }
 
 #[test]
-fn raises_when_account_repays_another_account_with_no_debt() {
+fn raises_when_benefactor_repays_account_with_no_debt() {
     let coin_info = uosmo_info();
 
     let owner = Addr::unchecked("owner");
@@ -607,7 +607,7 @@ fn raises_when_account_repays_another_account_with_no_debt() {
 }
 
 #[test]
-fn raises_when_other_account_pays_some_debt() {
+fn benefactor_pays_some_of_recipient_debt() {
     let coin_info = uosmo_info();
 
     let owner = Addr::unchecked("owner");

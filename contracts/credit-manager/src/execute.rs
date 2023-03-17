@@ -1,8 +1,5 @@
-use std::cmp::min;
-
 use cosmwasm_std::{
-    to_binary, Addr, Coin, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdResult, Uint128,
-    WasmMsg,
+    to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdResult, WasmMsg,
 };
 use mars_account_nft::msg::ExecuteMsg as NftExecuteMsg;
 use mars_rover::{
@@ -20,14 +17,11 @@ use crate::{
     liquidate_lend::liquidate_lend,
     reclaim::reclaim,
     refund::refund_coin_balances,
-    repay::{current_debt_for_denom, repay},
+    repay::{check_for_recipient, repay},
     state::ACCOUNT_NFT,
     swap::swap_exact_in,
     update_coin_balances::update_coin_balance,
-    utils::{
-        assert_is_token_owner, assert_not_contract_in_config, decrement_coin_balance,
-        increment_coin_balance,
-    },
+    utils::{assert_is_token_owner, assert_not_contract_in_config},
     vault::{
         enter_vault, exit_vault, exit_vault_unlocked, liquidate_vault, request_vault_unlock,
         update_vault_coin_balance,
@@ -51,7 +45,7 @@ pub fn create_credit_account(deps: DepsMut, user: Addr) -> ContractResult<Respon
 }
 
 pub fn dispatch_actions(
-    deps: DepsMut,
+    mut deps: DepsMut,
     env: Env,
     info: MessageInfo,
     account_id: &str,
@@ -83,33 +77,17 @@ pub fn dispatch_actions(
                 recipient_account_id,
                 coin,
             } => {
-                if let Some(recipient) = recipient_account_id {
-                    let (debt_amount, _debt_shares) = current_debt_for_denom(
-                        deps.as_ref(),
-                        &env,
-                        &recipient.clone(),
-                        &coin.denom,
-                    )?;
-                    let amount_to_repay =
-                        min(debt_amount, coin.amount.value().unwrap_or(Uint128::MAX));
-                    let coin_to_repay = Coin {
-                        denom: coin.denom.to_string(),
-                        amount: amount_to_repay,
-                    };
-
-                    decrement_coin_balance(deps.storage, account_id, &coin_to_repay)?;
-                    increment_coin_balance(deps.storage, recipient, &coin_to_repay)?;
-
-                    callbacks.push(CallbackMsg::Repay {
-                        account_id: recipient.to_string(),
-                        coin: coin.clone(),
-                    })
-                } else {
-                    callbacks.push(CallbackMsg::Repay {
-                        account_id: account_id.to_string(),
-                        coin: coin.clone(),
-                    })
-                }
+                let (account_id, coin) = check_for_recipient(
+                    &mut deps,
+                    &env,
+                    account_id,
+                    recipient_account_id,
+                    coin.clone(),
+                )?;
+                callbacks.push(CallbackMsg::Repay {
+                    account_id,
+                    coin,
+                })
             }
             Action::Lend(coin) => callbacks.push(CallbackMsg::Lend {
                 account_id: account_id.to_string(),

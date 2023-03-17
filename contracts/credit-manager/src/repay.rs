@@ -8,7 +8,7 @@ use mars_rover::{
 
 use crate::{
     state::{DEBT_SHARES, RED_BANK, TOTAL_DEBT_SHARES},
-    utils::{debt_shares_to_amount, decrement_coin_balance},
+    utils::{debt_shares_to_amount, decrement_coin_balance, increment_coin_balance},
 };
 
 pub fn repay(
@@ -80,4 +80,29 @@ pub fn current_debt_for_denom(
         DEBT_SHARES.load(deps.storage, (account_id, denom)).map_err(|_| ContractError::NoDebt)?;
     let coin = debt_shares_to_amount(deps, &env.contract.address, denom, debt_shares)?;
     Ok((coin.amount, debt_shares))
+}
+
+pub fn check_for_recipient(
+    deps: &mut DepsMut,
+    env: &Env,
+    account_id: &str,
+    recipient_account_id: &Option<String>,
+    coin: ActionCoin,
+) -> ContractResult<(String, ActionCoin)> {
+    if let Some(recipient) = recipient_account_id {
+        let (debt_amount, _) =
+            current_debt_for_denom(deps.as_ref(), &env, &recipient.clone(), &coin.denom)?;
+        let amount_to_repay = min(debt_amount, coin.amount.value().unwrap_or(Uint128::MAX));
+        let coin_to_repay = &Coin {
+            denom: coin.denom.to_string(),
+            amount: amount_to_repay,
+        };
+
+        decrement_coin_balance(deps.storage, account_id, coin_to_repay)?;
+        increment_coin_balance(deps.storage, recipient, coin_to_repay)?;
+
+        Ok((recipient.to_string(), coin_to_repay.into()))
+    } else {
+        Ok((account_id.to_string(), coin))
+    }
 }

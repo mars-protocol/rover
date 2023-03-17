@@ -33,8 +33,8 @@ pub enum Action {
     Deposit(Coin),
     Withdraw(Coin),
     Borrow(Coin),
-    Repay{
-        recipient_account_id: &Option<String>,
+    Repay {
+        recipient_account_id: Option<String>,
         coin: ActionCoin,
     },
     EnterVault {
