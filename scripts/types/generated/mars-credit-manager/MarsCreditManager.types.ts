@@ -211,6 +211,13 @@ export type CallbackMsg =
       }
     }
   | {
+      repay_for_recipient: {
+        benefactor_account_id: string
+        coin: ActionCoin
+        recipient_account_id: string
+      }
+    }
+  | {
       lend: {
         account_id: string
         coin: Coin

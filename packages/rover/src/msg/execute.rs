@@ -214,6 +214,12 @@ pub enum CallbackMsg {
         account_id: String,
         coin: ActionCoin,
     },
+    /// Benefactor account repays debt on behalf of recipient
+    RepayForRecipient {
+        benefactor_account_id: String,
+        recipient_account_id: String,
+        coin: ActionCoin,
+    },
     /// Lend coin to the Red Bank
     Lend {
         account_id: String,

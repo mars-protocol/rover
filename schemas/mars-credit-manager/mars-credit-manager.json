@@ -792,6 +792,36 @@
             "additionalProperties": false
           },
           {
+            "description": "Benefactor account repays debt on behalf of recipient",
+            "type": "object",
+            "required": [
+              "repay_for_recipient"
+            ],
+            "properties": {
+              "repay_for_recipient": {
+                "type": "object",
+                "required": [
+                  "benefactor_account_id",
+                  "coin",
+                  "recipient_account_id"
+                ],
+                "properties": {
+                  "benefactor_account_id": {
+                    "type": "string"
+                  },
+                  "coin": {
+                    "$ref": "#/definitions/ActionCoin"
+                  },
+                  "recipient_account_id": {
+                    "type": "string"
+                  }
+                },
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          },
+          {
             "description": "Lend coin to the Red Bank",
             "type": "object",
             "required": [

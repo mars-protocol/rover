@@ -1,9 +1,12 @@
 use std::cmp::min;
 
-use cosmwasm_std::{Coin, Deps, DepsMut, Env, Response, Uint128};
+use cosmwasm_std::{to_binary, Coin, CosmosMsg, Deps, DepsMut, Env, Response, Uint128, WasmMsg};
 use mars_rover::{
     error::{ContractError, ContractResult},
-    msg::execute::ActionCoin,
+    msg::{
+        execute::{ActionCoin, CallbackMsg::Repay},
+        ExecuteMsg,
+    },
 };
 
 use crate::{
@@ -82,27 +85,37 @@ pub fn current_debt_for_denom(
     Ok((coin.amount, debt_shares))
 }
 
-pub fn check_for_recipient(
-    deps: &mut DepsMut,
-    env: &Env,
-    account_id: &str,
-    recipient_account_id: &Option<String>,
+pub fn repay_for_recipient(
+    deps: DepsMut,
+    env: Env,
+    benefactor_account_id: &str,
+    recipient_account_id: &str,
     coin: ActionCoin,
-) -> ContractResult<(String, ActionCoin)> {
-    if let Some(recipient) = recipient_account_id {
-        let (debt_amount, _) =
-            current_debt_for_denom(deps.as_ref(), env, &recipient.clone(), &coin.denom)?;
-        let amount_to_repay = min(debt_amount, coin.amount.value().unwrap_or(Uint128::MAX));
-        let coin_to_repay = &Coin {
-            denom: coin.denom,
-            amount: amount_to_repay,
-        };
+) -> ContractResult<Response> {
+    let (debt_amount, _) =
+        current_debt_for_denom(deps.as_ref(), &env, recipient_account_id, &coin.denom)?;
+    let amount_to_repay = min(debt_amount, coin.amount.value().unwrap_or(Uint128::MAX));
+    let coin_to_repay = &Coin {
+        denom: coin.denom,
+        amount: amount_to_repay,
+    };
 
-        decrement_coin_balance(deps.storage, account_id, coin_to_repay)?;
-        increment_coin_balance(deps.storage, recipient, coin_to_repay)?;
+    decrement_coin_balance(deps.storage, benefactor_account_id, coin_to_repay)?;
+    increment_coin_balance(deps.storage, recipient_account_id, coin_to_repay)?;
 
-        Ok((recipient.to_string(), coin_to_repay.into()))
-    } else {
-        Ok((account_id.to_string(), coin))
-    }
+    let repay_callback_msg = CosmosMsg::Wasm(WasmMsg::Execute {
+        contract_addr: env.contract.address.to_string(),
+        funds: vec![],
+        msg: to_binary(&ExecuteMsg::Callback(Repay {
+            account_id: recipient_account_id.to_string(),
+            coin: ActionCoin::from(coin_to_repay),
+        }))?,
+    });
+
+    Ok(Response::new()
+        .add_message(repay_callback_msg)
+        .add_attribute("action", "repay_for_recipient")
+        .add_attribute("benefactor_account_id", benefactor_account_id)
+        .add_attribute("recipient_account_id", recipient_account_id)
+        .add_attribute("coin_repaid", coin_to_repay.to_string()))
 }

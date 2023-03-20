@@ -17,7 +17,7 @@ use crate::{
     liquidate_lend::liquidate_lend,
     reclaim::reclaim,
     refund::refund_coin_balances,
-    repay::{check_for_recipient, repay},
+    repay::{repay, repay_for_recipient},
     state::ACCOUNT_NFT,
     swap::swap_exact_in,
     update_coin_balances::update_coin_balance,
@@ -45,7 +45,7 @@ pub fn create_credit_account(deps: DepsMut, user: Addr) -> ContractResult<Respon
 }
 
 pub fn dispatch_actions(
-    mut deps: DepsMut,
+    deps: DepsMut,
     env: Env,
     info: MessageInfo,
     account_id: &str,
@@ -77,17 +77,18 @@ pub fn dispatch_actions(
                 recipient_account_id,
                 coin,
             } => {
-                let (account_id, coin) = check_for_recipient(
-                    &mut deps,
-                    &env,
-                    account_id,
-                    recipient_account_id,
-                    coin.clone(),
-                )?;
-                callbacks.push(CallbackMsg::Repay {
-                    account_id,
-                    coin,
-                })
+                if let Some(recipient) = recipient_account_id {
+                    callbacks.push(CallbackMsg::RepayForRecipient {
+                        benefactor_account_id: account_id.to_string(),
+                        recipient_account_id: recipient.clone(),
+                        coin: coin.clone(),
+                    })
+                } else {
+                    callbacks.push(CallbackMsg::Repay {
+                        account_id: account_id.to_string(),
+                        coin: coin.clone(),
+                    })
+                }
             }
             Action::Lend(coin) => callbacks.push(CallbackMsg::Lend {
                 account_id: account_id.to_string(),
@@ -244,6 +245,11 @@ pub fn execute_callback(
             account_id,
             coin,
         } => repay(deps, env, &account_id, &coin),
+        CallbackMsg::RepayForRecipient {
+            benefactor_account_id,
+            recipient_account_id,
+            coin,
+        } => repay_for_recipient(deps, env, &benefactor_account_id, &recipient_account_id, coin),
         CallbackMsg::Lend {
             account_id,
             coin,
