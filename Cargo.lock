@@ -1227,6 +1227,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "mars-rover-liquidation"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-multi-test",
+ "cw-storage-plus 1.0.1",
+ "cw-utils 1.0.1",
+ "cw-vault-standard",
+ "cw2 1.0.1",
+ "mars-mock-credit-manager",
+ "mars-mock-oracle",
+ "mars-mock-red-bank",
+ "mars-mock-vault",
+ "mars-owner",
+ "mars-red-bank-types",
+ "mars-rover",
+ "mars-rover-health-computer",
+ "mars-rover-health-types",
+ "thiserror",
+]
+
+[[package]]
 name = "mars-swapper-base"
 version = "1.0.0"
 dependencies = [

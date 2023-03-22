@@ -6,6 +6,7 @@ members = [
     "contracts/swapper/*",
     "contracts/zapper/*",
     "contracts/health",
+    "contracts/liquidation",
 
     # mock contracts
     "contracts/mock-credit-manager",

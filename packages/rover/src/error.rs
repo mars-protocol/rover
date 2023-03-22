@@ -3,6 +3,7 @@ use cosmwasm_std::{
     DecimalRangeExceeded, OverflowError, StdError, Uint128,
 };
 use mars_owner::OwnerError;
+use mars_rover_health_types::HealthError;
 use thiserror::Error;
 
 use crate::coins::Coins;
@@ -136,4 +137,7 @@ pub enum ContractError {
 
     #[error("There is more time left on the lock period")]
     UnlockNotReady,
+
+    #[error("{0}")]
+    Health(#[from] HealthError),
 }
