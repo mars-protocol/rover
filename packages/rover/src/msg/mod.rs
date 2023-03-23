@@ -1,5 +1,6 @@
 pub mod execute;
 pub mod instantiate;
+pub mod liquidation;
 pub mod query;
 pub mod zapper;
 

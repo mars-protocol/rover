@@ -1,19 +1,12 @@
-use std::ops::Add;
-
-use cosmwasm_std::{
-    Coin, CosmosMsg, Decimal, DepsMut, Env, QuerierWrapper, Response, StdError, Storage, Uint128,
-};
+use cosmwasm_std::{Coin, CosmosMsg, DepsMut, Env, Response, Storage, Uint128};
 use mars_rover::{
-    adapters::oracle::Oracle,
     error::{ContractError, ContractResult},
-    msg::execute::CallbackMsg,
-    traits::Stringify,
+    msg::{execute::CallbackMsg, query::DebtAmount},
 };
 
 use crate::{
-    health::query_health,
     repay::current_debt_for_denom,
-    state::{COIN_BALANCES, MAX_CLOSE_FACTOR, ORACLE, RED_BANK},
+    state::{COIN_BALANCES, LIQUIDATION_CONTRACT},
     utils::{decrement_coin_balance, increment_coin_balance},
 };
 
@@ -54,6 +47,37 @@ pub fn liquidate_deposit(
         .add_attribute("coin_liquidated", request.to_string()))
 }
 
+pub fn calculate_liquidation(
+    deps: &DepsMut,
+    env: &Env,
+    liquidatee_account_id: &str,
+    debt_coin: &Coin,
+    request_coin: &str,
+    request_coin_balance: Uint128,
+) -> ContractResult<(Coin, Coin)> {
+    let lc = LIQUIDATION_CONTRACT.load(deps.storage)?;
+
+    let (total_debt_amount, shares) =
+        current_debt_for_denom(deps.as_ref(), env, liquidatee_account_id, &debt_coin.denom)?;
+
+    let lr = lc.query_liquidation(
+        &deps.querier,
+        liquidatee_account_id.to_string(),
+        debt_coin.clone(),
+        Coin {
+            denom: request_coin.to_string(),
+            amount: request_coin_balance,
+        },
+        DebtAmount {
+            denom: debt_coin.denom.to_string(),
+            shares,
+            amount: total_debt_amount,
+        },
+    )?;
+
+    Ok((lr.debt_coin, lr.request_coin))
+}
+/*
 /// Calculates precise debt & request coin amounts to liquidate
 /// The debt amount will be adjusted down if:
 /// - Exceeds liquidatee's total debt for denom
@@ -132,7 +156,7 @@ pub fn calculate_liquidation(
     assert_liquidation_profitable(&deps.querier, &oracle, result.clone())?;
 
     Ok(result)
-}
+}*/
 
 pub fn repay_debt(
     storage: &mut dyn Storage,
@@ -153,6 +177,7 @@ pub fn repay_debt(
     Ok(msg)
 }
 
+/*
 /// In scenarios with small amounts or large gap between coin prices, there is a possibility
 /// that the liquidation will result in loss for the liquidator. This assertion prevents this.
 fn assert_liquidation_profitable(
@@ -171,4 +196,4 @@ fn assert_liquidation_profitable(
     }
 
     Ok(())
-}
+}*/

@@ -3,11 +3,13 @@ use cosmwasm_std::entry_point;
 use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response};
 use cw2::set_contract_version;
 use mars_owner::OwnerInit::SetInitialOwner;
-use mars_rover::{error::ContractResult, msg::execute::LiquidateRequest};
+use mars_rover::{
+    error::ContractResult,
+    msg::liquidation::{ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg},
+};
 
 use crate::{
-    compute::{liquidate_deposit, liquidate_lend, liquidate_vault},
-    msg::{ConfigResponse, ExecuteMsg, InstantiateMsg, QueryMsg},
+    compute::query_liquidation,
     state::{CREDIT_MANAGER, OWNER},
     update_config::update_config,
 };
@@ -38,7 +40,7 @@ pub fn instantiate(
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
-    env: Env,
+    _env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
 ) -> ContractResult<Response> {
@@ -47,48 +49,6 @@ pub fn execute(
         ExecuteMsg::UpdateConfig {
             credit_manager,
         } => update_config(deps, info, credit_manager),
-        ExecuteMsg::Liquidate {
-            liquidator_account_id,
-            liquidatee_account_id,
-            debt_coin,
-            request,
-        } => {
-            // FIXME: check ownership of the account
-            // assert_is_token_owner(&deps, &info.sender, account_id)?;
-            match request {
-                LiquidateRequest::Deposit(request_coin_denom) => liquidate_deposit(
-                    deps,
-                    env,
-                    &liquidator_account_id,
-                    &liquidatee_account_id,
-                    debt_coin,
-                    &request_coin_denom,
-                ),
-                LiquidateRequest::Lend(request_coin_denom) => liquidate_lend(
-                    deps,
-                    env,
-                    &liquidator_account_id,
-                    &liquidatee_account_id,
-                    debt_coin,
-                    &request_coin_denom,
-                ),
-                LiquidateRequest::Vault {
-                    request_vault,
-                    position_type,
-                } => {
-                    let request_vault = request_vault.check(deps.api)?;
-                    liquidate_vault(
-                        deps,
-                        env,
-                        &liquidator_account_id,
-                        &liquidatee_account_id,
-                        debt_coin,
-                        request_vault,
-                        position_type,
-                    )
-                }
-            }
-        }
     }
 }
 
@@ -96,6 +56,18 @@ pub fn execute(
 pub fn query(deps: Deps, _: Env, msg: QueryMsg) -> ContractResult<Binary> {
     let res = match msg {
         QueryMsg::Config {} => to_binary(&query_config(deps)?),
+        QueryMsg::Liquidation {
+            liquidatee_account_id,
+            debt_coin,
+            request_coin,
+            liquidatee_debt_coin,
+        } => to_binary(&query_liquidation(
+            deps,
+            liquidatee_account_id,
+            debt_coin,
+            request_coin,
+            liquidatee_debt_coin,
+        )?),
     };
     res.map_err(Into::into)
 }

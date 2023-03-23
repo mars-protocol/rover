@@ -1,14 +1,9 @@
 use cosmwasm_std::{Addr, QuerierWrapper};
 use mars_rover::{
-    adapters::{
-        oracle::Oracle,
-        red_bank::RedBank,
-        vault::{Vault, VaultConfig},
-    },
+    adapters::vault::{Vault, VaultConfig},
     error::ContractResult,
     msg::query::{ConfigResponse, Positions, QueryMsg, VaultConfigResponse},
 };
-use mars_rover_health_types::HealthResult;
 
 use crate::types::CreditManagerConfigResponse;
 

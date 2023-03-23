@@ -1,7 +1,8 @@
-/*use cosmwasm_schema::{cw_serde, QueryResponses};
+use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::Coin;
 use mars_owner::{OwnerResponse, OwnerUpdate};
-use mars_rover::msg::query::DebtAmount;
+
+use crate::msg::query::DebtAmount;
 
 #[cw_serde]
 pub struct InstantiateMsg {
@@ -30,11 +31,11 @@ pub enum QueryMsg {
     Liquidation {
         /// The credit account id of the one with a liquidation threshold health factor 1 or below
         liquidatee_account_id: String,
-        /// The coin they wish to acquire from the liquidatee (amount returned will include the bonus)
+        /// Debt to repay
         debt_coin: Coin,
-        /// Position details to be liquidated
+        /// The coin they wish to acquire from the liquidatee (amount returned will include the bonus)
         request_coin: Coin,
-        /// TODO
+        /// Total liquidatee debt
         liquidatee_debt_coin: DebtAmount,
     },
 }
@@ -52,4 +53,3 @@ pub struct LiquidationResponse {
     /// Request coin amount to give to a liquidator
     pub request_coin: Coin,
 }
-*/

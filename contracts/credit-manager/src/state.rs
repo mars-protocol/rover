@@ -4,6 +4,7 @@ use cw_storage_plus::{Item, Map};
 use mars_owner::Owner;
 use mars_rover::adapters::{
     health::HealthContract,
+    liquidation::LiquidationContract,
     oracle::Oracle,
     red_bank::RedBank,
     swap::Swapper,
@@ -22,6 +23,7 @@ pub const SWAPPER: Item<Swapper> = Item::new("swapper");
 pub const VAULT_CONFIGS: Map<&Addr, VaultConfig> = Map::new("vault_configs");
 pub const ZAPPER: Item<Zapper> = Item::new("zapper");
 pub const HEALTH_CONTRACT: Item<HealthContract> = Item::new("health_contract");
+pub const LIQUIDATION_CONTRACT: Item<LiquidationContract> = Item::new("liquidation_contract");
 
 // Config
 pub const OWNER: Owner = Owner::new("owner");

@@ -1,15 +1,10 @@
-use std::{collections::HashMap, ops::Add};
+use std::ops::Add;
 
-use cosmwasm_std::{
-    Coin, Decimal, Deps, DepsMut, Env, QuerierWrapper, Response, StdError, StdResult, Uint128,
-};
+use cosmwasm_std::{Coin, Decimal, Deps, QuerierWrapper, StdError, Uint128};
 use mars_rover::{
-    adapters::{
-        oracle::Oracle,
-        vault::{Vault, VaultPositionType},
-    },
+    adapters::oracle::Oracle,
     error::{ContractError, ContractResult},
-    msg::query::DebtAmount,
+    msg::{liquidation::LiquidationResponse, query::DebtAmount},
     traits::Stringify,
 };
 use mars_rover_health_types::HealthError::CreditManagerNotSet;
@@ -18,80 +13,45 @@ use crate::{
     querier::LiquidationQuerier, state::CREDIT_MANAGER, types::CreditManagerConfigResponse,
 };
 
-pub fn liquidate_deposit(
-    deps: DepsMut,
-    env: Env,
-    liquidator_account_id: &str,
-    liquidatee_account_id: &str,
+pub fn query_liquidation(
+    deps: Deps,
+    liquidatee_account_id: String,
     debt_coin: Coin,
-    request_coin_denom: &str,
-) -> ContractResult<Response> {
-    unimplemented!()
-}
-
-pub fn liquidate_lend(
-    deps: DepsMut,
-    env: Env,
-    liquidator_account_id: &str,
-    liquidatee_account_id: &str,
-    debt_coin: Coin,
-    request_coin_denom: &str,
-) -> ContractResult<Response> {
-    unimplemented!()
-}
-
-pub fn liquidate_vault(
-    deps: DepsMut,
-    env: Env,
-    liquidator_account_id: &str,
-    liquidatee_account_id: &str,
-    debt_coin: Coin,
-    request_vault: Vault,
-    position_type: VaultPositionType,
-) -> ContractResult<Response> {
-    unimplemented!()
-}
-
-pub fn compute_liquidation(
-    deps: DepsMut,
-    env: Env,
-    liquidator_account_id: &str,
-    liquidatee_account_id: &str,
-    debt_coin: Coin,
-    request_coin_denom: &str,
-) -> ContractResult<(Coin, Coin)> {
+    request_coin: Coin,
+    liquidatee_debt_coin: DebtAmount,
+) -> ContractResult<LiquidationResponse> {
     let credit_manager_addr =
         CREDIT_MANAGER.may_load(deps.storage)?.ok_or(CreditManagerNotSet {})?;
     let querier = LiquidationQuerier::new(&deps.querier, &credit_manager_addr);
+
     let config = querier.query_credit_manager_config()?;
-    let positions = querier.query_positions(liquidatee_account_id)?;
+
+    /*let positions = querier.query_positions(liquidatee_account_id)?;
     let debt = positions
         .debts
         .iter()
         .find(|d| d.denom.eq(&debt_coin.denom))
         .ok_or(ContractError::NoDebt)?;
-    let lend = positions
-        .lends
-        .iter()
-        .find(|d| d.denom.eq(request_coin_denom))
-        .ok_or(ContractError::NoneLent)?;
     let deposit = positions
         .deposits
         .iter()
         .find(|d| d.denom.eq(request_coin_denom))
-        .ok_or(ContractError::CoinNotAvailable(request_coin_denom.to_string()))?;
+        .ok_or(ContractError::CoinNotAvailable(request_coin_denom.to_string()))?;*/
 
-    let request_coin_balance = deposit.amount;
-    calculate_liquidation(
+    let (debt, request) = calculate_liquidation(
         &deps,
-        &env,
-        liquidatee_account_id,
+        &liquidatee_account_id,
         &debt_coin,
-        request_coin_denom,
-        request_coin_balance,
+        &request_coin.denom,
+        request_coin.amount,
         config,
-        debt,
-    )
+        &liquidatee_debt_coin,
+    )?;
+
+    Ok(LiquidationResponse {
+        debt_coin: debt,
+        request_coin: request,
+    })
 }
 
 /// Calculates precise debt & request coin amounts to liquidate
@@ -101,8 +61,7 @@ pub fn compute_liquidation(
 /// - The value of the debt repaid exceeds the maximum close factor %
 /// Returns -> (Debt Coin, Request Coin)
 pub fn calculate_liquidation(
-    deps: &DepsMut,
-    env: &Env,
+    deps: &Deps,
     liquidatee_account_id: &str,
     debt_coin: &Coin,
     request_coin: &str,
