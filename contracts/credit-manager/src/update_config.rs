@@ -7,6 +7,7 @@ use mars_rover::{
     traits::{FallbackStr, Stringify},
 };
 
+use crate::state::RED_BANK;
 use crate::{
     instantiate::{assert_lte_to_one, assert_no_duplicate_coins, assert_no_duplicate_vaults},
     state::{
@@ -68,6 +69,12 @@ pub fn update_config(
         ORACLE.save(deps.storage, &unchecked.check(deps.api)?)?;
         response =
             response.add_attribute("key", "oracle").add_attribute("value", unchecked.address());
+    }
+
+    if let Some(unchecked) = updates.red_bank {
+        RED_BANK.save(deps.storage, &unchecked.check(deps.api)?)?;
+        response =
+            response.add_attribute("key", "red-bank").add_attribute("value", unchecked.address());
     }
 
     if let Some(unchecked) = updates.swapper {
