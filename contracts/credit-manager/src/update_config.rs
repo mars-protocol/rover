@@ -73,7 +73,7 @@ pub fn update_config(
     if let Some(unchecked) = updates.red_bank {
         RED_BANK.save(deps.storage, &unchecked.check(deps.api)?)?;
         response =
-            response.add_attribute("key", "red-bank").add_attribute("value", unchecked.address());
+            response.add_attribute("key", "red_bank").add_attribute("value", unchecked.address());
     }
 
     if let Some(unchecked) = updates.swapper {
