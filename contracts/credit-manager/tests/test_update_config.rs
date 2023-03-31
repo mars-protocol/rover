@@ -1,6 +1,7 @@
 use cosmwasm_std::{coin, Addr, Decimal, Uint128};
 use cw_multi_test::{BasicApp, Executor};
 use mars_mock_oracle::msg::{CoinPrice, InstantiateMsg as OracleInstantiateMsg};
+use mars_mock_red_bank::msg::InstantiateMsg as RedBankInstantiateMsg;
 use mars_mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
 use mars_rover::{
     adapters::{
