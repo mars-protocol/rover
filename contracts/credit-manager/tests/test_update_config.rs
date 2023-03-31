@@ -2,11 +2,11 @@ use cosmwasm_std::{coin, Addr, Decimal, Uint128};
 use cw_multi_test::{BasicApp, Executor};
 use mars_mock_oracle::msg::{CoinPrice, InstantiateMsg as OracleInstantiateMsg};
 use mars_mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
-use mars_rover::adapters::red_bank::RedBankUnchecked;
 use mars_rover::{
     adapters::{
         health::HealthContractUnchecked,
         oracle::{OracleBase, OracleUnchecked},
+        red_bank::RedBankUnchecked,
         swap::SwapperBase,
         vault::{VaultBase, VaultConfig},
         zapper::ZapperBase,

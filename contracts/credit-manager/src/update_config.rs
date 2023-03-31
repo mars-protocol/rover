@@ -7,12 +7,11 @@ use mars_rover::{
     traits::{FallbackStr, Stringify},
 };
 
-use crate::state::RED_BANK;
 use crate::{
     instantiate::{assert_lte_to_one, assert_no_duplicate_coins, assert_no_duplicate_vaults},
     state::{
         ACCOUNT_NFT, ALLOWED_COINS, HEALTH_CONTRACT, MAX_CLOSE_FACTOR, MAX_UNLOCKING_POSITIONS,
-        ORACLE, OWNER, SWAPPER, VAULT_CONFIGS, ZAPPER,
+        ORACLE, OWNER, RED_BANK, SWAPPER, VAULT_CONFIGS, ZAPPER,
     },
 };
 
