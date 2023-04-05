@@ -557,9 +557,9 @@ dependencies = [
 
 [[package]]
 name = "cw-vault-standard"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "793cd7de3239b1bf187a2a61c8e37d80bb9bd6e354328bfb12070323a435eee1"
+checksum = "c2e72c053adf399c2dc95cf07ee0c8723dfceeb13ba127cc96ba31d96e454919"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
@@ -1291,7 +1291,7 @@ dependencies = [
  "mars-rover-health",
  "mars-rover-health-types",
  "mars-swapper-mock",
- "mars-zapper-mock",
+ "mars-v2-zapper-mock",
 ]
 
 [[package]]
@@ -1516,7 +1516,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mars-zapper-base"
+name = "mars-v2-zapper-base"
 version = "1.0.0"
 dependencies = [
  "cosmwasm-schema",
@@ -1529,7 +1529,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "mars-zapper-mock"
+name = "mars-v2-zapper-mock"
 version = "1.0.0"
 dependencies = [
  "cosmwasm-schema",
@@ -1541,14 +1541,41 @@ dependencies = [
 ]
 
 [[package]]
-name = "mars-zapper-osmosis"
+name = "mars-v2-zapper-osmosis"
 version = "1.0.0"
 dependencies = [
  "cosmwasm-std",
  "cw-dex",
  "cw-utils 1.0.1",
  "cw2 1.0.1",
- "mars-zapper-base",
+ "mars-v2-zapper-base",
+ "osmosis-std 0.15.2",
+ "osmosis-test-tube",
+]
+
+[[package]]
+name = "mars-v3-zapper-base"
+version = "1.0.0"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-utils 1.0.1",
+ "cw2 1.0.1",
+ "mars-owner",
+ "schemars",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
+name = "mars-v3-zapper-osmosis"
+version = "1.0.0"
+dependencies = [
+ "anyhow",
+ "cosmwasm-std",
+ "cw-utils 1.0.1",
+ "mars-owner",
+ "mars-v3-zapper-base",
  "osmosis-std 0.15.2",
  "osmosis-test-tube",
 ]
