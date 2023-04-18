@@ -65,6 +65,7 @@ mars-rover-health-types    = { version = "2.0.0", path = "./packages/health-type
 mars-osmosis               = { git = "https://github.com/mars-protocol/red-bank", rev = "00301d60c38af09d8eb7980355009e2f00c6f41f" }
 mars-red-bank-types        = "1.0.0"
 mars-owner                 = { version = "1.1.0", features = ["emergency-owner"] }
+mars-params                = "1.0.2"
 mars-rover                 = { version = "2.0.0", path = "./packages/rover" }
 
 # contracts

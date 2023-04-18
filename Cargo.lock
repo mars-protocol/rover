@@ -1455,6 +1455,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "mars-params"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e76688c883401778ab5f60c83e0e982f307438fbbcbfea10bbb97a950222636e"
+dependencies = [
+ "cosmwasm-schema",
+ "cosmwasm-std",
+ "cw-storage-plus 1.0.1",
+ "cw2 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "mars-owner",
+ "mars-red-bank-types",
+ "mars-utils",
+ "schemars",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "mars-red-bank-types"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1480,6 +1498,7 @@ dependencies = [
  "cw721-base 0.17.0",
  "mars-account-nft",
  "mars-owner",
+ "mars-params",
  "mars-red-bank-types",
  "mars-rover-health-types",
  "schemars",

@@ -2,6 +2,7 @@ use cosmwasm_std::{Addr, Decimal, Uint128};
 use cw_item_set::Set;
 use cw_storage_plus::{Item, Map};
 use mars_owner::Owner;
+use mars_rover::adapters::params::MarsParams;
 use mars_rover::adapters::{
     health::HealthContract,
     oracle::Oracle,
@@ -22,6 +23,7 @@ pub const SWAPPER: Item<Swapper> = Item::new("swapper");
 pub const VAULT_CONFIGS: Map<&Addr, VaultConfig> = Map::new("vault_configs");
 pub const ZAPPER: Item<Zapper> = Item::new("zapper");
 pub const HEALTH_CONTRACT: Item<HealthContract> = Item::new("health_contract");
+pub const MARS_PARAMS: Item<MarsParams> = Item::new("mars_params");
 
 // Config
 pub const OWNER: Owner = Owner::new("owner");
