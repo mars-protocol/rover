@@ -8,9 +8,11 @@ use cw2::set_contract_version;
 use mars_owner::OwnerInit::SetInitialOwner;
 
 use crate::{
-    assert_exact_funds_sent, CallbackMsg, ContractError, ContractError::Unauthorized,
-    ContractResult, ExecuteMsg, InstantiateMsg, NewPositionRequest, OptionFilter, PositionManager,
-    QueryMsg, OWNER,
+    error::{ContractError, ContractError::Unauthorized, ContractResult},
+    msg::{CallbackMsg, ExecuteMsg, InstantiateMsg, NewPositionRequest, QueryMsg},
+    state::OWNER,
+    traits::{OptionFilter, PositionManager},
+    utils::assert_exact_funds_sent,
 };
 
 const CONTRACT_NAME: &str = env!("CARGO_PKG_NAME");
@@ -118,8 +120,7 @@ where
     ) -> ContractResult<Response> {
         OWNER.assert_owner(deps.storage, &info.sender)?;
 
-        let request_coins =
-            vec![request.token_desired0.clone(), request.token_desired1.clone()].only_some();
+        let request_coins = vec![&request.token_desired0, &request.token_desired1].only_some();
         assert_exact_funds_sent(&info, &request_coins)?;
 
         // Creating positions do not guarantee all funds will be used. Refund the leftovers.
@@ -150,21 +151,22 @@ where
             .map(|denom| -> StdResult<_> {
                 deps.querier.query_balance(env.contract.address.clone(), denom)
             })
-            .collect::<StdResult<Vec<_>>>()?
-            .into_iter()
-            .filter(|c| !c.amount.is_zero())
-            .collect::<Vec<_>>();
+            .filter(|c| match c {
+                Ok(c) => !c.amount.is_zero(),
+                Err(_) => true,
+            })
+            .collect::<StdResult<Vec<_>>>()?;
+
+        let coins_refunded =
+            coins_to_return.iter().map(|c| c.to_string()).collect::<Vec<_>>().join(", ");
 
         let transfer_msg = CosmosMsg::Bank(BankMsg::Send {
             to_address: recipient.to_string(),
-            amount: coins_to_return.clone(),
+            amount: coins_to_return,
         });
 
         let event = Event::new(REFUND_EVENT_TYPE)
-            .add_attribute(
-                REFUND_AMOUNT_ATTR_KEY,
-                coins_to_return.iter().map(|c| c.to_string()).collect::<Vec<_>>().join(", "),
-            )
+            .add_attribute(REFUND_AMOUNT_ATTR_KEY, coins_refunded)
             .add_attribute(REFUND_RECIPIENT_ATTR_KEY, recipient);
 
         Ok(Response::new().add_message(transfer_msg).add_event(event))

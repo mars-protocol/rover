@@ -1,5 +1,5 @@
 use cosmwasm_std::coin;
-use mars_v3_zapper_base::NewPositionRequest;
+use mars_v3_zapper_base::msg::NewPositionRequest;
 
 pub fn default_new_position_req() -> NewPositionRequest {
     NewPositionRequest {

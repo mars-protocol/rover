@@ -1,5 +1,5 @@
 use cosmwasm_std::{coin, Addr};
-use mars_v3_zapper_base::CallbackMsg;
+use mars_v3_zapper_base::msg::CallbackMsg;
 use osmosis_test_tube::Account;
 
 use crate::helpers::{assert_err, MockEnv};

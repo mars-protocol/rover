@@ -1,6 +1,8 @@
 use cosmwasm_std::{Coin, CosmosMsg, DepsMut, Env, SubMsgResponse};
 use mars_v3_zapper_base::{
-    ContractError::ReplyError, ContractResult, NewPositionRequest, PositionManager,
+    error::{ContractError::ReplyError, ContractResult},
+    msg::NewPositionRequest,
+    traits::PositionManager,
 };
 use osmosis_std::types::{
     cosmos::base::v1beta1,

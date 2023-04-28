@@ -1,6 +1,6 @@
 use cosmwasm_std::{Coin, CosmosMsg, DepsMut, Env, SubMsgResponse};
 
-use crate::{ContractResult, NewPositionRequest};
+use crate::{error::ContractResult, msg::NewPositionRequest};
 
 pub trait PositionManager {
     /// Owner should be the zapper contract itself (not the user)
@@ -23,8 +23,8 @@ pub trait OptionFilter<T> {
     fn only_some(&self) -> Vec<T>;
 }
 
-impl OptionFilter<Coin> for Vec<Option<Coin>> {
+impl OptionFilter<Coin> for Vec<&Option<Coin>> {
     fn only_some(&self) -> Vec<Coin> {
-        self.iter().flatten().cloned().collect::<Vec<_>>()
+        self.iter().filter_map(|x| x.as_ref()).cloned().collect()
     }
 }

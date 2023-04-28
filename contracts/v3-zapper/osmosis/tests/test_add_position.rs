@@ -1,7 +1,10 @@
 use cosmwasm_std::coin;
 use mars_v3_zapper_base::{
-    ExecuteMsg, NewPositionRequest, REFUND_AMOUNT_ATTR_KEY, REFUND_EVENT_TYPE,
-    V3_POSITION_ATTR_KEY, V3_POSITION_CREATED_EVENT_TYPE,
+    contract::{
+        REFUND_AMOUNT_ATTR_KEY, REFUND_EVENT_TYPE, V3_POSITION_ATTR_KEY,
+        V3_POSITION_CREATED_EVENT_TYPE,
+    },
+    msg::{ExecuteMsg, NewPositionRequest},
 };
 use osmosis_test_tube::{Account, Module, Wasm};
 

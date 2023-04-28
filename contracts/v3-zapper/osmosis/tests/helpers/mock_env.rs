@@ -3,7 +3,7 @@ use std::{mem::take, str::FromStr};
 use anyhow::Result as AnyResult;
 use cosmwasm_std::{coin, Coin};
 use mars_owner::{OwnerResponse, OwnerUpdate};
-use mars_v3_zapper_base::{CallbackMsg, ExecuteMsg, InstantiateMsg, QueryMsg};
+use mars_v3_zapper_base::msg::{CallbackMsg, ExecuteMsg, InstantiateMsg, QueryMsg};
 use osmosis_std::types::osmosis::{
     concentratedliquidity::v1beta1::{
         MsgCreateConcentratedPool, PositionWithUnderlyingAssetBreakdown, QueryUserPositionsRequest,

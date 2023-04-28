@@ -1,6 +1,6 @@
 use cosmwasm_std::{Coin, MessageInfo};
 
-use crate::{ContractError, ContractResult};
+use crate::error::{ContractError, ContractResult};
 
 /// Assert that fund of exactly the same type and amount was sent along with a message
 pub fn assert_exact_funds_sent(info: &MessageInfo, expected: &[Coin]) -> ContractResult<()> {

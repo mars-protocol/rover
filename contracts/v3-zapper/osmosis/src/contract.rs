@@ -1,7 +1,11 @@
 use cosmwasm_std::{
     entry_point, Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response, StdResult,
 };
-use mars_v3_zapper_base::{ContractResult, ExecuteMsg, InstantiateMsg, QueryMsg, V3ZapperBase};
+use mars_v3_zapper_base::{
+    contract::V3ZapperBase,
+    error::ContractResult,
+    msg::{ExecuteMsg, InstantiateMsg, QueryMsg},
+};
 
 use crate::position_manager::OsmosisPositionManager;
 
