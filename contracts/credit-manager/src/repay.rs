@@ -151,16 +151,22 @@ pub fn repay_from_wallet(
         }))?,
     });
 
+    // if attempting to repay too much, refund back the extra
+    let refund_amount = if coin_sent.amount > coin_to_repay.amount {
+        coin_sent.amount.checked_sub(coin_to_repay.amount)?
+    } else {
+        Uint128::zero()
+    };
+
     let mut response = Response::new()
         .add_message(repay_callback_msg)
         .add_attribute("action", "repay_from_wallet")
         .add_attribute("from_address", info.sender.to_string())
         .add_attribute("account_id", account_id)
-        .add_attribute("coin_repaid", coin_to_repay.to_string());
+        .add_attribute("coin_repaid", coin_to_repay.to_string())
+        .add_attribute("refunded", refund_amount.to_string());
 
-    // if attempting to repay too much, refund back the extra
-    if coin_sent.amount > coin_to_repay.amount {
-        let refund_amount = coin_sent.amount.checked_sub(coin_to_repay.amount)?;
+    if !refund_amount.is_zero() {
         let transfer_msg = CosmosMsg::Bank(BankMsg::Send {
             to_address: info.sender.to_string(),
             amount: vec![Coin {
@@ -168,8 +174,7 @@ pub fn repay_from_wallet(
                 amount: refund_amount,
             }],
         });
-        response =
-            response.add_message(transfer_msg).add_attribute("refunded", refund_amount.to_string());
+        response = response.add_message(transfer_msg);
     }
 
     Ok(response)
