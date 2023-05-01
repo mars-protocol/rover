@@ -146,16 +146,13 @@ where
         recipient: Addr,
         denoms: &[String],
     ) -> ContractResult<Response> {
-        let coins_to_return = denoms
-            .iter()
-            .map(|denom| -> StdResult<_> {
-                deps.querier.query_balance(env.contract.address.clone(), denom)
-            })
-            .filter(|c| match c {
-                Ok(c) => !c.amount.is_zero(),
-                Err(_) => true,
-            })
-            .collect::<StdResult<Vec<_>>>()?;
+        let mut coins_to_return = vec![];
+        for denom in denoms {
+            let balance = deps.querier.query_balance(env.contract.address.clone(), denom)?;
+            if !balance.amount.is_zero() {
+                coins_to_return.push(balance)
+            }
+        }
 
         let coins_refunded =
             coins_to_return.iter().map(|c| c.to_string()).collect::<Vec<_>>().join(", ");
