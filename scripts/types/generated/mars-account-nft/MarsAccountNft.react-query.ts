@@ -367,6 +367,7 @@ export function useMarsAccountNftConfigQuery<TData = NftConfigBaseForString>({
 }
 export interface MarsAccountNftUpdateOwnershipMutation {
   client: MarsAccountNftClient
+  msg: Action
   args?: {
     fee?: number | StdFee | 'auto'
     memo?: string

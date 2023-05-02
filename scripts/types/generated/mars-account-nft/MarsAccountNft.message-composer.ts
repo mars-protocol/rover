@@ -125,7 +125,7 @@ export interface MarsAccountNftMessage {
     },
     funds?: Coin[],
   ) => MsgExecuteContractEncodeObject
-  updateOwnership: (funds?: Coin[]) => MsgExecuteContractEncodeObject
+  updateOwnership: (action: Action, funds?: Coin[]) => MsgExecuteContractEncodeObject
 }
 export class MarsAccountNftMessageComposer implements MarsAccountNftMessage {
   sender: string
@@ -383,7 +383,7 @@ export class MarsAccountNftMessageComposer implements MarsAccountNftMessage {
       }),
     }
   }
-  updateOwnership = (funds?: Coin[]): MsgExecuteContractEncodeObject => {
+  updateOwnership = (action: Action, funds?: Coin[]): MsgExecuteContractEncodeObject => {
     return {
       typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
       value: MsgExecuteContract.fromPartial({
@@ -391,7 +391,7 @@ export class MarsAccountNftMessageComposer implements MarsAccountNftMessage {
         contract: this.contractAddress,
         msg: toUtf8(
           JSON.stringify({
-            update_ownership: {},
+            update_ownership: action,
           }),
         ),
         funds,

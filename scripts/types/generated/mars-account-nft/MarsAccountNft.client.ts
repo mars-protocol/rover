@@ -380,6 +380,7 @@ export interface MarsAccountNftInterface extends MarsAccountNftReadOnlyInterface
     funds?: Coin[],
   ) => Promise<ExecuteResult>
   updateOwnership: (
+    action: Action,
     fee?: number | StdFee | 'auto',
     memo?: string,
     funds?: Coin[],
@@ -639,6 +640,7 @@ export class MarsAccountNftClient
     )
   }
   updateOwnership = async (
+    action: Action,
     fee: number | StdFee | 'auto' = 'auto',
     memo?: string,
     funds?: Coin[],
@@ -647,7 +649,7 @@ export class MarsAccountNftClient
       this.sender,
       this.contractAddress,
       {
-        update_ownership: {},
+        update_ownership: action,
       },
       fee,
       memo,
