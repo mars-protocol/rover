@@ -314,12 +314,26 @@
         "properties": {
           "update_nft_config": {
             "type": "object",
-            "required": [
-              "updates"
-            ],
             "properties": {
-              "updates": {
-                "$ref": "#/definitions/NftConfigUpdates"
+              "config": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/NftConfigUpdates"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "ownership": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Action"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
               }
             },
             "additionalProperties": false
@@ -1564,12 +1578,6 @@
               {
                 "type": "null"
               }
-            ]
-          },
-          "proposed_new_minter": {
-            "type": [
-              "string",
-              "null"
             ]
           }
         },

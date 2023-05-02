@@ -15,6 +15,7 @@ import {
   Expiration,
   Timestamp,
   Uint64,
+  Action,
   NftConfigUpdates,
   QueryMsg,
   AllNftInfoResponseForEmpty,
@@ -30,6 +31,8 @@ import {
   ContractInfoResponse,
   MinterResponse,
   NumTokensResponse,
+  Addr,
+  OwnershipForAddr,
 } from './MarsAccountNft.types'
 export interface MarsAccountNftReadOnlyInterface {
   contractAddress: string
@@ -96,6 +99,7 @@ export interface MarsAccountNftReadOnlyInterface {
     startAfter?: string
   }) => Promise<TokensResponse>
   minter: () => Promise<MinterResponse>
+  ownership: () => Promise<OwnershipForAddr>
 }
 export class MarsAccountNftQueryClient implements MarsAccountNftReadOnlyInterface {
   client: CosmWasmClient
@@ -117,6 +121,7 @@ export class MarsAccountNftQueryClient implements MarsAccountNftReadOnlyInterfac
     this.tokens = this.tokens.bind(this)
     this.allTokens = this.allTokens.bind(this)
     this.minter = this.minter.bind(this)
+    this.ownership = this.ownership.bind(this)
   }
 
   config = async (): Promise<NftConfigBaseForString> => {
@@ -261,6 +266,11 @@ export class MarsAccountNftQueryClient implements MarsAccountNftReadOnlyInterfac
       minter: {},
     })
   }
+  ownership = async (): Promise<OwnershipForAddr> => {
+    return this.client.queryContractSmart(this.contractAddress, {
+      ownership: {},
+    })
+  }
 }
 export interface MarsAccountNftInterface extends MarsAccountNftReadOnlyInterface {
   contractAddress: string
@@ -271,11 +281,6 @@ export interface MarsAccountNftInterface extends MarsAccountNftReadOnlyInterface
     }: {
       updates: NftConfigUpdates
     },
-    fee?: number | StdFee | 'auto',
-    memo?: string,
-    funds?: Coin[],
-  ) => Promise<ExecuteResult>
-  acceptMinterRole: (
     fee?: number | StdFee | 'auto',
     memo?: string,
     funds?: Coin[],
@@ -374,6 +379,11 @@ export interface MarsAccountNftInterface extends MarsAccountNftReadOnlyInterface
     memo?: string,
     funds?: Coin[],
   ) => Promise<ExecuteResult>
+  updateOwnership: (
+    fee?: number | StdFee | 'auto',
+    memo?: string,
+    funds?: Coin[],
+  ) => Promise<ExecuteResult>
 }
 export class MarsAccountNftClient
   extends MarsAccountNftQueryClient
@@ -389,7 +399,6 @@ export class MarsAccountNftClient
     this.sender = sender
     this.contractAddress = contractAddress
     this.updateConfig = this.updateConfig.bind(this)
-    this.acceptMinterRole = this.acceptMinterRole.bind(this)
     this.mint = this.mint.bind(this)
     this.burn = this.burn.bind(this)
     this.transferNft = this.transferNft.bind(this)
@@ -398,6 +407,7 @@ export class MarsAccountNftClient
     this.revoke = this.revoke.bind(this)
     this.approveAll = this.approveAll.bind(this)
     this.revokeAll = this.revokeAll.bind(this)
+    this.updateOwnership = this.updateOwnership.bind(this)
   }
 
   updateConfig = async (
@@ -417,22 +427,6 @@ export class MarsAccountNftClient
         update_config: {
           updates,
         },
-      },
-      fee,
-      memo,
-      funds,
-    )
-  }
-  acceptMinterRole = async (
-    fee: number | StdFee | 'auto' = 'auto',
-    memo?: string,
-    funds?: Coin[],
-  ): Promise<ExecuteResult> => {
-    return await this.client.execute(
-      this.sender,
-      this.contractAddress,
-      {
-        accept_minter_role: {},
       },
       fee,
       memo,
@@ -638,6 +632,22 @@ export class MarsAccountNftClient
         revoke_all: {
           operator,
         },
+      },
+      fee,
+      memo,
+      funds,
+    )
+  }
+  updateOwnership = async (
+    fee: number | StdFee | 'auto' = 'auto',
+    memo?: string,
+    funds?: Coin[],
+  ): Promise<ExecuteResult> => {
+    return await this.client.execute(
+      this.sender,
+      this.contractAddress,
+      {
+        update_ownership: {},
       },
       fee,
       memo,

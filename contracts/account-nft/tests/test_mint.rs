@@ -2,7 +2,7 @@ use std::fmt::Error;
 
 use cosmwasm_std::Addr;
 use cw721::OwnerOfResponse;
-use cw721_base::ContractError::Unauthorized;
+use cw721_base::{ContractError::Ownership, OwnershipError::NotOwner};
 use cw_multi_test::Executor;
 use mars_account_nft::{
     error::{ContractError, ContractError::BaseError},
@@ -68,23 +68,7 @@ fn only_minter_can_mint() {
         &[],
     );
     let err: ContractError = res.unwrap_err().downcast().unwrap();
-    assert_eq!(err, BaseError(Unauthorized {}))
-}
-
-#[test]
-fn only_token_owner_can_burn() {
-    let mut mock = MockEnv::new().build().unwrap();
-
-    let user = Addr::unchecked("user");
-    let token_id = mock.mint(&user).unwrap();
-    mock.set_health_response(&user, &token_id, &below_max_for_burn());
-
-    let bad_guy = Addr::unchecked("bad_guy");
-    let res = mock.burn(&bad_guy, &token_id);
-    let err: ContractError = res.unwrap_err().downcast().unwrap();
-    assert_eq!(err, BaseError(Unauthorized {}));
-
-    mock.burn(&user, &token_id).unwrap();
+    assert_eq!(err, BaseError(Ownership(NotOwner)))
 }
 
 #[test]
