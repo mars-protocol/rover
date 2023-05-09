@@ -1,5 +1,3 @@
-use std::fmt::Error;
-
 use cosmwasm_std::Addr;
 use cw721::OwnerOfResponse;
 use cw721_base::{ContractError::Ownership, OwnershipError::NotOwner};
@@ -83,10 +81,7 @@ fn normal_base_cw721_actions_can_still_be_taken() {
         token_id: token_id.clone(),
         recipient: rover_user_b.clone().into(),
     };
-    mock.app
-        .execute_contract(rover_user_a, mock.nft_contract.clone(), &transfer_msg, &[])
-        .map_err(|_| Error::default())
-        .unwrap();
+    mock.app.execute_contract(rover_user_a, mock.nft_contract.clone(), &transfer_msg, &[]).unwrap();
 
     let res: OwnerOfResponse = mock
         .app
