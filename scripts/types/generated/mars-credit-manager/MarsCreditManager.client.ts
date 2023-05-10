@@ -9,11 +9,12 @@ import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from '@cosmjs/co
 import { StdFee } from '@cosmjs/amino'
 import {
   HealthContractBaseForString,
-  Decimal,
   Uint128,
   OracleBaseForString,
+  ParamsBaseForString,
   RedBankBaseForString,
   SwapperBaseForString,
+  Decimal,
   ZapperBaseForString,
   InstantiateMsg,
   VaultInstantiateConfig,

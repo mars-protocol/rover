@@ -10,11 +10,12 @@ import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx'
 import { toUtf8 } from '@cosmjs/encoding'
 import {
   HealthContractBaseForString,
-  Decimal,
   Uint128,
   OracleBaseForString,
+  ParamsBaseForString,
   RedBankBaseForString,
   SwapperBaseForString,
+  Decimal,
   ZapperBaseForString,
   InstantiateMsg,
   VaultInstantiateConfig,

@@ -9,10 +9,10 @@ use mars_rover::{
 };
 
 use crate::{
-    instantiate::{assert_lte_to_one, assert_no_duplicate_coins, assert_no_duplicate_vaults},
+    instantiate::{assert_no_duplicate_coins, assert_no_duplicate_vaults},
     state::{
-        ACCOUNT_NFT, ALLOWED_COINS, HEALTH_CONTRACT, MAX_CLOSE_FACTOR, MAX_UNLOCKING_POSITIONS,
-        ORACLE, OWNER, RED_BANK, SWAPPER, VAULT_CONFIGS, ZAPPER,
+        ACCOUNT_NFT, ALLOWED_COINS, HEALTH_CONTRACT, MAX_UNLOCKING_POSITIONS, ORACLE, OWNER,
+        RED_BANK, SWAPPER, VAULT_CONFIGS, ZAPPER,
     },
 };
 
@@ -87,14 +87,6 @@ pub fn update_config(
         ZAPPER.save(deps.storage, &unchecked.check(deps.api)?)?;
         response =
             response.add_attribute("key", "zapper").add_attribute("value", unchecked.address());
-    }
-
-    if let Some(cf) = updates.max_close_factor {
-        assert_lte_to_one(&cf)?;
-        MAX_CLOSE_FACTOR.save(deps.storage, &cf)?;
-        response = response
-            .add_attribute("key", "max_close_factor")
-            .add_attribute("value", cf.to_string());
     }
 
     if let Some(num) = updates.max_unlocking_positions {

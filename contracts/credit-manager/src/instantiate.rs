@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use cosmwasm_std::{Api, Decimal, DepsMut, QuerierWrapper, StdResult};
+use cosmwasm_std::{Api, DepsMut, QuerierWrapper, StdResult};
 use mars_owner::OwnerInit::SetInitialOwner;
 use mars_rover::{
     error::{ContractError::InvalidConfig, ContractResult},
@@ -8,8 +8,8 @@ use mars_rover::{
 };
 
 use crate::state::{
-    ALLOWED_COINS, HEALTH_CONTRACT, MAX_CLOSE_FACTOR, MAX_UNLOCKING_POSITIONS, ORACLE, OWNER,
-    RED_BANK, SWAPPER, VAULT_CONFIGS, ZAPPER,
+    ALLOWED_COINS, HEALTH_CONTRACT, MAX_UNLOCKING_POSITIONS, ORACLE, OWNER, PARAMS, RED_BANK,
+    SWAPPER, VAULT_CONFIGS, ZAPPER,
 };
 
 pub fn store_config(deps: DepsMut, msg: &InstantiateMsg) -> ContractResult<()> {
@@ -27,9 +27,7 @@ pub fn store_config(deps: DepsMut, msg: &InstantiateMsg) -> ContractResult<()> {
     ZAPPER.save(deps.storage, &msg.zapper.check(deps.api)?)?;
     MAX_UNLOCKING_POSITIONS.save(deps.storage, &msg.max_unlocking_positions)?;
     HEALTH_CONTRACT.save(deps.storage, &msg.health_contract.check(deps.api)?)?;
-
-    assert_lte_to_one(&msg.max_close_factor)?;
-    MAX_CLOSE_FACTOR.save(deps.storage, &msg.max_close_factor)?;
+    PARAMS.save(deps.storage, &msg.params.check(deps.api)?)?;
 
     assert_no_duplicate_vaults(deps.api, &deps.querier, &msg.vault_configs)?;
     msg.vault_configs.iter().try_for_each(|v| -> ContractResult<_> {
@@ -80,15 +78,6 @@ pub fn assert_no_duplicate_coins(denoms: &[String]) -> ContractResult<()> {
     if set.len() != denoms.len() {
         return Err(InvalidConfig {
             reason: "Duplicate coin configs present".to_string(),
-        });
-    }
-    Ok(())
-}
-
-pub fn assert_lte_to_one(dec: &Decimal) -> ContractResult<()> {
-    if dec > &Decimal::one() {
-        return Err(InvalidConfig {
-            reason: "value greater than one".to_string(),
         });
     }
     Ok(())

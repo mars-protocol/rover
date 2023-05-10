@@ -1383,10 +1383,10 @@
       "type": "object",
       "required": [
         "health_contract",
-        "max_close_factor",
         "max_unlocking_positions",
         "oracle",
         "ownership",
+        "params",
         "red_bank",
         "swapper",
         "zapper"
@@ -1401,9 +1401,6 @@
         "health_contract": {
           "type": "string"
         },
-        "max_close_factor": {
-          "$ref": "#/definitions/Decimal"
-        },
         "max_unlocking_positions": {
           "$ref": "#/definitions/Uint128"
         },
@@ -1412,6 +1409,9 @@
         },
         "ownership": {
           "$ref": "#/definitions/OwnerResponse"
+        },
+        "params": {
+          "type": "string"
         },
         "red_bank": {
           "type": "string"
@@ -1425,10 +1425,6 @@
       },
       "additionalProperties": false,
       "definitions": {
-        "Decimal": {
-          "description": "A fixed-point decimal value with 18 fractional digits, i.e. Decimal(1_000_000_000_000_000_000) == 1.0\n\nThe greatest possible value that can be represented is 340282366920938463463.374607431768211455 (which is (2^128 - 1) / 10^18)",
-          "type": "string"
-        },
         "OwnerResponse": {
           "description": "Returned from Owner.query()",
           "type": "object",

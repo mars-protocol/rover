@@ -10,10 +10,11 @@ use mars_rover::{
     traits::Stringify,
 };
 
+use crate::state::PARAMS;
 use crate::{
     health::query_health,
     repay::current_debt_for_denom,
-    state::{COIN_BALANCES, MAX_CLOSE_FACTOR, ORACLE, RED_BANK},
+    state::{COIN_BALANCES, ORACLE, RED_BANK},
     utils::{decrement_coin_balance, increment_coin_balance},
 };
 
@@ -82,7 +83,8 @@ pub fn calculate_liquidation(
         current_debt_for_denom(deps.as_ref(), env, liquidatee_account_id, &debt_coin.denom)?;
 
     // Ensure debt amount does not exceed close factor % of the liquidatee's total debt value
-    let close_factor = MAX_CLOSE_FACTOR.load(deps.storage)?;
+    let params = PARAMS.load(deps.storage)?;
+    let close_factor = params.query_max_close_factor(&deps.querier)?;
     let max_close_value = health.total_debt_value.checked_mul_floor(close_factor)?;
     let oracle = ORACLE.load(deps.storage)?;
     let debt_res = oracle.query_price(&deps.querier, &debt_coin.denom)?;

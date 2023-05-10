@@ -41,7 +41,7 @@ pub fn compute_health(deps: Deps, account_id: &str) -> HealthResult<HealthRespon
         .try_for_each(|denom| -> StdResult<()> {
             let price = oracle.query_price(&deps.querier, denom)?.price;
             denoms_data.prices.insert(denom.clone(), price);
-            let market = red_bank.query_market(&deps.querier, denom)?;
+            let market = red_bank.query_market(&deps.querier, denom)?; // TODO: Delete this, replace with query_params()
             denoms_data.markets.insert(denom.clone(), market);
             Ok(())
         })?;
@@ -51,7 +51,7 @@ pub fn compute_health(deps: Deps, account_id: &str) -> HealthResult<HealthRespon
     positions.vaults.iter().try_for_each(|v| -> HealthResult<()> {
         let vault_coin_value = v.query_values(&deps.querier, &oracle)?;
         vaults_data.vault_values.insert(v.vault.address.clone(), vault_coin_value);
-        let config = querier.query_vault_config(&v.vault)?;
+        let config = querier.query_vault_config(&v.vault)?; // TODO: Delete this, replace with query_params_vault_config()
         vaults_data.vault_configs.insert(v.vault.address.clone(), config);
         Ok(())
     })?;

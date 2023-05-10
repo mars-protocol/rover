@@ -189,7 +189,6 @@ fn delisted_assets_can_be_repaid() {
             vault_configs: None,
             oracle: None,
             red_bank: None,
-            max_close_factor: None,
             max_unlocking_positions: None,
             swapper: None,
             zapper: None,

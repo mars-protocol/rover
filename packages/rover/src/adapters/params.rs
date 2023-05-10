@@ -1,17 +1,14 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{
-    to_binary, Addr, Api, Coin, CosmosMsg, Decimal, QuerierWrapper, QueryRequest, StdResult,
-    Uint128, WasmMsg, WasmQuery,
-};
+use cosmwasm_std::{Addr, Api, Decimal, QuerierWrapper, StdResult};
 use mars_params::msg::QueryMsg;
 use mars_params::types::{AssetParams, VaultConfig};
 
 #[cw_serde]
-pub struct MarsParamsBase<T>(T);
+pub struct ParamsBase<T>(T);
 
-impl<T> MarsParamsBase<T> {
-    pub fn new(address: T) -> MarsParamsBase<T> {
-        MarsParamsBase(address)
+impl<T> ParamsBase<T> {
+    pub fn new(address: T) -> ParamsBase<T> {
+        ParamsBase(address)
     }
 
     pub fn address(&self) -> &T {
@@ -19,22 +16,22 @@ impl<T> MarsParamsBase<T> {
     }
 }
 
-pub type MarsParamsUnchecked = MarsParamsBase<String>;
-pub type MarsParams = MarsParamsBase<Addr>;
+pub type ParamsUnchecked = ParamsBase<String>;
+pub type Params = ParamsBase<Addr>;
 
-impl From<MarsParams> for MarsParamsUnchecked {
-    fn from(mars_params: MarsParams) -> Self {
+impl From<Params> for ParamsUnchecked {
+    fn from(mars_params: Params) -> Self {
         Self(mars_params.0.to_string())
     }
 }
 
-impl MarsParamsUnchecked {
-    pub fn check(&self, api: &dyn Api) -> StdResult<MarsParams> {
-        Ok(MarsParamsBase(api.addr_validate(self.address())?))
+impl ParamsUnchecked {
+    pub fn check(&self, api: &dyn Api) -> StdResult<Params> {
+        Ok(ParamsBase(api.addr_validate(self.address())?))
     }
 }
 
-impl MarsParams {
+impl Params {
     pub fn query_asset_params(
         &self,
         querier: &QuerierWrapper,
@@ -61,10 +58,7 @@ impl MarsParams {
         )
     }
 
-    pub fn query_max_close_factor(
-        &self,
-        querier: &QuerierWrapper,
-    ) -> StdResult<Decimal> {
+    pub fn query_max_close_factor(&self, querier: &QuerierWrapper) -> StdResult<Decimal> {
         querier.query_wasm_smart(self.address().to_string(), &QueryMsg::MaxCloseFactor {})
     }
 }

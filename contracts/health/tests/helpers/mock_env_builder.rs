@@ -155,7 +155,7 @@ impl MockEnvBuilder {
                         red_bank,
                         oracle,
                         account_nft: None,
-                        max_close_factor: Default::default(),
+                        params: Default::default(),
                         max_unlocking_positions: Default::default(),
                         swapper: "n/a".to_string(),
                         zapper: "n/a".to_string(),

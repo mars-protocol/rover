@@ -116,6 +116,7 @@ impl RedBank {
         Ok(response.amount)
     }
 
+    // TODO: Delete this
     pub fn query_market(&self, querier: &QuerierWrapper, denom: &str) -> StdResult<Market> {
         querier.query_wasm_smart(
             self.address(),

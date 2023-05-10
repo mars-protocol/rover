@@ -83,6 +83,7 @@ pub fn withdraw(
     Ok(Response::new().add_message(transfer_msg))
 }
 
+// TODO: Delete this
 pub fn update_asset(
     deps: DepsMut,
     denom: &str,

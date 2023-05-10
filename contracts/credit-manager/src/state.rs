@@ -1,8 +1,9 @@
-use cosmwasm_std::{Addr, Decimal, Uint128};
+use cosmwasm_std::{Addr, Uint128};
 use cw_item_set::Set;
 use cw_storage_plus::{Item, Map};
 use mars_owner::Owner;
-use mars_rover::adapters::params::MarsParams;
+
+use mars_rover::adapters::params::Params;
 use mars_rover::adapters::{
     health::HealthContract,
     oracle::Oracle,
@@ -20,15 +21,19 @@ pub const ACCOUNT_NFT: Item<Addr> = Item::new("account_nft");
 pub const ORACLE: Item<Oracle> = Item::new("oracle");
 pub const RED_BANK: Item<RedBank> = Item::new("red_bank");
 pub const SWAPPER: Item<Swapper> = Item::new("swapper");
-pub const VAULT_CONFIGS: Map<&Addr, VaultConfig> = Map::new("vault_configs");
+pub const VAULT_CONFIGS: Map<&Addr, VaultConfig> = Map::new("vault_configs"); // TODO: Remove this
 pub const ZAPPER: Item<Zapper> = Item::new("zapper");
 pub const HEALTH_CONTRACT: Item<HealthContract> = Item::new("health_contract");
-pub const MARS_PARAMS: Item<MarsParams> = Item::new("mars_params");
+pub const PARAMS: Item<Params> = Item::new("params");
 
 // Config
 pub const OWNER: Owner = Owner::new("owner");
-pub const ALLOWED_COINS: Set<&str> = Set::new("allowed_coins");
-pub const MAX_CLOSE_FACTOR: Item<Decimal> = Item::new("max_close_factor");
+// TODO: - Remove Allowed Coins. Replace with Params query. Get to build. Get tests to pass.
+//       - Replace all uses of query_markets() with query_params()
+//       - Remove VAULT_CONFIGS and replace with query_vault_config(). Get to build. Get tests to pass.
+//       - Update build scripts so that it compiles. May need to remove some asset params in instantiate.
+//          - Don't sweat too bad because there is a lot we need to update there.
+pub const ALLOWED_COINS: Set<&str> = Set::new("allowed_coins"); // TODO: Remove this
 pub const MAX_UNLOCKING_POSITIONS: Item<Uint128> = Item::new("max_unlocking_positions");
 
 // Positions

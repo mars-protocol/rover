@@ -219,10 +219,10 @@ export type ArrayOfString = string[]
 export interface ConfigResponse {
   account_nft?: string | null
   health_contract: string
-  max_close_factor: Decimal
   max_unlocking_positions: Uint128
   oracle: string
   ownership: OwnerResponse
+  params: string
   red_bank: string
   swapper: string
   zapper: string

@@ -6,19 +6,20 @@
  */
 
 export type HealthContractBaseForString = string
-export type Decimal = string
 export type Uint128 = string
 export type OracleBaseForString = string
+export type ParamsBaseForString = string
 export type RedBankBaseForString = string
 export type SwapperBaseForString = string
+export type Decimal = string
 export type ZapperBaseForString = string
 export interface InstantiateMsg {
   allowed_coins: string[]
   health_contract: HealthContractBaseForString
-  max_close_factor: Decimal
   max_unlocking_positions: Uint128
   oracle: OracleBaseForString
   owner: string
+  params: ParamsBaseForString
   red_bank: RedBankBaseForString
   swapper: SwapperBaseForString
   vault_configs: VaultInstantiateConfig[]
@@ -339,7 +340,6 @@ export interface ConfigUpdates {
   account_nft?: string | null
   allowed_coins?: string[] | null
   health_contract?: HealthContractBaseForString | null
-  max_close_factor?: Decimal | null
   max_unlocking_positions?: Uint128 | null
   oracle?: OracleBaseForString | null
   red_bank?: RedBankBaseForString | null
@@ -512,10 +512,10 @@ export type ArrayOfString = string[]
 export interface ConfigResponse {
   account_nft?: string | null
   health_contract: string
-  max_close_factor: Decimal
   max_unlocking_positions: Uint128
   oracle: string
   ownership: OwnerResponse
+  params: string
   red_bank: string
   swapper: string
   zapper: string

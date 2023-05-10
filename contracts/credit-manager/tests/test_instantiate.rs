@@ -247,18 +247,17 @@ fn raises_on_invalid_oracle_addr() {
 }
 
 #[test]
-fn max_close_factor_set_on_instantiate() {
-    let mock = MockEnv::new().build().unwrap();
+fn params_set_on_instantiate() {
+    let params_contract = "params_contract_456".to_string();
+    let mock = MockEnv::new().params(&params_contract).build().unwrap();
     let res = mock.query_config();
-    let mock_default = Decimal::from_atomics(5u128, 1).unwrap();
-    assert_eq!(mock_default, res.max_close_factor);
+    assert_eq!(params_contract, res.params);
 }
 
 #[test]
-fn max_close_factor_validated() {
-    let mock = MockEnv::new().max_close_factor(Decimal::from_atomics(1244u128, 3).unwrap()).build();
-
+fn raises_on_invalid_params_addr() {
+    let mock = MockEnv::new().params("%%%INVALID%%%").build();
     if mock.is_ok() {
-        panic!("Should have thrown an error: Max close factor should be below 1");
+        panic!("Should have thrown an error");
     }
 }

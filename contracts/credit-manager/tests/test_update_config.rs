@@ -38,7 +38,6 @@ fn only_owner_can_update_config() {
             allowed_coins: None,
             oracle: None,
             red_bank: None,
-            max_close_factor: None,
             max_unlocking_positions: None,
             swapper: None,
             vault_configs: None,
@@ -70,7 +69,6 @@ fn raises_on_invalid_vaults_config() {
             allowed_coins: None,
             oracle: None,
             red_bank: None,
-            max_close_factor: None,
             max_unlocking_positions: None,
             swapper: None,
             vault_configs: Some(vec![vault_config]),
@@ -98,7 +96,6 @@ fn raises_on_invalid_vaults_config() {
             allowed_coins: None,
             oracle: None,
             red_bank: None,
-            max_close_factor: None,
             max_unlocking_positions: None,
             swapper: None,
             vault_configs: Some(vec![vault_config]),
@@ -125,7 +122,6 @@ fn raises_on_invalid_vaults_config() {
             allowed_coins: None,
             oracle: None,
             red_bank: None,
-            max_close_factor: None,
             max_unlocking_positions: None,
             swapper: None,
             vault_configs: Some(vec![vault_a, vault_b]),
@@ -155,7 +151,6 @@ fn update_config_works_with_full_config() {
     let new_oracle = deploy_new_oracle(&mut mock.app);
     let new_red_bank = deploy_new_red_bank(&mut mock.app);
     let new_zapper = ZapperBase::new("new_zapper".to_string());
-    let new_close_factor = Decimal::from_atomics(32u128, 2).unwrap();
     let new_unlocking_max = Uint128::new(321);
     let new_swapper = SwapperBase::new("new_swapper".to_string());
     let new_health_contract = HealthContractUnchecked::new("new_health_contract".to_string());
@@ -167,7 +162,6 @@ fn update_config_works_with_full_config() {
             allowed_coins: Some(new_allowed_coins.clone()),
             oracle: Some(new_oracle.clone()),
             red_bank: Some(new_red_bank.clone()),
-            max_close_factor: Some(new_close_factor),
             max_unlocking_positions: Some(new_unlocking_max),
             swapper: Some(new_swapper.clone()),
             vault_configs: Some(new_vault_configs.clone()),
@@ -212,9 +206,6 @@ fn update_config_works_with_full_config() {
 
     assert_eq!(&new_config.zapper, new_zapper.address());
     assert_ne!(new_config.zapper, original_config.zapper);
-
-    assert_eq!(new_config.max_close_factor, new_close_factor);
-    assert_ne!(new_config.max_close_factor, original_config.max_close_factor);
 
     assert_eq!(new_config.max_unlocking_positions, new_unlocking_max);
     assert_ne!(new_config.max_unlocking_positions, original_config.max_unlocking_positions);
@@ -262,7 +253,7 @@ fn update_config_works_with_some_config() {
     assert_eq!(new_config.ownership.proposed, original_config.ownership.proposed);
     assert_eq!(new_config.red_bank, original_config.red_bank);
     assert_eq!(new_config.oracle, original_config.oracle);
-    assert_eq!(new_config.max_close_factor, original_config.max_close_factor);
+    assert_eq!(new_config.params, original_config.params);
     assert_eq!(new_config.swapper, original_config.swapper);
     assert_eq!(new_config.zapper, original_config.zapper);
     assert_eq!(new_config.health_contract, original_config.health_contract);
@@ -330,29 +321,9 @@ fn update_config_does_nothing_when_nothing_is_passed() {
     assert_eq!(new_config.red_bank, original_config.red_bank);
     assert_eq!(new_config.oracle, original_config.oracle);
     assert_eq!(new_config.zapper, original_config.zapper);
-    assert_eq!(new_config.max_close_factor, original_config.max_close_factor);
+    assert_eq!(new_config.params, original_config.params);
     assert_eq!(new_config.swapper, original_config.swapper);
     assert_eq!(new_config.health_contract, original_config.health_contract);
-}
-
-#[test]
-fn max_close_factor_validated_on_update() {
-    let mut mock = MockEnv::new().build().unwrap();
-    let original_config = mock.query_config();
-    let res = mock.update_config(
-        &Addr::unchecked(original_config.ownership.owner.unwrap()),
-        ConfigUpdates {
-            max_close_factor: Some(Decimal::from_atomics(42u128, 1).unwrap()),
-            ..Default::default()
-        },
-    );
-
-    assert_err(
-        res,
-        InvalidConfig {
-            reason: "value greater than one".to_string(),
-        },
-    );
 }
 
 #[test]
@@ -366,7 +337,6 @@ fn raises_on_duplicate_vault_configs() {
             allowed_coins: None,
             oracle: None,
             red_bank: None,
-            max_close_factor: None,
             max_unlocking_positions: None,
             swapper: None,
             vault_configs: Some(vec![
@@ -417,7 +387,6 @@ fn raises_on_duplicate_coin_configs() {
             ]),
             oracle: None,
             red_bank: None,
-            max_close_factor: None,
             max_unlocking_positions: None,
             swapper: None,
             vault_configs: None,

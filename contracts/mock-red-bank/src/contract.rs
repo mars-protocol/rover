@@ -48,6 +48,7 @@ pub fn execute(
             ..
         } => withdraw(deps, info, &denom, &amount),
         red_bank::ExecuteMsg::UpdateAsset {
+            // TODO: Delete this
             denom,
             params,
         } => update_asset(deps, &denom, params),
@@ -64,7 +65,7 @@ pub fn query(deps: Deps, _env: Env, msg: red_bank::QueryMsg) -> StdResult<Binary
         } => to_binary(&query_debt(deps, user, denom)?),
         red_bank::QueryMsg::Market {
             denom,
-        } => to_binary(&query_market(deps, denom)?),
+        } => to_binary(&query_market(deps, denom)?), // TODO: Delete this
         red_bank::QueryMsg::UserCollateral {
             user,
             denom,

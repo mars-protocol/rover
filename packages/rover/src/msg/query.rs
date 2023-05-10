@@ -1,5 +1,5 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Coin, Decimal, Uint128};
+use cosmwasm_std::{Coin, Uint128};
 use mars_owner::OwnerResponse;
 
 use crate::{
@@ -219,7 +219,7 @@ pub struct ConfigResponse {
     pub account_nft: Option<String>,
     pub red_bank: String,
     pub oracle: String,
-    pub max_close_factor: Decimal,
+    pub params: String,
     pub max_unlocking_positions: Uint128,
     pub swapper: String,
     pub zapper: String,

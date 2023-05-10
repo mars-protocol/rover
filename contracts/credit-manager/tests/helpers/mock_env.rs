@@ -1,4 +1,5 @@
 use std::mem::take;
+use std::str::FromStr;
 
 use anyhow::Result as AnyResult;
 use cosmwasm_std::{coins, testing::MockApi, Addr, Coin, Decimal, StdResult, Uint128};
@@ -26,6 +27,7 @@ use mars_red_bank_types::red_bank::{
     QueryMsg::{UserCollateral, UserDebt},
     UserCollateralResponse, UserDebtResponse,
 };
+use mars_rover::adapters::params::Params;
 use mars_rover::{
     adapters::{
         health::HealthContract,
@@ -61,10 +63,12 @@ use mars_rover_health_types::{
     QueryMsg::Health,
 };
 
+use mars_params::msg::InstantiateMsg as ParamsInstantiateMsg;
+
 use crate::helpers::{
     lp_token_info, mock_account_nft_contract, mock_health_contract, mock_oracle_contract,
-    mock_red_bank_contract, mock_rover_contract, mock_swapper_contract, mock_v2_zapper_contract,
-    mock_vault_contract, AccountToFund, CoinInfo, VaultTestInfo,
+    mock_params_contract, mock_red_bank_contract, mock_rover_contract, mock_swapper_contract,
+    mock_v2_zapper_contract, mock_vault_contract, AccountToFund, CoinInfo, VaultTestInfo,
 };
 
 pub const DEFAULT_RED_BANK_COIN_BALANCE: Uint128 = Uint128::new(1_000_000);
@@ -84,6 +88,7 @@ pub struct MockEnvBuilder {
     pub pre_deployed_vaults: Option<Vec<VaultInstantiateConfig>>,
     pub allowed_coins: Option<Vec<CoinInfo>>,
     pub oracle: Option<Oracle>,
+    pub params: Option<Params>,
     pub red_bank: Option<RedBankBase<Addr>>,
     pub deploy_nft_contract: bool,
     pub set_nft_contract_minter: bool,
@@ -104,6 +109,7 @@ impl MockEnv {
             pre_deployed_vaults: None,
             allowed_coins: None,
             oracle: None,
+            params: None,
             red_bank: None,
             deploy_nft_contract: true,
             set_nft_contract_minter: true,
@@ -742,16 +748,17 @@ impl MockEnvBuilder {
         let swapper = self.deploy_swapper().into();
         let allowed_coins =
             self.get_allowed_coins().iter().map(|info| info.denom.clone()).collect();
-        let max_close_factor = self.get_max_close_factor();
         let max_unlocking_positions = self.get_max_unlocking_positions();
 
         let mut vault_configs = vec![];
         vault_configs.extend(self.deploy_vaults());
         vault_configs.extend(self.pre_deployed_vaults.clone().unwrap_or_default());
+        // TODO: self.add_vaults_to_params(vault_configs);
 
         let oracle = self.get_oracle().into();
         let zapper = self.deploy_zapper(&oracle)?.into();
         let health_contract = self.get_health_contract().into();
+        let params = self.get_params_contract().into();
 
         self.app.instantiate_contract(
             code_id,
@@ -762,11 +769,11 @@ impl MockEnvBuilder {
                 vault_configs,
                 red_bank,
                 oracle,
-                max_close_factor,
                 max_unlocking_positions,
                 swapper,
                 zapper,
                 health_contract,
+                params,
             },
             &[],
             "mock-rover-contract",
@@ -827,6 +834,38 @@ impl MockEnvBuilder {
             )
             .unwrap();
         OracleBase::new(addr)
+    }
+
+    fn get_params_contract(&mut self) -> Params {
+        if self.params.is_none() {
+            let hc = self.deploy_params_contract();
+            self.params = Some(hc);
+        }
+        self.params.clone().unwrap()
+    }
+
+    pub fn deploy_params_contract(&mut self) -> Params {
+        let contract_code_id = self.app.store_code(mock_params_contract());
+        let owner = Addr::unchecked("params_contract_owner");
+
+        let addr = self
+            .app
+            .instantiate_contract(
+                contract_code_id,
+                owner.clone(),
+                &ParamsInstantiateMsg {
+                    owner: owner.to_string(),
+                    max_close_factor: self
+                        .max_close_factor
+                        .unwrap_or(Decimal::from_str("0.5").unwrap()),
+                },
+                &[],
+                "mock-params-contract",
+                Some(owner.to_string()),
+            )
+            .unwrap();
+
+        Params::new(addr)
     }
 
     fn get_health_contract(&mut self) -> HealthContract {
@@ -1034,11 +1073,6 @@ impl MockEnvBuilder {
         self.allowed_coins.clone().unwrap_or_default()
     }
 
-    fn get_max_close_factor(&self) -> Decimal {
-        self.max_close_factor.unwrap_or_else(|| Decimal::from_atomics(5u128, 1).unwrap())
-        // 50%
-    }
-
     fn get_max_unlocking_positions(&self) -> Uint128 {
         self.max_unlocking_positions.unwrap_or_else(|| Uint128::new(100))
     }
@@ -1079,6 +1113,11 @@ impl MockEnvBuilder {
 
     pub fn oracle(&mut self, addr: &str) -> &mut Self {
         self.oracle = Some(OracleBase::new(Addr::unchecked(addr)));
+        self
+    }
+
+    pub fn params(&mut self, addr: &str) -> &mut Self {
+        self.params = Some(Params::new(Addr::unchecked(addr)));
         self
     }
 

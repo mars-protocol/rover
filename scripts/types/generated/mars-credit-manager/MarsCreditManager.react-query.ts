@@ -10,11 +10,12 @@ import { ExecuteResult } from '@cosmjs/cosmwasm-stargate'
 import { StdFee } from '@cosmjs/amino'
 import {
   HealthContractBaseForString,
-  Decimal,
   Uint128,
   OracleBaseForString,
+  ParamsBaseForString,
   RedBankBaseForString,
   SwapperBaseForString,
+  Decimal,
   ZapperBaseForString,
   InstantiateMsg,
   VaultInstantiateConfig,

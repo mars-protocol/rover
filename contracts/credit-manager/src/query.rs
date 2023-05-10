@@ -11,11 +11,12 @@ use mars_rover::{
     },
 };
 
+use crate::state::PARAMS;
 use crate::{
     state::{
         ACCOUNT_NFT, ALLOWED_COINS, COIN_BALANCES, DEBT_SHARES, HEALTH_CONTRACT, LENT_SHARES,
-        MAX_CLOSE_FACTOR, MAX_UNLOCKING_POSITIONS, ORACLE, OWNER, RED_BANK, SWAPPER,
-        TOTAL_DEBT_SHARES, TOTAL_LENT_SHARES, VAULT_CONFIGS, VAULT_POSITIONS, ZAPPER,
+        MAX_UNLOCKING_POSITIONS, ORACLE, OWNER, RED_BANK, SWAPPER, TOTAL_DEBT_SHARES,
+        TOTAL_LENT_SHARES, VAULT_CONFIGS, VAULT_POSITIONS, ZAPPER,
     },
     utils::{debt_shares_to_amount, lent_shares_to_amount},
     vault::vault_utilization_in_deposit_cap_denom,
@@ -29,7 +30,7 @@ pub fn query_config(deps: Deps) -> ContractResult<ConfigResponse> {
         account_nft: ACCOUNT_NFT.may_load(deps.storage)?.map(|addr| addr.to_string()),
         red_bank: RED_BANK.load(deps.storage)?.address().into(),
         oracle: ORACLE.load(deps.storage)?.address().into(),
-        max_close_factor: MAX_CLOSE_FACTOR.load(deps.storage)?,
+        params: PARAMS.load(deps.storage)?.address().into(),
         max_unlocking_positions: MAX_UNLOCKING_POSITIONS.load(deps.storage)?,
         swapper: SWAPPER.load(deps.storage)?.address().into(),
         zapper: ZAPPER.load(deps.storage)?.address().into(),
