@@ -21,10 +21,10 @@ fn missing_price_data() {
     let udai = udai_info();
 
     let denoms_data = DenomsData {
-        prices: HashMap::from([(umars.market.denom.clone(), umars.price)]),
+        prices: HashMap::from([(umars.denom.clone(), umars.price)]),
         params: HashMap::from([
-            (umars.market.denom.clone(), umars.market.clone()),
-            (udai.market.denom.clone(), udai.market.clone()),
+            (umars.denom.clone(), umars.params.clone()),
+            (udai.denom.clone(), udai.params.clone()),
         ]),
     };
 
@@ -36,15 +36,15 @@ fn missing_price_data() {
     let h = HealthComputer {
         positions: Positions {
             account_id: "123".to_string(),
-            deposits: vec![coin(1200, &umars.market.denom), coin(33, &udai.market.denom)],
+            deposits: vec![coin(1200, &umars.denom), coin(33, &udai.denom)],
             debts: vec![
                 DebtAmount {
-                    denom: udai.market.denom.clone(),
+                    denom: udai.denom.clone(),
                     shares: Default::default(),
                     amount: Uint128::new(3100),
                 },
                 DebtAmount {
-                    denom: umars.market.denom.clone(),
+                    denom: umars.denom.clone(),
                     shares: Default::default(),
                     amount: Uint128::new(200),
                 },
@@ -54,24 +54,23 @@ fn missing_price_data() {
         },
         denoms_data,
         vaults_data,
-        allowed_coins: vec![umars.market.denom, udai.market.denom.clone()],
     };
 
     let err: HealthError = h.compute_health().unwrap_err();
-    assert_eq!(err, HealthError::MissingPrice(udai.market.denom))
+    assert_eq!(err, HealthError::MissingPrice(udai.denom))
 }
 
 #[test]
-fn missing_market_data() {
+fn missing_params() {
     let umars = umars_info();
     let udai = udai_info();
 
     let denoms_data = DenomsData {
         prices: HashMap::from([
-            (umars.market.denom.clone(), umars.price),
-            (udai.market.denom.clone(), udai.price),
+            (umars.denom.clone(), umars.price),
+            (udai.denom.clone(), udai.price),
         ]),
-        params: HashMap::from([(udai.market.denom.clone(), udai.market.clone())]),
+        params: HashMap::from([(udai.denom.clone(), udai.params.clone())]),
     };
 
     let vaults_data = VaultsData {
@@ -82,15 +81,15 @@ fn missing_market_data() {
     let h = HealthComputer {
         positions: Positions {
             account_id: "123".to_string(),
-            deposits: vec![coin(1200, &umars.market.denom), coin(33, &udai.market.denom)],
+            deposits: vec![coin(1200, &umars.denom), coin(33, &udai.denom)],
             debts: vec![
                 DebtAmount {
-                    denom: udai.market.denom.clone(),
+                    denom: udai.denom.clone(),
                     shares: Default::default(),
                     amount: Uint128::new(3100),
                 },
                 DebtAmount {
-                    denom: umars.market.denom.clone(),
+                    denom: umars.denom.clone(),
                     shares: Default::default(),
                     amount: Uint128::new(200),
                 },
@@ -100,11 +99,10 @@ fn missing_market_data() {
         },
         denoms_data,
         vaults_data,
-        allowed_coins: vec![umars.market.denom.clone(), udai.market.denom],
     };
 
     let err: HealthError = h.compute_health().unwrap_err();
-    assert_eq!(err, HealthError::MissingParams(umars.market.denom))
+    assert_eq!(err, HealthError::MissingParams(umars.denom))
 }
 
 #[test]
@@ -156,7 +154,6 @@ fn missing_market_data_for_vault_base_token() {
         },
         denoms_data,
         vaults_data,
-        allowed_coins: vec![],
     };
 
     let err: HealthError = h.compute_health().unwrap_err();
@@ -198,7 +195,6 @@ fn missing_vault_value() {
         },
         denoms_data,
         vaults_data,
-        allowed_coins: vec![],
     };
 
     let err: HealthError = h.compute_health().unwrap_err();
@@ -246,7 +242,6 @@ fn missing_vault_config() {
         },
         denoms_data,
         vaults_data,
-        allowed_coins: vec![],
     };
 
     let err: HealthError = h.compute_health().unwrap_err();
