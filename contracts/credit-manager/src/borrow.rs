@@ -18,7 +18,7 @@ pub fn borrow(deps: DepsMut, env: Env, account_id: &str, coin: Coin) -> Contract
         return Err(ContractError::NoAmount);
     }
 
-    assert_coin_is_whitelisted(deps.storage, &coin.denom)?;
+    assert_coin_is_whitelisted(&deps.as_ref(), &coin.denom)?;
 
     let red_bank = RED_BANK.load(deps.storage)?;
     let total_debt_amount =

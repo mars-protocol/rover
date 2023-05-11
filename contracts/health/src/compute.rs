@@ -56,7 +56,8 @@ pub fn compute_health(deps: Deps, account_id: &str) -> HealthResult<HealthRespon
         Ok(())
     })?;
 
-    let allowed_coins = querier.query_allowed_coins()?;
+    // let allowed_coins = querier.query_allowed_coins()?;
+    let allowed_coins = vec![]; // TODO: Query params
 
     let computer = HealthComputer {
         positions,

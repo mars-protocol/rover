@@ -1,7 +1,8 @@
-use cosmwasm_std::{to_binary, CosmosMsg, DepsMut, MessageInfo, Response, WasmMsg};
+use cosmwasm_std::{CosmosMsg, DepsMut, MessageInfo, Response, to_binary, WasmMsg};
 use cw721_base::Action;
-use mars_account_nft::{msg::ExecuteMsg as NftExecuteMsg, nft_config::NftConfigUpdates};
 use mars_owner::OwnerUpdate;
+
+use mars_account_nft::{msg::ExecuteMsg as NftExecuteMsg, nft_config::NftConfigUpdates};
 use mars_rover::{
     error::ContractResult,
     msg::instantiate::ConfigUpdates,
@@ -9,9 +10,9 @@ use mars_rover::{
 };
 
 use crate::{
-    instantiate::{assert_no_duplicate_coins, assert_no_duplicate_vaults},
+    instantiate::assert_no_duplicate_vaults,
     state::{
-        ACCOUNT_NFT, ALLOWED_COINS, HEALTH_CONTRACT, MAX_UNLOCKING_POSITIONS, ORACLE, OWNER,
+        ACCOUNT_NFT, HEALTH_CONTRACT, MAX_UNLOCKING_POSITIONS, ORACLE, OWNER,
         RED_BANK, SWAPPER, VAULT_CONFIGS, ZAPPER,
     },
 };
@@ -40,16 +41,6 @@ pub fn update_config(
             .add_message(accept_minter_role_msg)
             .add_attribute("key", "account_nft")
             .add_attribute("value", addr_str);
-    }
-
-    if let Some(coins) = updates.allowed_coins {
-        assert_no_duplicate_coins(&coins)?;
-        ALLOWED_COINS.clear(deps.storage);
-        coins.iter().try_for_each(|denom| ALLOWED_COINS.insert(deps.storage, denom).map(|_| ()))?;
-
-        response = response
-            .add_attribute("key", "allowed_coins")
-            .add_attribute("value", coins.join(", ").fallback("None"));
     }
 
     if let Some(configs) = updates.vault_configs {

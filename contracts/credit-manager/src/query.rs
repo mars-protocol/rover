@@ -1,6 +1,7 @@
 use cosmwasm_std::{Addr, Coin, Deps, Env, Order, StdResult, Uint128};
 use cw_paginate::paginate_map;
 use cw_storage_plus::Bound;
+
 use mars_rover::{
     adapters::vault::{Vault, VaultBase, VaultPosition, VaultPositionValue, VaultUnchecked},
     error::ContractResult,
@@ -11,16 +12,16 @@ use mars_rover::{
     },
 };
 
-use crate::state::PARAMS;
 use crate::{
     state::{
-        ACCOUNT_NFT, ALLOWED_COINS, COIN_BALANCES, DEBT_SHARES, HEALTH_CONTRACT, LENT_SHARES,
+        ACCOUNT_NFT, COIN_BALANCES, DEBT_SHARES, HEALTH_CONTRACT, LENT_SHARES,
         MAX_UNLOCKING_POSITIONS, ORACLE, OWNER, RED_BANK, SWAPPER, TOTAL_DEBT_SHARES,
         TOTAL_LENT_SHARES, VAULT_CONFIGS, VAULT_POSITIONS, ZAPPER,
     },
     utils::{debt_shares_to_amount, lent_shares_to_amount},
     vault::vault_utilization_in_deposit_cap_denom,
 };
+use crate::state::PARAMS;
 
 const DEFAULT_LIMIT: u32 = 10;
 
@@ -228,21 +229,12 @@ pub fn query_all_vault_positions(
     })
 }
 
-/// NOTE: This implementation of the query function assumes the map `ALLOWED_COINS` only saves `Empty`.
-/// If a coin is to be removed from the whitelist, the map must remove the corresponding key.
-pub fn query_allowed_coins(
-    deps: Deps,
-    start_after: Option<String>,
-    limit: Option<u32>,
-) -> StdResult<Vec<String>> {
-    let start = start_after.as_ref().map(|denom| Bound::exclusive(denom.as_str()));
+pub fn query_whitelisted_asset(deps: Deps, denom: &str) -> StdResult<bool> {
+    let params = PARAMS.load(deps.storage)?;
+    let asset_params = params.query_asset_params(&deps.querier, denom)?;
+    let whitelisted = asset_params.rover.whitelisted;
 
-    let limit = limit.unwrap_or(DEFAULT_LIMIT) as usize;
-
-    ALLOWED_COINS
-        .items(deps.storage, start, None, Order::Ascending)
-        .take(limit)
-        .collect::<StdResult<Vec<_>>>()
+    Ok(whitelisted)
 }
 
 pub fn query_total_debt_shares(deps: Deps, denom: &str) -> StdResult<DebtShares> {

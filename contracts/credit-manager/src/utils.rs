@@ -6,15 +6,17 @@ use cosmwasm_std::{
 };
 use cw721::OwnerOfResponse;
 use cw721_base::QueryMsg;
+
 use mars_rover::{
     error::{ContractError, ContractResult},
     msg::{execute::CallbackMsg, ExecuteMsg},
 };
 
+use crate::state::PARAMS;
 use crate::{
     state::{
-        ACCOUNT_NFT, ALLOWED_COINS, COIN_BALANCES, HEALTH_CONTRACT, LENT_SHARES, ORACLE, RED_BANK,
-        SWAPPER, TOTAL_DEBT_SHARES, TOTAL_LENT_SHARES, VAULT_CONFIGS, ZAPPER,
+        ACCOUNT_NFT, COIN_BALANCES, HEALTH_CONTRACT, LENT_SHARES, ORACLE, RED_BANK, SWAPPER,
+        TOTAL_DEBT_SHARES, TOTAL_LENT_SHARES, VAULT_CONFIGS, ZAPPER,
     },
     update_coin_balances::query_balance,
 };
@@ -42,19 +44,18 @@ pub fn query_nft_token_owner(deps: Deps, account_id: &str) -> ContractResult<Str
     Ok(res.owner)
 }
 
-pub fn assert_coin_is_whitelisted(storage: &mut dyn Storage, denom: &str) -> ContractResult<()> {
-    let is_whitelisted = ALLOWED_COINS.contains(storage, denom); // TODO: Delete this, replace with query_params().whitelisted
+pub fn assert_coin_is_whitelisted(deps: &Deps, denom: &str) -> ContractResult<()> {
+    let params = PARAMS.load(deps.storage)?;
+    let params_query = params.query_asset_params(&deps.querier, denom)?;
+    let is_whitelisted = params_query.rover.whitelisted;
     if !is_whitelisted {
         return Err(ContractError::NotWhitelisted(denom.to_string()));
     }
     Ok(())
 }
 
-pub fn assert_coins_are_whitelisted(
-    storage: &mut dyn Storage,
-    denoms: Vec<&str>,
-) -> ContractResult<()> {
-    denoms.iter().try_for_each(|denom| assert_coin_is_whitelisted(storage, denom))
+pub fn assert_coins_are_whitelisted(deps: &Deps, denoms: Vec<&str>) -> ContractResult<()> {
+    denoms.iter().try_for_each(|denom| assert_coin_is_whitelisted(deps, denom))
 }
 
 pub fn increment_coin_balance(

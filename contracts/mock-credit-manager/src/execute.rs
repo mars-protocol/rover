@@ -1,7 +1,7 @@
 use cosmwasm_std::{Addr, DepsMut, Response, StdResult};
 use mars_rover::{adapters::vault::VaultConfig, msg::query::Positions};
 
-use crate::state::{ALLOWED_COINS, POSITION_RESPONSES, VAULT_CONFIGS};
+use crate::state::{POSITION_RESPONSES, VAULT_CONFIGS};
 
 pub fn set_position_response(
     deps: DepsMut,
@@ -9,11 +9,6 @@ pub fn set_position_response(
     positions: Positions,
 ) -> StdResult<Response> {
     POSITION_RESPONSES.save(deps.storage, &account_id, &positions)?;
-    Ok(Response::new())
-}
-
-pub fn set_allowed_coins(deps: DepsMut, coins: Vec<String>) -> StdResult<Response> {
-    ALLOWED_COINS.save(deps.storage, &coins)?;
     Ok(Response::new())
 }
 

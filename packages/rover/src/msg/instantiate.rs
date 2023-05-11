@@ -18,8 +18,6 @@ use crate::{
 pub struct InstantiateMsg {
     /// The address with privileged access to update config
     pub owner: String,
-    /// Whitelisted coin denoms approved by governance
-    pub allowed_coins: Vec<String>, // TODO: Remove this
     /// Vaults approved by governance that implement credit manager's vault interface
     /// Includes a deposit cap that enforces a TLV limit for risk mitigation
     pub vault_configs: Vec<VaultInstantiateConfig>, // TODO: Remove this

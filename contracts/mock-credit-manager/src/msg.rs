@@ -15,7 +15,6 @@ pub enum ExecuteMsg {
         account_id: String,
         positions: Positions,
     },
-    SetAllowedCoins(Vec<String>),
     SetVaultConfig {
         address: String,
         config: VaultConfig,

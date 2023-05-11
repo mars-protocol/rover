@@ -30,12 +30,6 @@ pub enum QueryMsg {
     VaultUtilization {
         vault: VaultUnchecked,
     },
-    /// Whitelisted coins
-    #[returns(Vec<String>)]
-    AllowedCoins {
-        start_after: Option<String>,
-        limit: Option<u32>,
-    },
     /// All positions represented by token with value
     #[returns(Positions)]
     Positions {

@@ -2,6 +2,7 @@ use cosmwasm_std::{
     entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response,
 };
 use cw2::set_contract_version;
+
 use mars_rover::{
     adapters::vault::VAULT_REQUEST_REPLY_ID,
     error::{ContractError, ContractResult},
@@ -15,8 +16,8 @@ use crate::{
     query::{
         query_all_coin_balances, query_all_debt_shares, query_all_lent_shares,
         query_all_total_debt_shares, query_all_total_lent_shares,
-        query_all_total_vault_coin_balances, query_all_vault_positions, query_allowed_coins,
-        query_config, query_positions, query_total_debt_shares, query_total_lent_shares,
+        query_all_total_vault_coin_balances, query_all_vault_positions, query_config,
+        query_positions, query_total_debt_shares, query_total_lent_shares,
         query_total_vault_coin_balance, query_vault_config, query_vault_position_value,
         query_vault_utilization, query_vaults_config,
     },
@@ -92,10 +93,6 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
         QueryMsg::VaultUtilization {
             vault,
         } => to_binary(&query_vault_utilization(deps, env, vault)?),
-        QueryMsg::AllowedCoins {
-            start_after,
-            limit,
-        } => to_binary(&query_allowed_coins(deps, start_after, limit)?),
         QueryMsg::Positions {
             account_id,
         } => to_binary(&query_positions(deps, &env, &account_id)?),

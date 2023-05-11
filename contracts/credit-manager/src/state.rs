@@ -1,9 +1,7 @@
 use cosmwasm_std::{Addr, Uint128};
-use cw_item_set::Set;
 use cw_storage_plus::{Item, Map};
 use mars_owner::Owner;
 
-use mars_rover::adapters::params::Params;
 use mars_rover::adapters::{
     health::HealthContract,
     oracle::Oracle,
@@ -12,6 +10,7 @@ use mars_rover::adapters::{
     vault::{VaultConfig, VaultPositionAmount},
     zapper::Zapper,
 };
+use mars_rover::adapters::params::Params;
 
 use crate::vault::RequestTempStorage;
 
@@ -33,7 +32,6 @@ pub const OWNER: Owner = Owner::new("owner");
 //       - Remove VAULT_CONFIGS and replace with query_vault_config(). Get to build. Get tests to pass.
 //       - Update build scripts so that it compiles. May need to remove some asset params in instantiate.
 //          - Don't sweat too bad because there is a lot we need to update there.
-pub const ALLOWED_COINS: Set<&str> = Set::new("allowed_coins"); // TODO: Remove this
 pub const MAX_UNLOCKING_POSITIONS: Item<Uint128> = Item::new("max_unlocking_positions");
 
 // Positions

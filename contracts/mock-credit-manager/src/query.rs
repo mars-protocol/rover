@@ -4,7 +4,7 @@ use mars_rover::{
     msg::query::{ConfigResponse, Positions, VaultConfigResponse},
 };
 
-use crate::state::{ALLOWED_COINS, CONFIG, POSITION_RESPONSES, VAULT_CONFIGS};
+use crate::state::{CONFIG, POSITION_RESPONSES, VAULT_CONFIGS};
 
 pub fn query_positions(deps: Deps, account_id: String) -> StdResult<Positions> {
     POSITION_RESPONSES.load(deps.storage, &account_id)
@@ -12,10 +12,6 @@ pub fn query_positions(deps: Deps, account_id: String) -> StdResult<Positions> {
 
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     CONFIG.load(deps.storage)
-}
-
-pub fn query_allowed_coins(deps: Deps) -> StdResult<Vec<String>> {
-    ALLOWED_COINS.load(deps.storage)
 }
 
 pub fn query_vault_config(deps: Deps, vault: VaultUnchecked) -> StdResult<VaultConfigResponse> {

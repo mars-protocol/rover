@@ -1,11 +1,12 @@
 use cosmwasm_std::{Decimal, DepsMut, MessageInfo, Response, Uint128};
+
 use mars_rover::{
     adapters::vault::VaultUnchecked,
-    error::{ContractError::InvalidConfig, ContractResult},
+    error::ContractResult,
     msg::execute::EmergencyUpdate,
 };
 
-use crate::state::{ALLOWED_COINS, OWNER, VAULT_CONFIGS};
+use crate::state::{OWNER, VAULT_CONFIGS};
 
 pub fn emergency_config_update(
     deps: DepsMut,
@@ -17,7 +18,6 @@ pub fn emergency_config_update(
     match update {
         EmergencyUpdate::SetZeroMaxLtv(v) => set_zero_max_ltv(deps, v),
         EmergencyUpdate::SetZeroDepositCap(v) => set_zero_deposit_cap(deps, v),
-        EmergencyUpdate::DisallowCoin(denom) => disallow_coin(deps, &denom),
     }
 }
 
@@ -41,17 +41,4 @@ pub fn set_zero_deposit_cap(deps: DepsMut, v: VaultUnchecked) -> ContractResult<
     Ok(Response::new()
         .add_attribute("action", "set_zero_deposit_cap")
         .add_attribute("vault", v.address))
-}
-
-pub fn disallow_coin(deps: DepsMut, denom: &str) -> ContractResult<Response> {
-    let result = ALLOWED_COINS.remove(deps.storage, denom)?;
-    if !result {
-        return Err(InvalidConfig {
-            reason: format!("{denom} not in config"),
-        });
-    }
-
-    Ok(Response::new()
-        .add_attribute("action", "disallow_coin")
-        .add_attribute("denom", denom.to_string()))
 }

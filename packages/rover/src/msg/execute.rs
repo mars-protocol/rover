@@ -92,7 +92,6 @@ impl From<&Coin> for ActionCoin {
 pub enum EmergencyUpdate {
     SetZeroMaxLtv(VaultUnchecked),
     SetZeroDepositCap(VaultUnchecked),
-    DisallowCoin(String),
 }
 
 #[cw_serde]

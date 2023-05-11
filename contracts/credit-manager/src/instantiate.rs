@@ -2,13 +2,14 @@ use std::collections::HashSet;
 
 use cosmwasm_std::{Api, DepsMut, QuerierWrapper, StdResult};
 use mars_owner::OwnerInit::SetInitialOwner;
+
 use mars_rover::{
     error::{ContractError::InvalidConfig, ContractResult},
     msg::{instantiate::VaultInstantiateConfig, InstantiateMsg},
 };
 
 use crate::state::{
-    ALLOWED_COINS, HEALTH_CONTRACT, MAX_UNLOCKING_POSITIONS, ORACLE, OWNER, PARAMS, RED_BANK,
+    HEALTH_CONTRACT, MAX_UNLOCKING_POSITIONS, ORACLE, OWNER, PARAMS, RED_BANK,
     SWAPPER, VAULT_CONFIGS, ZAPPER,
 };
 
@@ -35,11 +36,6 @@ pub fn store_config(deps: DepsMut, msg: &InstantiateMsg) -> ContractResult<()> {
         let vault = v.vault.check(deps.api)?;
         Ok(VAULT_CONFIGS.save(deps.storage, &vault.address, &v.config)?)
     })?;
-
-    assert_no_duplicate_coins(&msg.allowed_coins)?;
-    msg.allowed_coins
-        .iter()
-        .try_for_each(|denom| ALLOWED_COINS.insert(deps.storage, denom).map(|_| ()))?;
 
     Ok(())
 }

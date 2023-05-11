@@ -41,17 +41,6 @@ impl<'a> HealthQuerier<'a> {
         ))
     }
 
-    pub fn query_allowed_coins(&self) -> HealthResult<Vec<String>> {
-        let allowed_coins: Vec<String> = self.querier.query_wasm_smart(
-            self.credit_manager_addr.to_string(),
-            &QueryMsg::AllowedCoins {
-                start_after: None,
-                limit: Some(u32::MAX),
-            },
-        )?;
-        Ok(allowed_coins)
-    }
-
     pub fn query_vault_config(&self, vault: &Vault) -> HealthResult<VaultConfig> {
         let vault_info: VaultConfigResponse = self.querier.query_wasm_smart(
             self.credit_manager_addr.to_string(),
