@@ -1,5 +1,9 @@
+use std::str::FromStr;
+
 use cosmwasm_std::{Coin, Decimal, StdError, Uint128};
-use mars_mock_red_bank::msg::CoinMarketInfo;
+use mars_params::types::AssetParamsUpdate::AddOrUpdate;
+use mars_params::types::{AssetParams, HighLeverageStrategyParams, RedBankSettings, RoverSettings};
+
 use mars_rover::{
     adapters::vault::{
         LockingVaultAmount, UnlockingPositions, Vault, VaultAmount, VaultPosition,
@@ -98,28 +102,40 @@ fn adds_vault_base_denoms_to_oracle_and_red_bank() {
         },
     );
 
-    mock.set_allowed_coins(&[vault_base_token.to_string()]);
-
-    let max_ltv = Decimal::from_atomics(4523u128, 4).unwrap();
+    let max_loan_to_value = Decimal::from_atomics(4523u128, 4).unwrap();
     let liquidation_threshold = Decimal::from_atomics(5u128, 1).unwrap();
 
-    mock.set_price(vault_base_token, Decimal::one());
-    mock.set_market(
-        vault_base_token,
-        &CoinMarketInfo {
-            denom: vault_base_token.to_string(),
-            max_ltv,
+    let update = AddOrUpdate {
+        denom: vault_base_token.to_string(),
+        params: AssetParams {
+            rover: RoverSettings {
+                whitelisted: true,
+                hls: HighLeverageStrategyParams {
+                    max_loan_to_value: Decimal::from_str("0.8").unwrap(),
+                    liquidation_threshold: Decimal::from_str("0.9").unwrap(),
+                },
+            },
+            red_bank: RedBankSettings {
+                deposit_enabled: false,
+                borrow_enabled: false,
+                deposit_cap: Default::default(),
+            },
+            max_loan_to_value,
             liquidation_threshold,
             liquidation_bonus: Decimal::from_atomics(9u128, 2).unwrap(),
         },
-    );
+    };
+
+    mock.update_asset_params(update);
+
+    mock.set_price(vault_base_token, Decimal::one());
 
     let health = mock.query_health(account_id).unwrap();
     assert_eq!(health.total_debt_value, Uint128::zero());
     assert_eq!(health.total_collateral_value, unlocking_amount);
     assert_eq!(
         health.max_ltv_adjusted_collateral,
-        unlocking_amount.checked_mul_floor(max_ltv).unwrap()
+        unlocking_amount.checked_mul_floor(max_loan_to_value).unwrap()
     );
     assert_eq!(
         health.liquidation_threshold_adjusted_collateral,
@@ -135,23 +151,38 @@ fn adds_vault_base_denoms_to_oracle_and_red_bank() {
 fn allowed_coins_work() {
     let mut mock = MockEnv::new().build().unwrap();
 
-    mock.set_allowed_coins(&[]);
-
     let umars = "umars";
+
     mock.set_price(umars, Decimal::one());
 
-    let max_ltv = Decimal::from_atomics(4523u128, 4).unwrap();
+    let max_loan_to_value = Decimal::from_atomics(4523u128, 4).unwrap();
     let liquidation_threshold = Decimal::from_atomics(5u128, 1).unwrap();
+    let liquidation_bonus = Decimal::from_atomics(9u128, 2).unwrap();
 
-    mock.set_market(
-        umars,
-        &CoinMarketInfo {
-            denom: umars.to_string(),
-            max_ltv,
-            liquidation_threshold,
-            liquidation_bonus: Decimal::from_atomics(9u128, 2).unwrap(),
+    let mut asset_params = AssetParams {
+        rover: RoverSettings {
+            whitelisted: false,
+            hls: HighLeverageStrategyParams {
+                max_loan_to_value: Decimal::from_str("0.8").unwrap(),
+                liquidation_threshold: Decimal::from_str("0.9").unwrap(),
+            },
         },
-    );
+        red_bank: RedBankSettings {
+            deposit_enabled: false,
+            borrow_enabled: false,
+            deposit_cap: Default::default(),
+        },
+        max_loan_to_value,
+        liquidation_threshold,
+        liquidation_bonus,
+    };
+
+    let update = AddOrUpdate {
+        denom: umars.to_string(),
+        params: asset_params.clone(),
+    };
+
+    mock.update_asset_params(update);
 
     let deposit_amount = Uint128::new(30);
 
@@ -184,12 +215,16 @@ fn allowed_coins_work() {
     assert!(!health.above_max_ltv);
 
     // Add to whitelist
-    mock.set_allowed_coins(&[umars.to_string()]);
+    asset_params.rover.whitelisted = true;
+    mock.update_asset_params(AddOrUpdate {
+        denom: umars.to_string(),
+        params: asset_params,
+    });
     let health = mock.query_health(account_id).unwrap();
     // Now reflects deposit value
     assert_eq!(
         health.max_ltv_adjusted_collateral,
-        deposit_amount.checked_mul_floor(max_ltv).unwrap()
+        deposit_amount.checked_mul_floor(max_loan_to_value).unwrap()
     );
 }
 
@@ -220,21 +255,34 @@ fn vault_whitelist_affects_max_ltv() {
             }],
         },
     );
-    mock.set_allowed_coins(&[vault_base_token.to_string()]);
 
-    let max_ltv = Decimal::from_atomics(4523u128, 4).unwrap();
+    let max_loan_to_value = Decimal::from_atomics(4523u128, 4).unwrap();
     let liquidation_threshold = Decimal::from_atomics(5u128, 1).unwrap();
 
-    mock.set_price(vault_base_token, Decimal::one());
-    mock.set_market(
-        vault_base_token,
-        &CoinMarketInfo {
-            denom: vault_base_token.to_string(),
-            max_ltv,
+    let update = AddOrUpdate {
+        denom: vault_base_token.to_string(),
+        params: AssetParams {
+            rover: RoverSettings {
+                whitelisted: true,
+                hls: HighLeverageStrategyParams {
+                    max_loan_to_value: Decimal::from_str("0.8").unwrap(),
+                    liquidation_threshold: Decimal::from_str("0.9").unwrap(),
+                },
+            },
+            red_bank: RedBankSettings {
+                deposit_enabled: false,
+                borrow_enabled: false,
+                deposit_cap: Default::default(),
+            },
+            max_loan_to_value,
             liquidation_threshold,
             liquidation_bonus: Decimal::from_atomics(9u128, 2).unwrap(),
         },
-    );
+    };
+
+    mock.update_asset_params(update);
+
+    mock.set_price(vault_base_token, Decimal::one());
 
     let vault_config = mock.query_vault_config(&vault.clone().into());
     let vault_max_ltv = vault_config.config.max_ltv;

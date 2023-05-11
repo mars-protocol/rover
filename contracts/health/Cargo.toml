@@ -36,6 +36,7 @@ cw-utils                 = { workspace = true }
 cw-vault-standard        = { workspace = true }
 mars-mock-credit-manager = { workspace = true }
 mars-mock-oracle         = { workspace = true }
-mars-mock-red-bank       = { workspace = true }
+mars-mock-red-bank       = { workspace = true } # TODO: Delete after
 mars-mock-vault          = { workspace = true }
-mars-red-bank-types      = { workspace = true }
+mars-params              = { workspace = true }
+mars-red-bank-types      = { workspace = true } # TODO: Delete after

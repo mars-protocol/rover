@@ -1524,6 +1524,7 @@ dependencies = [
  "mars-mock-red-bank",
  "mars-mock-vault",
  "mars-owner",
+ "mars-params",
  "mars-red-bank-types",
  "mars-rover",
  "mars-rover-health-computer",

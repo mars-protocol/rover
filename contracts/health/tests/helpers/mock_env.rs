@@ -4,11 +4,15 @@ use cw_multi_test::{App, AppResponse, BankSudo, BasicApp, Executor, SudoMsg};
 use cw_vault_standard::{
     VaultInfoResponse, VaultStandardExecuteMsg::Deposit, VaultStandardQueryMsg::Info,
 };
+use mars_params::msg::ExecuteMsg::UpdateAssetParams;
+use mars_params::types::AssetParamsUpdate;
+use mars_red_bank_types::red_bank::ExecuteMsg::UpdateAsset;
+use mars_red_bank_types::red_bank::InitOrUpdateAssetParams;
+
 use mars_mock_credit_manager::msg::ExecuteMsg::{SetPositionsResponse, SetVaultConfig};
 use mars_mock_oracle::msg::{CoinPrice, ExecuteMsg::ChangePrice};
 use mars_mock_red_bank::msg::CoinMarketInfo;
 use mars_mock_vault::contract::STARTING_VAULT_SHARES;
-use mars_red_bank_types::red_bank::{ExecuteMsg::UpdateAsset, InitOrUpdateAssetParams};
 use mars_rover::{
     adapters::vault::VaultUnchecked,
     msg::{
@@ -28,6 +32,7 @@ pub struct MockEnv {
     pub vault_contract: Addr,
     pub oracle: Addr,
     pub red_bank: Addr,
+    pub params: Addr,
 }
 
 #[allow(clippy::new_ret_no_self)]
@@ -42,6 +47,7 @@ impl MockEnv {
             vault_contract: None,
             oracle: None,
             red_bank: None,
+            params: None,
         }
     }
 
@@ -184,12 +190,12 @@ impl MockEnv {
             .unwrap();
     }
 
-    pub fn set_allowed_coins(&mut self, allowed_coins: &[String]) {
+    pub fn update_asset_params(&mut self, update: AssetParamsUpdate) {
         self.app
             .execute_contract(
                 self.deployer.clone(),
-                self.cm_contract.clone(),
-                &SetAllowedCoins(allowed_coins.to_vec()),
+                self.params.clone(),
+                &UpdateAssetParams(update),
                 &[],
             )
             .unwrap();

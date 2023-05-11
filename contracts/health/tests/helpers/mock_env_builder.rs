@@ -1,16 +1,19 @@
 use std::mem::take;
+use std::str::FromStr;
 
 use anyhow::Result as AnyResult;
 use cosmwasm_std::{coin, Addr, Decimal};
 use cw_multi_test::{BasicApp, Executor};
 use cw_utils::Duration;
+use mars_owner::OwnerResponse;
+use mars_params::msg::InstantiateMsg as ParamsInstantiateMsg;
+
 use mars_mock_credit_manager::msg::{
     ExecuteMsg::SetVaultConfig, InstantiateMsg as CmMockInstantiateMsg,
 };
 use mars_mock_oracle::msg::InstantiateMsg as OracleInstantiateMsg;
 use mars_mock_red_bank::msg::InstantiateMsg as RedBankInstantiateMsg;
 use mars_mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
-use mars_owner::OwnerResponse;
 use mars_rover::{
     adapters::{oracle::OracleUnchecked, vault::VaultConfig},
     msg::query::ConfigResponse,
@@ -18,7 +21,7 @@ use mars_rover::{
 use mars_rover_health_types::{ExecuteMsg::UpdateConfig, InstantiateMsg};
 
 use crate::helpers::{
-    mock_credit_manager_contract, mock_health_contract, mock_oracle_contract,
+    mock_credit_manager_contract, mock_health_contract, mock_oracle_contract, mock_params_contract,
     mock_red_bank_contract, mock_vault_contract, MockEnv,
 };
 
@@ -30,6 +33,7 @@ pub struct MockEnvBuilder {
     pub vault_contract: Option<Addr>,
     pub oracle: Option<Addr>,
     pub red_bank: Option<Addr>,
+    pub params: Option<Addr>,
     pub set_cm_config: bool,
 }
 
@@ -47,6 +51,7 @@ impl MockEnvBuilder {
             red_bank: self.get_red_bank(),
             cm_contract: self.get_cm_contract(),
             app: take(&mut self.app),
+            params: self.get_params_contract(),
         })
     }
 
@@ -137,6 +142,7 @@ impl MockEnvBuilder {
         let code_id = self.app.store_code(contract);
         let red_bank = self.get_red_bank().to_string();
         let oracle = self.get_oracle().to_string();
+        let params = self.get_params_contract().to_string();
 
         let cm_addr = self
             .app
@@ -154,8 +160,8 @@ impl MockEnvBuilder {
                         },
                         red_bank,
                         oracle,
+                        params,
                         account_nft: None,
-                        params: Default::default(),
                         max_unlocking_positions: Default::default(),
                         swapper: "n/a".to_string(),
                         zapper: "n/a".to_string(),
@@ -187,6 +193,33 @@ impl MockEnvBuilder {
                 &[],
             )
             .unwrap();
+    }
+
+    fn get_params_contract(&mut self) -> Addr {
+        if self.params.is_none() {
+            let hc = self.deploy_params_contract();
+            self.params = Some(hc);
+        }
+        self.params.clone().unwrap()
+    }
+
+    pub fn deploy_params_contract(&mut self) -> Addr {
+        let contract_code_id = self.app.store_code(mock_params_contract());
+        let owner = self.deployer.clone();
+
+        self.app
+            .instantiate_contract(
+                contract_code_id,
+                owner.clone(),
+                &ParamsInstantiateMsg {
+                    owner: owner.to_string(),
+                    max_close_factor: Decimal::from_str("0.5").unwrap(),
+                },
+                &[],
+                "mock-params-contract",
+                Some(owner.to_string()),
+            )
+            .unwrap()
     }
 
     fn get_vault_contract(&mut self) -> Addr {
