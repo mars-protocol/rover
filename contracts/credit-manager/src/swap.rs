@@ -17,7 +17,7 @@ pub fn swap_exact_in(
     denom_out: &str,
     slippage: Decimal,
 ) -> ContractResult<Response> {
-    assert_coin_is_whitelisted(&deps.as_ref(), denom_out)?;
+    assert_coin_is_whitelisted(deps.storage, &deps.querier, denom_out)?;
 
     let coin_in_to_trade = Coin {
         denom: coin_in.denom.clone(),

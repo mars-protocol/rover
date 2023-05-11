@@ -31,7 +31,7 @@ pub fn compute_health(deps: Deps, account_id: &str) -> HealthResult<HealthRespon
     let vault_base_token_denoms = vault_infos.values().map(|v| &v.base_token).collect::<Vec<_>>();
 
     // Collect prices + markets
-    let (oracle, red_bank) = querier.query_deps()?;
+    let (oracle, params) = querier.query_deps()?;
     let mut denoms_data: DenomsData = Default::default();
     deposit_denoms
         .into_iter()
@@ -41,8 +41,8 @@ pub fn compute_health(deps: Deps, account_id: &str) -> HealthResult<HealthRespon
         .try_for_each(|denom| -> StdResult<()> {
             let price = oracle.query_price(&deps.querier, denom)?.price;
             denoms_data.prices.insert(denom.clone(), price);
-            let market = red_bank.query_market(&deps.querier, denom)?; // TODO: Delete this, replace with query_params()
-            denoms_data.markets.insert(denom.clone(), market);
+            let params = params.query_asset_params(&deps.querier, denom)?;
+            denoms_data.params.insert(denom.clone(), params);
             Ok(())
         })?;
 
@@ -56,14 +56,10 @@ pub fn compute_health(deps: Deps, account_id: &str) -> HealthResult<HealthRespon
         Ok(())
     })?;
 
-    // let allowed_coins = querier.query_allowed_coins()?;
-    let allowed_coins = vec![]; // TODO: Query params
-
     let computer = HealthComputer {
         positions,
         denoms_data,
         vaults_data,
-        allowed_coins,
     };
 
     Ok(computer.compute_health()?.into())

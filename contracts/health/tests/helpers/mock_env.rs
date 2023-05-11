@@ -4,9 +4,7 @@ use cw_multi_test::{App, AppResponse, BankSudo, BasicApp, Executor, SudoMsg};
 use cw_vault_standard::{
     VaultInfoResponse, VaultStandardExecuteMsg::Deposit, VaultStandardQueryMsg::Info,
 };
-use mars_mock_credit_manager::msg::ExecuteMsg::{
-    SetAllowedCoins, SetPositionsResponse, SetVaultConfig,
-};
+use mars_mock_credit_manager::msg::ExecuteMsg::{SetPositionsResponse, SetVaultConfig};
 use mars_mock_oracle::msg::{CoinPrice, ExecuteMsg::ChangePrice};
 use mars_mock_red_bank::msg::CoinMarketInfo;
 use mars_mock_vault::contract::STARTING_VAULT_SHARES;

@@ -25,7 +25,7 @@ fn only_assets_with_no_debts() {
 
     let denoms_data = DenomsData {
         prices: HashMap::from([(umars.market.denom.clone(), umars.price)]),
-        markets: HashMap::from([(umars.market.denom.clone(), umars.market.clone())]),
+        params: HashMap::from([(umars.market.denom.clone(), umars.market.clone())]),
     };
 
     let vaults_data = VaultsData {
@@ -84,7 +84,7 @@ fn terra_ragnarok() {
 
     let denoms_data = DenomsData {
         prices: HashMap::from([(uluna.market.denom.clone(), uluna.price)]),
-        markets: HashMap::from([(uluna.market.denom.clone(), uluna.market.clone())]),
+        params: HashMap::from([(uluna.market.denom.clone(), uluna.market.clone())]),
     };
 
     let vaults_data = VaultsData {
@@ -151,7 +151,7 @@ fn terra_ragnarok() {
 
     let denoms_data = DenomsData {
         prices: HashMap::from([(uluna.market.denom.clone(), uluna.price)]),
-        markets: HashMap::from([(uluna.market.denom.clone(), uluna.market.clone())]),
+        params: HashMap::from([(uluna.market.denom.clone(), uluna.market.clone())]),
     };
 
     let h = HealthComputer {
@@ -201,7 +201,7 @@ fn ltv_and_lqdt_adjusted_values() {
             (ustars.market.denom.clone(), ustars.price),
             (ujuno.market.denom.clone(), ujuno.price),
         ]),
-        markets: HashMap::from([
+        params: HashMap::from([
             (ustars.market.denom.clone(), ustars.market.clone()),
             (ujuno.market.denom.clone(), ujuno.market.clone()),
         ]),
@@ -309,7 +309,7 @@ fn debt_value() {
             (ustars.market.denom.clone(), ustars.price),
             (ujuno.market.denom.clone(), ujuno.price),
         ]),
-        markets: HashMap::from([
+        params: HashMap::from([
             (ustars.market.denom.clone(), ustars.market.clone()),
             (ujuno.market.denom.clone(), ujuno.market.clone()),
         ]),
@@ -435,7 +435,7 @@ fn above_max_ltv_below_liq_threshold() {
             (umars.market.denom.clone(), umars.price),
             (udai.market.denom.clone(), udai.price),
         ]),
-        markets: HashMap::from([
+        params: HashMap::from([
             (umars.market.denom.clone(), umars.market.clone()),
             (udai.market.denom.clone(), udai.market.clone()),
         ]),
@@ -490,7 +490,7 @@ fn liquidatable() {
             (umars.market.denom.clone(), umars.price),
             (udai.market.denom.clone(), udai.price),
         ]),
-        markets: HashMap::from([
+        params: HashMap::from([
             (umars.market.denom.clone(), umars.market.clone()),
             (udai.market.denom.clone(), udai.market.clone()),
         ]),
@@ -552,7 +552,7 @@ fn allowed_coins_influence_max_ltv() {
             (umars.market.denom.clone(), umars.price),
             (udai.market.denom.clone(), udai.price),
         ]),
-        markets: HashMap::from([
+        params: HashMap::from([
             (umars.market.denom.clone(), umars.market.clone()),
             (udai.market.denom.clone(), udai.market.clone()),
         ]),
@@ -614,7 +614,7 @@ fn unlocked_vault() {
             (umars.market.denom.clone(), umars.price),
             (udai.market.denom.clone(), udai.price),
         ]),
-        markets: HashMap::from([
+        params: HashMap::from([
             (umars.market.denom.clone(), umars.market.clone()),
             (udai.market.denom.clone(), udai.market.clone()),
         ]),
@@ -703,7 +703,7 @@ fn locked_vault() {
             (umars.market.denom.clone(), umars.price),
             (udai.market.denom.clone(), udai.price),
         ]),
-        markets: HashMap::from([
+        params: HashMap::from([
             (umars.market.denom.clone(), umars.market.clone()),
             (udai.market.denom.clone(), udai.market.clone()),
         ]),
@@ -795,7 +795,7 @@ fn locked_vault_with_unlocking_positions() {
             (umars.market.denom.clone(), umars.price),
             (udai.market.denom.clone(), udai.price),
         ]),
-        markets: HashMap::from([
+        params: HashMap::from([
             (umars.market.denom.clone(), umars.market.clone()),
             (udai.market.denom.clone(), udai.market.clone()),
         ]),
@@ -896,7 +896,7 @@ fn vault_is_not_whitelisted() {
             (umars.market.denom.clone(), umars.price),
             (udai.market.denom.clone(), udai.price),
         ]),
-        markets: HashMap::from([
+        params: HashMap::from([
             (umars.market.denom.clone(), umars.market.clone()),
             (udai.market.denom.clone(), udai.market.clone()),
         ]),
@@ -988,7 +988,7 @@ fn vault_base_token_is_not_whitelisted() {
             (udai.market.denom.clone(), udai.price),
             (ujuno.market.denom.clone(), ujuno.price),
         ]),
-        markets: HashMap::from([
+        params: HashMap::from([
             (umars.market.denom.clone(), umars.market.clone()),
             (udai.market.denom.clone(), udai.market.clone()),
             (ujuno.market.denom.clone(), ujuno.market.clone()),
@@ -1092,7 +1092,7 @@ fn lent_coins_used_as_collateral() {
             (udai.market.denom.clone(), udai.price),
             (uluna.market.denom.clone(), uluna.price),
         ]),
-        markets: HashMap::from([
+        params: HashMap::from([
             (umars.market.denom.clone(), umars.market.clone()),
             (udai.market.denom.clone(), udai.market.clone()),
             (uluna.market.denom.clone(), uluna.market.clone()),
@@ -1161,7 +1161,7 @@ fn allowed_lent_coins_influence_max_ltv() {
             (udai.market.denom.clone(), udai.price),
             (uluna.market.denom.clone(), uluna.price),
         ]),
-        markets: HashMap::from([
+        params: HashMap::from([
             (umars.market.denom.clone(), umars.market.clone()),
             (udai.market.denom.clone(), udai.market.clone()),
             (uluna.market.denom.clone(), uluna.market.clone()),

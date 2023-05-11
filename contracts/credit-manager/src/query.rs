@@ -12,6 +12,7 @@ use mars_rover::{
     },
 };
 
+use crate::state::PARAMS;
 use crate::{
     state::{
         ACCOUNT_NFT, COIN_BALANCES, DEBT_SHARES, HEALTH_CONTRACT, LENT_SHARES,
@@ -21,9 +22,6 @@ use crate::{
     utils::{debt_shares_to_amount, lent_shares_to_amount},
     vault::vault_utilization_in_deposit_cap_denom,
 };
-use crate::state::PARAMS;
-
-const DEFAULT_LIMIT: u32 = 10;
 
 pub fn query_config(deps: Deps) -> ContractResult<ConfigResponse> {
     Ok(ConfigResponse {

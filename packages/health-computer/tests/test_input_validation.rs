@@ -22,7 +22,7 @@ fn missing_price_data() {
 
     let denoms_data = DenomsData {
         prices: HashMap::from([(umars.market.denom.clone(), umars.price)]),
-        markets: HashMap::from([
+        params: HashMap::from([
             (umars.market.denom.clone(), umars.market.clone()),
             (udai.market.denom.clone(), udai.market.clone()),
         ]),
@@ -71,7 +71,7 @@ fn missing_market_data() {
             (umars.market.denom.clone(), umars.price),
             (udai.market.denom.clone(), udai.price),
         ]),
-        markets: HashMap::from([(udai.market.denom.clone(), udai.market.clone())]),
+        params: HashMap::from([(udai.market.denom.clone(), udai.market.clone())]),
     };
 
     let vaults_data = VaultsData {
@@ -104,14 +104,14 @@ fn missing_market_data() {
     };
 
     let err: HealthError = h.compute_health().unwrap_err();
-    assert_eq!(err, HealthError::MissingMarket(umars.market.denom))
+    assert_eq!(err, HealthError::MissingParams(umars.market.denom))
 }
 
 #[test]
 fn missing_market_data_for_vault_base_token() {
     let denoms_data = DenomsData {
         prices: HashMap::default(),
-        markets: HashMap::default(),
+        params: HashMap::default(),
     };
 
     let vault = Vault::new(Addr::unchecked("vault_addr_123".to_string()));
@@ -160,14 +160,14 @@ fn missing_market_data_for_vault_base_token() {
     };
 
     let err: HealthError = h.compute_health().unwrap_err();
-    assert_eq!(err, HealthError::MissingMarket("base_token_xyz".to_string()))
+    assert_eq!(err, HealthError::MissingParams("base_token_xyz".to_string()))
 }
 
 #[test]
 fn missing_vault_value() {
     let denoms_data = DenomsData {
         prices: HashMap::default(),
-        markets: HashMap::default(),
+        params: HashMap::default(),
     };
 
     let vault = Vault::new(Addr::unchecked("vault_addr_123".to_string()));
@@ -209,7 +209,7 @@ fn missing_vault_value() {
 fn missing_vault_config() {
     let denoms_data = DenomsData {
         prices: HashMap::default(),
-        markets: HashMap::default(),
+        params: HashMap::default(),
     };
 
     let vault = Vault::new(Addr::unchecked("vault_addr_123".to_string()));

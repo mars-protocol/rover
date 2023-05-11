@@ -3,6 +3,7 @@ use std::ops::Add;
 use cosmwasm_std::{
     Coin, CosmosMsg, Decimal, DepsMut, Env, QuerierWrapper, Response, StdError, Storage, Uint128,
 };
+
 use mars_rover::{
     adapters::oracle::Oracle,
     error::{ContractError, ContractResult},
@@ -14,7 +15,7 @@ use crate::state::PARAMS;
 use crate::{
     health::query_health,
     repay::current_debt_for_denom,
-    state::{COIN_BALANCES, ORACLE, RED_BANK},
+    state::{COIN_BALANCES, ORACLE},
     utils::{decrement_coin_balance, increment_coin_balance},
 };
 
@@ -94,10 +95,9 @@ pub fn calculate_liquidation(
     // FORMULA: debt amount = request value / (1 + liquidation bonus %) / debt price
     let request_res = oracle.query_price(&deps.querier, request_coin)?;
     let max_request_value = request_coin_balance.checked_mul_floor(request_res.price)?;
-    let liq_bonus_rate = RED_BANK
-        .load(deps.storage)?
-        .query_market(&deps.querier, &debt_coin.denom)?
-        .liquidation_bonus;
+
+    let denom_params = params.query_asset_params(&deps.querier, &debt_coin.denom)?;
+    let liq_bonus_rate = denom_params.liquidation_bonus;
     let request_coin_adjusted_max_debt = max_request_value
         .checked_div_floor(Decimal::one().add(liq_bonus_rate))?
         .checked_div_floor(debt_res.price)?;

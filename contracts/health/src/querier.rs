@@ -1,8 +1,9 @@
 use cosmwasm_std::{Addr, QuerierWrapper};
+
+use mars_rover::adapters::params::Params;
 use mars_rover::{
     adapters::{
         oracle::Oracle,
-        red_bank::RedBank,
         vault::{Vault, VaultConfig},
     },
     msg::query::{ConfigResponse, Positions, QueryMsg, VaultConfigResponse},
@@ -31,13 +32,13 @@ impl<'a> HealthQuerier<'a> {
         )?)
     }
 
-    pub fn query_deps(&self) -> HealthResult<(Oracle, RedBank)> {
+    pub fn query_deps(&self) -> HealthResult<(Oracle, Params)> {
         let config: ConfigResponse = self
             .querier
             .query_wasm_smart(self.credit_manager_addr.to_string(), &QueryMsg::Config {})?;
         Ok((
             Oracle::new(Addr::unchecked(config.oracle)),
-            RedBank::new(Addr::unchecked(config.red_bank)),
+            Params::new(Addr::unchecked(config.params)),
         ))
     }
 

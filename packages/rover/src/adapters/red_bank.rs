@@ -1,9 +1,9 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    to_binary, Addr, Api, Coin, CosmosMsg, QuerierWrapper, QueryRequest, StdResult, Uint128,
+    Addr, Api, Coin, CosmosMsg, QuerierWrapper, QueryRequest, StdResult, to_binary, Uint128,
     WasmMsg, WasmQuery,
 };
-use mars_red_bank_types::{red_bank, red_bank::Market};
+use mars_red_bank_types::red_bank;
 
 #[cw_serde]
 pub struct RedBankBase<T>(T);
@@ -114,15 +114,5 @@ impl RedBank {
                 })?,
             }))?;
         Ok(response.amount)
-    }
-
-    // TODO: Delete this
-    pub fn query_market(&self, querier: &QuerierWrapper, denom: &str) -> StdResult<Market> {
-        querier.query_wasm_smart(
-            self.address(),
-            &red_bank::QueryMsg::Market {
-                denom: denom.to_string(),
-            },
-        )
     }
 }

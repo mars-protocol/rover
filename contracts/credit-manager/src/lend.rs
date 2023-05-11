@@ -13,7 +13,7 @@ pub fn lend(deps: DepsMut, env: Env, account_id: &str, coin: Coin) -> ContractRe
         return Err(ContractError::NoAmount);
     }
 
-    assert_coin_is_whitelisted(&deps.as_ref(), &coin.denom)?;
+    assert_coin_is_whitelisted(deps.storage, &deps.querier, &coin.denom)?;
 
     let red_bank = RED_BANK.load(deps.storage)?;
     let total_lent = red_bank.query_lent(&deps.querier, &env.contract.address, &coin.denom)?;

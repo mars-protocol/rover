@@ -1,4 +1,5 @@
-use cosmwasm_std::{Coin, Deps, DepsMut, Response, Storage, Uint128};
+use cosmwasm_std::{Coin, QuerierWrapper, Response, Storage, Uint128};
+
 use mars_rover::{
     coins::Coins,
     error::{ContractError, ContractResult},
@@ -7,13 +8,14 @@ use mars_rover::{
 use crate::utils::{assert_coin_is_whitelisted, increment_coin_balance};
 
 pub fn deposit(
-    deps: &DepsMut,
+    storage: &mut dyn Storage,
+    querier: &QuerierWrapper,
     response: Response,
     account_id: &str,
     coin: &Coin,
     received_coins: &mut Coins,
 ) -> ContractResult<Response> {
-    assert_coin_is_whitelisted(&deps.as_ref(), &coin.denom)?;
+    assert_coin_is_whitelisted(storage, querier, &coin.denom)?;
 
     if coin.amount.is_zero() {
         return Ok(response);
@@ -23,7 +25,7 @@ pub fn deposit(
 
     received_coins.deduct(coin)?;
 
-    increment_coin_balance(deps.storage, account_id, coin)?;
+    increment_coin_balance(storage, account_id, coin)?;
 
     Ok(response
         .add_attribute("action", "callback/deposit")

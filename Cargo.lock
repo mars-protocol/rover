@@ -1539,6 +1539,7 @@ dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-vault-standard",
+ "mars-params",
  "mars-red-bank-types",
  "mars-rover",
  "mars-rover-health-types",
