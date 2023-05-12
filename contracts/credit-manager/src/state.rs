@@ -2,6 +2,7 @@ use cosmwasm_std::{Addr, Uint128};
 use cw_storage_plus::{Item, Map};
 use mars_owner::Owner;
 
+use mars_rover::adapters::params::Params;
 use mars_rover::adapters::{
     health::HealthContract,
     oracle::Oracle,
@@ -10,7 +11,6 @@ use mars_rover::adapters::{
     vault::{VaultConfig, VaultPositionAmount},
     zapper::Zapper,
 };
-use mars_rover::adapters::params::Params;
 
 use crate::vault::RequestTempStorage;
 
@@ -27,8 +27,7 @@ pub const PARAMS: Item<Params> = Item::new("params");
 
 // Config
 pub const OWNER: Owner = Owner::new("owner");
-// TODO: - Remove Allowed Coins. Replace with Params query. Get to build. Get tests to pass.
-//       - Replace all uses of query_markets() with query_params()
+// TODO:
 //       - Remove VAULT_CONFIGS and replace with query_vault_config(). Get to build. Get tests to pass.
 //       - Update build scripts so that it compiles. May need to remove some asset params in instantiate.
 //          - Don't sweat too bad because there is a lot we need to update there.

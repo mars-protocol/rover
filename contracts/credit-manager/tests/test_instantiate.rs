@@ -1,12 +1,12 @@
 use cosmwasm_std::{coin, Decimal};
+
 use mars_rover::{
     adapters::vault::{VaultBase, VaultConfig},
     msg::instantiate::VaultInstantiateConfig,
 };
 
 use crate::helpers::{
-    assert_contents_equal, locked_vault_info, uatom_info, ujake_info, unlocked_vault_info,
-    uosmo_info, CoinInfo, MockEnv, VaultTestInfo,
+    assert_contents_equal, locked_vault_info, unlocked_vault_info, MockEnv, VaultTestInfo,
 };
 
 pub mod helpers;
@@ -22,7 +22,7 @@ fn owner_set_on_instantiate() {
 #[test]
 fn raises_on_invalid_owner_addr() {
     let owner = "%%%INVALID%%%";
-    let res = MockEnv::new().owner(owner).build();
+    let res = MockEnv::new().owner(owner).params_contract("xyz").build();
     if res.is_ok() {
         panic!("Should have thrown an error");
     }
@@ -177,38 +177,6 @@ fn duplicate_vaults_raises() {
         .pre_deployed_vault(&locked_vault_info(), None)
         .pre_deployed_vault(&locked_vault_info(), None)
         .build();
-    if mock.is_ok() {
-        panic!("Should have thrown an error");
-    }
-}
-
-#[test]
-fn allowed_coins_set_on_instantiate() {
-    let allowed_coins = vec![
-        uosmo_info(),
-        uatom_info(),
-        ujake_info(),
-        CoinInfo {
-            denom: "umars".to_string(),
-            price: Decimal::from_atomics(25u128, 2).unwrap(),
-            max_ltv: Decimal::from_atomics(7u128, 1).unwrap(),
-            liquidation_threshold: Decimal::from_atomics(78u128, 2).unwrap(),
-            liquidation_bonus: Decimal::from_atomics(2u128, 1).unwrap(),
-        },
-    ];
-    let mock = MockEnv::new().allowed_coins(&allowed_coins).build().unwrap();
-
-    let res = mock.query_allowed_coins(None, None);
-    assert_contents_equal(
-        &res,
-        &allowed_coins.iter().map(|info| info.denom.clone()).collect::<Vec<_>>(),
-    )
-}
-
-#[test]
-fn duplicate_coins_raises() {
-    let allowed_coins = vec![uosmo_info(), uosmo_info(), uatom_info()];
-    let mock = MockEnv::new().allowed_coins(&allowed_coins).build();
     if mock.is_ok() {
         panic!("Should have thrown an error");
     }

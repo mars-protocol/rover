@@ -29,7 +29,7 @@ fn pagination_on_all_vault_coin_balances_query_works() {
             addr: user_c.clone(),
             funds: vec![lp_token.to_coin(1000)],
         })
-        .allowed_coins(&[lp_token.clone()])
+        .set_params(&[lp_token.clone()])
         .vault_configs(&all_vaults)
         .build()
         .unwrap();

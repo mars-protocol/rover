@@ -2,13 +2,23 @@ use std::mem::take;
 use std::str::FromStr;
 
 use anyhow::Result as AnyResult;
-use cosmwasm_std::{coins, testing::MockApi, Addr, Coin, Decimal, StdResult, Uint128};
+use cosmwasm_std::{coins, testing::MockApi, Addr, Coin, Decimal, Empty, StdResult, Uint128};
 use cw721_base::{Action::TransferOwnership, Ownership};
 use cw_multi_test::{App, AppResponse, BankSudo, BasicApp, Executor, SudoMsg};
 use cw_vault_standard::{
     extensions::lockup::{LockupQueryMsg, UnlockingPosition},
     msg::{ExtensionQueryMsg, VaultStandardQueryMsg::VaultExtension},
 };
+use mars_owner::OwnerUpdate;
+use mars_params::msg::ExecuteMsg::UpdateAssetParams;
+use mars_params::msg::InstantiateMsg as ParamsInstantiateMsg;
+use mars_params::types::AssetParamsUpdate;
+use mars_params::types::AssetParamsUpdate::AddOrUpdate;
+use mars_red_bank_types::red_bank::{
+    QueryMsg::{UserCollateral, UserDebt},
+    UserCollateralResponse, UserDebtResponse,
+};
+
 use mars_account_nft::{
     msg::{
         ExecuteMsg as NftExecuteMsg, InstantiateMsg as NftInstantiateMsg, QueryMsg as NftQueryMsg,
@@ -18,14 +28,8 @@ use mars_account_nft::{
 use mars_mock_oracle::msg::{
     CoinPrice, ExecuteMsg as OracleExecuteMsg, InstantiateMsg as OracleInstantiateMsg,
 };
-use mars_mock_red_bank::msg::{CoinMarketInfo, InstantiateMsg as RedBankInstantiateMsg};
 use mars_mock_vault::{
     contract::DEFAULT_VAULT_TOKEN_PREFUND, msg::InstantiateMsg as VaultInstantiateMsg,
-};
-use mars_owner::OwnerUpdate;
-use mars_red_bank_types::red_bank::{
-    QueryMsg::{UserCollateral, UserDebt},
-    UserCollateralResponse, UserDebtResponse,
 };
 use mars_rover::adapters::params::Params;
 use mars_rover::{
@@ -44,7 +48,7 @@ use mars_rover::{
         zapper::{Zapper, ZapperBase},
     },
     msg::{
-        execute::{Action, CallbackMsg, EmergencyUpdate},
+        execute::{Action, CallbackMsg},
         instantiate::{ConfigUpdates, VaultInstantiateConfig},
         query::{
             CoinBalanceResponseItem, ConfigResponse, DebtShares, LentShares, Positions,
@@ -62,8 +66,6 @@ use mars_rover_health_types::{
     ExecuteMsg::UpdateConfig, HealthResponse, InstantiateMsg as HealthInstantiateMsg,
     QueryMsg::Health,
 };
-
-use mars_params::msg::InstantiateMsg as ParamsInstantiateMsg;
 
 use crate::helpers::{
     lp_token_info, mock_account_nft_contract, mock_health_contract, mock_oracle_contract,
@@ -86,7 +88,7 @@ pub struct MockEnvBuilder {
     pub emergency_owner: Option<Addr>,
     pub vault_configs: Option<Vec<VaultTestInfo>>,
     pub pre_deployed_vaults: Option<Vec<VaultInstantiateConfig>>,
-    pub allowed_coins: Option<Vec<CoinInfo>>,
+    pub coin_params: Option<Vec<CoinInfo>>,
     pub oracle: Option<Oracle>,
     pub params: Option<Params>,
     pub red_bank: Option<RedBankBase<Addr>>,
@@ -107,7 +109,7 @@ impl MockEnv {
             emergency_owner: None,
             vault_configs: None,
             pre_deployed_vaults: None,
-            allowed_coins: None,
+            coin_params: None,
             oracle: None,
             params: None,
             red_bank: None,
@@ -186,17 +188,16 @@ impl MockEnv {
         )
     }
 
-    pub fn emergency_update(
-        &mut self,
-        sender: &Addr,
-        update: EmergencyUpdate,
-    ) -> AnyResult<AppResponse> {
-        self.app.execute_contract(
-            sender.clone(),
-            self.rover.clone(),
-            &ExecuteMsg::EmergencyConfigUpdate(update),
-            &[],
-        )
+    pub fn update_asset_params(&mut self, update: AssetParamsUpdate) {
+        let config = self.query_config();
+        self.app
+            .execute_contract(
+                Addr::unchecked(config.ownership.owner.unwrap()),
+                Addr::unchecked(config.params),
+                &UpdateAssetParams(update),
+                &[],
+            )
+            .unwrap();
     }
 
     pub fn update_nft_config(
@@ -387,22 +388,22 @@ impl MockEnv {
             .clone()
     }
 
-    pub fn query_allowed_coins(
-        &self,
-        start_after: Option<String>,
-        limit: Option<u32>,
-    ) -> Vec<String> {
-        self.app
-            .wrap()
-            .query_wasm_smart(
-                self.rover.clone(),
-                &QueryMsg::AllowedCoins {
-                    start_after,
-                    limit,
-                },
-            )
-            .unwrap()
-    }
+    // pub fn query_allowed_coins(
+    //     &self,
+    //     start_after: Option<String>,
+    //     limit: Option<u32>,
+    // ) -> Vec<String> {
+    //     self.app
+    //         .wrap()
+    //         .query_wasm_smart(
+    //             self.rover.clone(),
+    //             &QueryMsg::AllowedCoins {
+    //                 start_after,
+    //                 limit,
+    //             },
+    //         )
+    //         .unwrap()
+    // }
 
     pub fn query_all_coin_balances(
         &self,
@@ -669,6 +670,8 @@ impl MockEnvBuilder {
         self.deploy_nft_contract(&rover);
         self.fund_users();
 
+        self.add_params_to_contract();
+
         Ok(MockEnv {
             app: take(&mut self.app),
             rover,
@@ -710,6 +713,25 @@ impl MockEnvBuilder {
         }
     }
 
+    fn add_params_to_contract(&mut self) {
+        let params_to_set = self.get_coin_params();
+        let params_contract = self.get_params_contract();
+
+        for coin_info in params_to_set {
+            self.app
+                .execute_contract(
+                    self.get_owner(),
+                    params_contract.address().clone(),
+                    &UpdateAssetParams(AddOrUpdate {
+                        denom: coin_info.denom.to_string(),
+                        params: coin_info.into(),
+                    }),
+                    &[],
+                )
+                .unwrap();
+        }
+    }
+
     pub fn set_emergency_owner(&mut self, rover: &Addr) {
         if let Some(eo) = self.emergency_owner.clone() {
             self.app
@@ -746,8 +768,6 @@ impl MockEnvBuilder {
         let code_id = self.app.store_code(mock_rover_contract());
         let red_bank = self.get_red_bank().into();
         let swapper = self.deploy_swapper().into();
-        let allowed_coins =
-            self.get_allowed_coins().iter().map(|info| info.denom.clone()).collect();
         let max_unlocking_positions = self.get_max_unlocking_positions();
 
         let mut vault_configs = vec![];
@@ -765,7 +785,6 @@ impl MockEnvBuilder {
             self.get_owner(),
             &InstantiateMsg {
                 owner: self.get_owner().to_string(),
-                allowed_coins,
                 vault_configs,
                 red_bank,
                 oracle,
@@ -796,7 +815,7 @@ impl MockEnvBuilder {
     fn deploy_oracle(&mut self) -> Oracle {
         let contract_code_id = self.app.store_code(mock_oracle_contract());
         let mut prices: Vec<CoinPrice> = self
-            .get_allowed_coins()
+            .get_coin_params()
             .iter()
             .map(|item| CoinPrice {
                 denom: item.denom.clone(),
@@ -846,7 +865,7 @@ impl MockEnvBuilder {
 
     pub fn deploy_params_contract(&mut self) -> Params {
         let contract_code_id = self.app.store_code(mock_params_contract());
-        let owner = Addr::unchecked("params_contract_owner");
+        let owner = self.get_owner();
 
         let addr = self
             .app
@@ -928,18 +947,7 @@ impl MockEnvBuilder {
             .instantiate_contract(
                 contract_code_id,
                 Addr::unchecked("red_bank_contract_owner"),
-                &RedBankInstantiateMsg {
-                    coins: self
-                        .get_allowed_coins()
-                        .iter()
-                        .map(|item| CoinMarketInfo {
-                            denom: item.denom.to_string(),
-                            max_ltv: item.max_ltv,
-                            liquidation_threshold: item.liquidation_threshold,
-                            liquidation_bonus: item.liquidation_bonus,
-                        })
-                        .collect(),
-                },
+                &Empty {},
                 &[],
                 "mock-red-bank",
                 None,
@@ -947,12 +955,12 @@ impl MockEnvBuilder {
             .unwrap();
 
         // fund red bank with whitelisted coins
-        if !self.get_allowed_coins().is_empty() {
+        if !self.get_coin_params().is_empty() {
             self.app
                 .sudo(SudoMsg::Bank(BankSudo::Mint {
                     to_address: addr.to_string(),
                     amount: self
-                        .get_allowed_coins()
+                        .get_coin_params()
                         .iter()
                         .map(|info| info.to_coin(DEFAULT_RED_BANK_COIN_BALANCE.u128()))
                         .collect(),
@@ -1069,8 +1077,8 @@ impl MockEnvBuilder {
             .collect()
     }
 
-    fn get_allowed_coins(&self) -> Vec<CoinInfo> {
-        self.allowed_coins.clone().unwrap_or_default()
+    fn get_coin_params(&self) -> Vec<CoinInfo> {
+        self.coin_params.clone().unwrap_or_default()
     }
 
     fn get_max_unlocking_positions(&self) -> Uint128 {
@@ -1101,8 +1109,13 @@ impl MockEnvBuilder {
         self
     }
 
-    pub fn allowed_coins(&mut self, allowed_coins: &[CoinInfo]) -> &mut Self {
-        self.allowed_coins = Some(allowed_coins.to_vec());
+    pub fn set_params(&mut self, coins: &[CoinInfo]) -> &mut Self {
+        self.coin_params = Some(coins.to_vec());
+        self
+    }
+
+    pub fn params_contract(&mut self, params: &str) -> &mut Self {
+        self.params = Some(Params::new(Addr::unchecked(params)));
         self
     }
 

@@ -6,12 +6,9 @@ use cw_vault_standard::{
 };
 use mars_params::msg::ExecuteMsg::UpdateAssetParams;
 use mars_params::types::AssetParamsUpdate;
-use mars_red_bank_types::red_bank::ExecuteMsg::UpdateAsset;
-use mars_red_bank_types::red_bank::InitOrUpdateAssetParams;
 
 use mars_mock_credit_manager::msg::ExecuteMsg::{SetPositionsResponse, SetVaultConfig};
 use mars_mock_oracle::msg::{CoinPrice, ExecuteMsg::ChangePrice};
-use mars_mock_red_bank::msg::CoinMarketInfo;
 use mars_mock_vault::contract::STARTING_VAULT_SHARES;
 use mars_rover::{
     adapters::vault::VaultUnchecked,
@@ -162,29 +159,6 @@ impl MockEnv {
                     denom: denom.to_string(),
                     price,
                 }),
-                &[],
-            )
-            .unwrap();
-    }
-
-    pub fn set_market(&mut self, denom: &str, market: &CoinMarketInfo) {
-        self.app
-            .execute_contract(
-                self.deployer.clone(),
-                self.red_bank.clone(),
-                &UpdateAsset {
-                    denom: denom.to_string(),
-                    params: InitOrUpdateAssetParams {
-                        max_loan_to_value: Some(market.max_ltv),
-                        liquidation_threshold: Some(market.liquidation_threshold),
-                        liquidation_bonus: Some(market.liquidation_bonus),
-                        reserve_factor: None,
-                        interest_rate_model: None,
-                        deposit_enabled: None,
-                        borrow_enabled: None,
-                        deposit_cap: None,
-                    },
-                },
                 &[],
             )
             .unwrap();

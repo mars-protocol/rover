@@ -2,7 +2,7 @@ use std::mem::take;
 use std::str::FromStr;
 
 use anyhow::Result as AnyResult;
-use cosmwasm_std::{coin, Addr, Decimal};
+use cosmwasm_std::{coin, Addr, Decimal, Empty};
 use cw_multi_test::{BasicApp, Executor};
 use cw_utils::Duration;
 use mars_owner::OwnerResponse;
@@ -12,7 +12,6 @@ use mars_mock_credit_manager::msg::{
     ExecuteMsg::SetVaultConfig, InstantiateMsg as CmMockInstantiateMsg,
 };
 use mars_mock_oracle::msg::InstantiateMsg as OracleInstantiateMsg;
-use mars_mock_red_bank::msg::InstantiateMsg as RedBankInstantiateMsg;
 use mars_mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
 use mars_rover::{
     adapters::{oracle::OracleUnchecked, vault::VaultConfig},
@@ -119,9 +118,7 @@ impl MockEnvBuilder {
             .instantiate_contract(
                 code_id,
                 self.deployer.clone(),
-                &RedBankInstantiateMsg {
-                    coins: vec![],
-                },
+                &Empty {},
                 &[],
                 "mock-red-bank",
                 None,

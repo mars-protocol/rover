@@ -227,14 +227,6 @@ pub fn query_all_vault_positions(
     })
 }
 
-pub fn query_whitelisted_asset(deps: Deps, denom: &str) -> StdResult<bool> {
-    let params = PARAMS.load(deps.storage)?;
-    let asset_params = params.query_asset_params(&deps.querier, denom)?;
-    let whitelisted = asset_params.rover.whitelisted;
-
-    Ok(whitelisted)
-}
-
 pub fn query_total_debt_shares(deps: Deps, denom: &str) -> StdResult<DebtShares> {
     let shares = TOTAL_DEBT_SHARES.load(deps.storage, denom)?;
     Ok(DebtShares {

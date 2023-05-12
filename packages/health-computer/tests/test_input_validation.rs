@@ -44,7 +44,7 @@ fn missing_price_data() {
                     amount: Uint128::new(3100),
                 },
                 DebtAmount {
-                    denom: umars.denom.clone(),
+                    denom: umars.denom,
                     shares: Default::default(),
                     amount: Uint128::new(200),
                 },
@@ -84,7 +84,7 @@ fn missing_params() {
             deposits: vec![coin(1200, &umars.denom), coin(33, &udai.denom)],
             debts: vec![
                 DebtAmount {
-                    denom: udai.denom.clone(),
+                    denom: udai.denom,
                     shares: Default::default(),
                     amount: Uint128::new(3100),
                 },

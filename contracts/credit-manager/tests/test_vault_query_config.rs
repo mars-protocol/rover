@@ -28,7 +28,7 @@ fn successfully_queries_with_utilization() {
 
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new()
-        .allowed_coins(&[lp_token.clone()])
+        .set_params(&[lp_token.clone()])
         .vault_configs(&[leverage_vault.clone()])
         .fund_account(AccountToFund {
             addr: user.clone(),

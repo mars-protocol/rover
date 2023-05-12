@@ -50,12 +50,10 @@ pub fn assert_coin_is_whitelisted(
     denom: &str,
 ) -> ContractResult<()> {
     let params = PARAMS.load(storage)?;
-    let params_query = params.query_asset_params(querier, denom)?;
-    let is_whitelisted = params_query.rover.whitelisted;
-    if !is_whitelisted {
-        return Err(ContractError::NotWhitelisted(denom.to_string()));
+    match params.query_asset_params(querier, denom) {
+        Ok(p) if p.rover.whitelisted => Ok(()),
+        _ => Err(ContractError::NotWhitelisted(denom.to_string())),
     }
-    Ok(())
 }
 
 pub fn assert_coins_are_whitelisted(
