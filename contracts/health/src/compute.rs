@@ -2,17 +2,24 @@ use std::collections::HashMap;
 
 use cosmwasm_std::{Deps, StdResult};
 use mars_rover_health_computer::{DenomsData, HealthComputer, VaultsData};
-use mars_rover_health_types::{HealthError::CreditManagerNotSet, HealthResponse, HealthResult};
+use mars_rover_health_types::{HealthError::ContractNotSet, HealthResponse, HealthResult};
 
-use crate::{querier::HealthQuerier, state::CREDIT_MANAGER};
+use crate::{
+    querier::HealthQuerier,
+    state::{CREDIT_MANAGER, PARAMS},
+};
 
 /// Uses `mars-rover-health-computer` which is a data agnostic package given
 /// it's compiled to .wasm and shared with the frontend.
 /// This function queries all necessary data to pass to `HealthComputer`.
 pub fn compute_health(deps: Deps, account_id: &str) -> HealthResult<HealthResponse> {
-    let credit_manager_addr =
-        CREDIT_MANAGER.may_load(deps.storage)?.ok_or(CreditManagerNotSet {})?;
-    let querier = HealthQuerier::new(&deps.querier, &credit_manager_addr);
+    let credit_manager_addr = CREDIT_MANAGER
+        .may_load(deps.storage)?
+        .ok_or(ContractNotSet("credit_manger".to_string()))?;
+    let params_contract_addr =
+        PARAMS.may_load(deps.storage)?.ok_or(ContractNotSet("params".to_string()))?;
+
+    let querier = HealthQuerier::new(&deps.querier, &credit_manager_addr, &params_contract_addr);
 
     let positions = querier.query_positions(account_id)?;
 
@@ -30,7 +37,7 @@ pub fn compute_health(deps: Deps, account_id: &str) -> HealthResult<HealthRespon
         .collect::<StdResult<HashMap<_, _>>>()?;
     let vault_base_token_denoms = vault_infos.values().map(|v| &v.base_token).collect::<Vec<_>>();
 
-    // Collect prices + markets
+    // Collect prices + asset
     let (oracle, params) = querier.query_deps()?;
     let mut denoms_data: DenomsData = Default::default();
     deposit_denoms
@@ -51,7 +58,7 @@ pub fn compute_health(deps: Deps, account_id: &str) -> HealthResult<HealthRespon
     positions.vaults.iter().try_for_each(|v| -> HealthResult<()> {
         let vault_coin_value = v.query_values(&deps.querier, &oracle)?;
         vaults_data.vault_values.insert(v.vault.address.clone(), vault_coin_value);
-        let config = querier.query_vault_config(&v.vault)?; // TODO: Delete this, replace with query_params_vault_config()
+        let config = querier.query_vault_config(&v.vault)?;
         vaults_data.vault_configs.insert(v.vault.address.clone(), config);
         Ok(())
     })?;

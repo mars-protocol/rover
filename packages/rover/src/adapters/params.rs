@@ -1,7 +1,9 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Addr, Api, Decimal, QuerierWrapper, StdResult};
-use mars_params::msg::QueryMsg;
-use mars_params::types::{AssetParams, VaultConfig};
+use mars_params::{
+    msg::QueryMsg,
+    types::{AssetParams, VaultConfig},
+};
 
 #[cw_serde]
 pub struct ParamsBase<T>(T);

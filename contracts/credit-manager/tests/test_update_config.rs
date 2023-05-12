@@ -1,27 +1,15 @@
-use cosmwasm_std::{coin, Addr, Decimal, Empty, Uint128};
+use cosmwasm_std::{Addr, Decimal, Empty, Uint128};
 use cw_multi_test::{BasicApp, Executor};
 use mars_mock_oracle::msg::{CoinPrice, InstantiateMsg as OracleInstantiateMsg};
-use mars_mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
 use mars_rover::{
     adapters::{
-        health::HealthContractUnchecked,
-        oracle::{OracleBase, OracleUnchecked},
-        red_bank::RedBankUnchecked,
-        swap::SwapperBase,
-        vault::{VaultBase, VaultConfig},
-        zapper::ZapperBase,
+        health::HealthContractUnchecked, oracle::OracleUnchecked, red_bank::RedBankUnchecked,
+        swap::SwapperBase, zapper::ZapperBase,
     },
-    error::ContractError::InvalidConfig,
-    msg::{
-        instantiate::{ConfigUpdates, VaultInstantiateConfig},
-        query::VaultConfigResponse,
-    },
+    msg::instantiate::ConfigUpdates,
 };
 
-use crate::helpers::{
-    assert_err, locked_vault_info, mock_oracle_contract, mock_red_bank_contract,
-    mock_vault_contract, uatom_info, uosmo_info, MockEnv,
-};
+use crate::helpers::{mock_oracle_contract, mock_red_bank_contract, MockEnv};
 
 pub mod helpers;
 
@@ -38,7 +26,6 @@ fn only_owner_can_update_config() {
             red_bank: None,
             max_unlocking_positions: None,
             swapper: None,
-            vault_configs: None,
             zapper: None,
             health_contract: None,
         },
@@ -50,97 +37,11 @@ fn only_owner_can_update_config() {
 }
 
 #[test]
-fn raises_on_invalid_vaults_config() {
-    let mut mock = MockEnv::new().build().unwrap();
-    let original_config = mock.query_config();
-
-    let mut vault_config = deploy_vault(&mut mock.app);
-
-    // Invalid config. Max LTV should be lower than liquidation threshold.
-    vault_config.config.max_ltv = Decimal::from_atomics(8u128, 1).unwrap();
-    vault_config.config.liquidation_threshold = Decimal::from_atomics(7u128, 1).unwrap();
-
-    let res = mock.update_config(
-        &Addr::unchecked(original_config.ownership.owner.clone().unwrap()),
-        ConfigUpdates {
-            account_nft: None,
-            oracle: None,
-            red_bank: None,
-            max_unlocking_positions: None,
-            swapper: None,
-            vault_configs: Some(vec![vault_config]),
-            zapper: None,
-            health_contract: None,
-        },
-    );
-
-    assert_err(
-        res,
-        InvalidConfig {
-            reason: "max ltv or liquidation threshold are invalid".to_string(),
-        },
-    );
-
-    let mut vault_config = deploy_vault(&mut mock.app);
-
-    // Invalid config. Liquidation threshold should be <= 1.
-    vault_config.config.liquidation_threshold = Decimal::from_atomics(9u128, 0).unwrap();
-
-    let res = mock.update_config(
-        &Addr::unchecked(original_config.ownership.owner.clone().unwrap()),
-        ConfigUpdates {
-            account_nft: None,
-            oracle: None,
-            red_bank: None,
-            max_unlocking_positions: None,
-            swapper: None,
-            vault_configs: Some(vec![vault_config]),
-            zapper: None,
-            health_contract: None,
-        },
-    );
-
-    assert_err(
-        res,
-        InvalidConfig {
-            reason: "max ltv or liquidation threshold are invalid".to_string(),
-        },
-    );
-
-    // Duplicate vault tokens
-    let vault_a = deploy_vault(&mut mock.app);
-    let vault_b = deploy_vault(&mut mock.app);
-
-    let res = mock.update_config(
-        &Addr::unchecked(original_config.ownership.owner.unwrap()),
-        ConfigUpdates {
-            account_nft: None,
-            oracle: None,
-            red_bank: None,
-            max_unlocking_positions: None,
-            swapper: None,
-            vault_configs: Some(vec![vault_a, vault_b]),
-            zapper: None,
-            health_contract: None,
-        },
-    );
-
-    assert_err(
-        res,
-        InvalidConfig {
-            reason: "Multiple vaults share the same vault token".to_string(),
-        },
-    );
-}
-
-#[test]
 fn update_config_works_with_full_config() {
     let mut mock = MockEnv::new().build().unwrap();
     let original_config = mock.query_config();
-    let original_vault_configs = mock.query_vault_configs(None, None);
 
     let new_nft_contract = mock.deploy_new_nft_contract().unwrap();
-    let new_vault_configs = vec![deploy_vault(&mut mock.app)];
     let new_oracle = deploy_new_oracle(&mut mock.app);
     let new_red_bank = deploy_new_red_bank(&mut mock.app);
     let new_zapper = ZapperBase::new("new_zapper".to_string());
@@ -156,7 +57,6 @@ fn update_config_works_with_full_config() {
             red_bank: Some(new_red_bank.clone()),
             max_unlocking_positions: Some(new_unlocking_max),
             swapper: Some(new_swapper.clone()),
-            vault_configs: Some(new_vault_configs.clone()),
             zapper: Some(new_zapper.clone()),
             health_contract: Some(new_health_contract.clone()),
         },
@@ -164,7 +64,6 @@ fn update_config_works_with_full_config() {
     .unwrap();
 
     let new_config = mock.query_config();
-    let new_queried_vault_configs = mock.query_vault_configs(None, None);
 
     assert_eq!(new_config.account_nft, Some(new_nft_contract.to_string()));
     assert_ne!(new_config.account_nft, original_config.account_nft);
@@ -173,18 +72,6 @@ fn update_config_works_with_full_config() {
         new_config.ownership.owner.unwrap(),
         original_config.ownership.owner.clone().unwrap()
     );
-
-    assert_eq!(
-        new_queried_vault_configs,
-        new_vault_configs
-            .iter()
-            .map(|v| VaultConfigResponse {
-                vault: v.vault.clone(),
-                config: v.config.clone(),
-            })
-            .collect::<Vec<_>>()
-    );
-    assert_ne!(new_queried_vault_configs, original_vault_configs);
 
     assert_eq!(&new_config.oracle, new_oracle.address());
     assert_ne!(new_config.oracle, original_config.oracle);
@@ -209,7 +96,6 @@ fn update_config_works_with_full_config() {
 fn update_config_works_with_some_config() {
     let mut mock = MockEnv::new().build().unwrap();
     let original_config = mock.query_config();
-    let original_vault_configs = mock.query_vault_configs(None, None);
 
     let new_nft_contract = mock.deploy_new_nft_contract().unwrap();
     let new_max_unlocking = Uint128::new(42);
@@ -225,7 +111,6 @@ fn update_config_works_with_some_config() {
     .unwrap();
 
     let new_config = mock.query_config();
-    let new_queried_vault_configs = mock.query_vault_configs(None, None);
 
     // Changed configs
     assert_eq!(new_config.account_nft, Some(new_nft_contract.to_string()));
@@ -243,44 +128,12 @@ fn update_config_works_with_some_config() {
     assert_eq!(new_config.swapper, original_config.swapper);
     assert_eq!(new_config.zapper, original_config.zapper);
     assert_eq!(new_config.health_contract, original_config.health_contract);
-    assert_eq!(new_queried_vault_configs, original_vault_configs);
-}
-
-#[test]
-fn update_config_removes_properly() {
-    let uatom = uatom_info();
-    let uosmo = uosmo_info();
-    let leverage_vault = locked_vault_info();
-
-    let mut mock = MockEnv::new()
-        .set_params(&[uatom, uosmo])
-        .vault_configs(&[leverage_vault])
-        .build()
-        .unwrap();
-
-    let vault_configs = mock.query_vault_configs(None, None);
-    assert_eq!(vault_configs.len(), 1);
-
-    mock.update_config(
-        &Addr::unchecked(mock.query_config().ownership.owner.unwrap()),
-        ConfigUpdates {
-            vault_configs: Some(vec![]),
-            ..Default::default()
-        },
-    )
-    .unwrap();
-
-    let vault_configs = mock.query_vault_configs(None, None);
-
-    // All allowed vaults removed
-    assert_eq!(vault_configs.len(), 0);
 }
 
 #[test]
 fn update_config_does_nothing_when_nothing_is_passed() {
     let mut mock = MockEnv::new().build().unwrap();
     let original_config = mock.query_config();
-    let original_vault_configs = mock.query_vault_configs(None, None);
 
     mock.update_config(
         &Addr::unchecked(original_config.ownership.owner.clone().unwrap()),
@@ -289,62 +142,15 @@ fn update_config_does_nothing_when_nothing_is_passed() {
     .unwrap();
 
     let new_config = mock.query_config();
-    let new_queried_vault_configs = mock.query_vault_configs(None, None);
 
     assert_eq!(new_config.account_nft, original_config.account_nft);
     assert_eq!(new_config.ownership, original_config.ownership);
-    assert_eq!(new_queried_vault_configs, original_vault_configs);
     assert_eq!(new_config.red_bank, original_config.red_bank);
     assert_eq!(new_config.oracle, original_config.oracle);
     assert_eq!(new_config.zapper, original_config.zapper);
     assert_eq!(new_config.params, original_config.params);
     assert_eq!(new_config.swapper, original_config.swapper);
     assert_eq!(new_config.health_contract, original_config.health_contract);
-}
-
-#[test]
-fn raises_on_duplicate_vault_configs() {
-    let mut mock = MockEnv::new().build().unwrap();
-    let original_config = mock.query_config();
-    let res = mock.update_config(
-        &Addr::unchecked(original_config.ownership.owner.unwrap()),
-        ConfigUpdates {
-            account_nft: None,
-            oracle: None,
-            red_bank: None,
-            max_unlocking_positions: None,
-            swapper: None,
-            vault_configs: Some(vec![
-                VaultInstantiateConfig {
-                    vault: VaultBase::new("vault_123".to_string()),
-                    config: VaultConfig {
-                        deposit_cap: Default::default(),
-                        max_ltv: Default::default(),
-                        liquidation_threshold: Default::default(),
-                        whitelisted: true,
-                    },
-                },
-                VaultInstantiateConfig {
-                    vault: VaultBase::new("vault_123".to_string()),
-                    config: VaultConfig {
-                        deposit_cap: Default::default(),
-                        max_ltv: Default::default(),
-                        liquidation_threshold: Default::default(),
-                        whitelisted: false,
-                    },
-                },
-            ]),
-            zapper: None,
-            health_contract: None,
-        },
-    );
-
-    assert_err(
-        res,
-        InvalidConfig {
-            reason: "Duplicate vault configs present".to_string(),
-        },
-    );
 }
 
 fn deploy_new_oracle(app: &mut BasicApp) -> OracleUnchecked {
@@ -386,32 +192,4 @@ fn deploy_new_red_bank(app: &mut BasicApp) -> RedBankUnchecked {
         )
         .unwrap();
     RedBankUnchecked::new(addr.to_string())
-}
-
-fn deploy_vault(app: &mut BasicApp) -> VaultInstantiateConfig {
-    let code_id = app.store_code(mock_vault_contract());
-    let addr = app
-        .instantiate_contract(
-            code_id,
-            Addr::unchecked("vault-instantiator"),
-            &VaultInstantiateMsg {
-                vault_token_denom: "vault_xyz".to_string(),
-                lockup: None,
-                base_token_denom: "uusdc".to_string(),
-                oracle: OracleBase::new("oracle".to_string()),
-            },
-            &[],
-            "mock-vault",
-            None,
-        )
-        .unwrap();
-    VaultInstantiateConfig {
-        vault: VaultBase::new(addr.to_string()),
-        config: VaultConfig {
-            deposit_cap: coin(123, "uusdc"),
-            max_ltv: Decimal::from_atomics(3u128, 1).unwrap(),
-            liquidation_threshold: Decimal::from_atomics(5u128, 1).unwrap(),
-            whitelisted: false,
-        },
-    }
 }

@@ -1,10 +1,10 @@
 use std::collections::HashMap;
 
 use cosmwasm_std::{coin, Addr, Uint128};
+use mars_params::types::VaultConfig;
 use mars_rover::{
     adapters::vault::{
-        CoinValue, Vault, VaultAmount, VaultConfig, VaultPosition, VaultPositionAmount,
-        VaultPositionValue,
+        CoinValue, Vault, VaultAmount, VaultPosition, VaultPositionAmount, VaultPositionValue,
     },
     msg::query::{DebtAmount, Positions},
 };
@@ -134,7 +134,7 @@ fn missing_market_data_for_vault_base_token() {
             vault.address.clone(),
             VaultConfig {
                 deposit_cap: Default::default(),
-                max_ltv: Default::default(),
+                max_loan_to_value: Default::default(),
                 liquidation_threshold: Default::default(),
                 whitelisted: false,
             },
@@ -175,7 +175,7 @@ fn missing_vault_value() {
             vault.address.clone(),
             VaultConfig {
                 deposit_cap: Default::default(),
-                max_ltv: Default::default(),
+                max_loan_to_value: Default::default(),
                 liquidation_threshold: Default::default(),
                 whitelisted: false,
             },

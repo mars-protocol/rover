@@ -1,10 +1,11 @@
 use std::{collections::HashMap, ops::Add, str::FromStr};
 
 use cosmwasm_std::{coin, Addr, Coin, Decimal, Uint128};
+use mars_params::types::VaultConfig;
 use mars_rover::{
     adapters::vault::{
-        CoinValue, LockingVaultAmount, UnlockingPositions, Vault, VaultAmount, VaultConfig,
-        VaultPosition, VaultPositionAmount, VaultPositionValue, VaultUnlockingPosition,
+        CoinValue, LockingVaultAmount, UnlockingPositions, Vault, VaultAmount, VaultPosition,
+        VaultPositionAmount, VaultPositionValue, VaultUnlockingPosition,
     },
     msg::query::{DebtAmount, LentAmount, Positions},
 };
@@ -636,7 +637,7 @@ fn unlocked_vault() {
             vault.address.clone(),
             VaultConfig {
                 deposit_cap: Default::default(),
-                max_ltv: Decimal::from_str("0.4").unwrap(),
+                max_loan_to_value: Decimal::from_str("0.4").unwrap(),
                 liquidation_threshold: Decimal::from_str("0.5").unwrap(),
                 whitelisted: true,
             },
@@ -724,7 +725,7 @@ fn locked_vault() {
             vault.address.clone(),
             VaultConfig {
                 deposit_cap: Default::default(),
-                max_ltv: Decimal::from_str("0.4").unwrap(),
+                max_loan_to_value: Decimal::from_str("0.4").unwrap(),
                 liquidation_threshold: Decimal::from_str("0.5").unwrap(),
                 whitelisted: true,
             },
@@ -815,7 +816,7 @@ fn locked_vault_with_unlocking_positions() {
             vault.address.clone(),
             VaultConfig {
                 deposit_cap: Default::default(),
-                max_ltv: Decimal::from_str("0.4").unwrap(),
+                max_loan_to_value: Decimal::from_str("0.4").unwrap(),
                 liquidation_threshold: Decimal::from_str("0.5").unwrap(),
                 whitelisted: true,
             },
@@ -915,7 +916,7 @@ fn vault_is_not_whitelisted() {
             vault.address.clone(),
             VaultConfig {
                 deposit_cap: Default::default(),
-                max_ltv: Decimal::from_str("0.4").unwrap(),
+                max_loan_to_value: Decimal::from_str("0.4").unwrap(),
                 liquidation_threshold: Decimal::from_str("0.5").unwrap(),
                 whitelisted: false,
             },
@@ -1009,7 +1010,7 @@ fn vault_base_token_is_not_whitelisted() {
             vault.address.clone(),
             VaultConfig {
                 deposit_cap: Default::default(),
-                max_ltv: Decimal::from_str("0.4").unwrap(),
+                max_loan_to_value: Decimal::from_str("0.4").unwrap(),
                 liquidation_threshold: Decimal::from_str("0.5").unwrap(),
                 whitelisted: true,
             },

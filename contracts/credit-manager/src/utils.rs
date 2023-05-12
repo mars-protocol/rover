@@ -1,22 +1,20 @@
 use std::{collections::HashSet, hash::Hash};
 
 use cosmwasm_std::{
-    to_binary, Addr, Coin, CosmosMsg, Decimal, Deps, DepsMut, Empty, Order::Ascending,
-    QuerierWrapper, StdResult, Storage, Uint128, WasmMsg,
+    to_binary, Addr, Coin, CosmosMsg, Decimal, Deps, DepsMut, Empty, QuerierWrapper, StdResult,
+    Storage, Uint128, WasmMsg,
 };
 use cw721::OwnerOfResponse;
 use cw721_base::QueryMsg;
-
 use mars_rover::{
     error::{ContractError, ContractResult},
     msg::{execute::CallbackMsg, ExecuteMsg},
 };
 
-use crate::state::PARAMS;
 use crate::{
     state::{
-        ACCOUNT_NFT, COIN_BALANCES, HEALTH_CONTRACT, LENT_SHARES, ORACLE, RED_BANK, SWAPPER,
-        TOTAL_DEBT_SHARES, TOTAL_LENT_SHARES, VAULT_CONFIGS, ZAPPER,
+        ACCOUNT_NFT, COIN_BALANCES, HEALTH_CONTRACT, LENT_SHARES, ORACLE, PARAMS, RED_BANK,
+        SWAPPER, TOTAL_DEBT_SHARES, TOTAL_LENT_SHARES, ZAPPER,
     },
     update_coin_balances::query_balance,
 };
@@ -199,8 +197,6 @@ pub fn lent_shares_to_amount(
 /// which rely on pre-post querying of bank balances of Rover.
 /// NOTE: https://twitter.com/larry0x/status/1595919149381079041
 pub fn assert_not_contract_in_config(deps: &Deps, addr_to_flag: &Addr) -> ContractResult<()> {
-    let vault_addrs =
-        VAULT_CONFIGS.keys(deps.storage, None, None, Ascending).collect::<StdResult<Vec<_>>>()?;
     let config_contracts = vec![
         ACCOUNT_NFT.load(deps.storage)?,
         RED_BANK.load(deps.storage)?.address().clone(),
@@ -210,8 +206,7 @@ pub fn assert_not_contract_in_config(deps: &Deps, addr_to_flag: &Addr) -> Contra
         HEALTH_CONTRACT.load(deps.storage)?.address().clone(),
     ];
 
-    let flagged_addr_in_config =
-        config_contracts.into_iter().chain(vault_addrs).any(|addr| addr == *addr_to_flag);
+    let flagged_addr_in_config = config_contracts.into_iter().any(|addr| addr == *addr_to_flag);
 
     if flagged_addr_in_config {
         return Err(ContractError::Unauthorized {

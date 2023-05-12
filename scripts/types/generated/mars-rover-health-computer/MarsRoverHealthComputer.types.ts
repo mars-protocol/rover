@@ -19,42 +19,37 @@ export type VaultAmount1 = string
 export type UnlockingPositions = VaultUnlockingPosition[]
 export type Addr = string
 export interface HealthComputer {
-  allowed_coins: string[]
   denoms_data: DenomsData
   positions: Positions
   vaults_data: VaultsData
 }
 export interface DenomsData {
-  markets: {
-    [k: string]: Market
+  params: {
+    [k: string]: AssetParams
   }
   prices: {
     [k: string]: Decimal
   }
 }
-export interface Market {
-  borrow_enabled: boolean
-  borrow_index: Decimal
-  borrow_rate: Decimal
-  collateral_total_scaled: Uint128
-  debt_total_scaled: Uint128
-  denom: string
-  deposit_cap: Uint128
-  deposit_enabled: boolean
-  indexes_last_updated: number
-  interest_rate_model: InterestRateModel
+export interface AssetParams {
   liquidation_bonus: Decimal
   liquidation_threshold: Decimal
-  liquidity_index: Decimal
-  liquidity_rate: Decimal
   max_loan_to_value: Decimal
-  reserve_factor: Decimal
+  red_bank: RedBankSettings
+  rover: RoverSettings
 }
-export interface InterestRateModel {
-  base: Decimal
-  optimal_utilization_rate: Decimal
-  slope_1: Decimal
-  slope_2: Decimal
+export interface RedBankSettings {
+  borrow_enabled: boolean
+  deposit_cap: Uint128
+  deposit_enabled: boolean
+}
+export interface RoverSettings {
+  hls: HighLeverageStrategyParams
+  whitelisted: boolean
+}
+export interface HighLeverageStrategyParams {
+  liquidation_threshold: Decimal
+  max_loan_to_value: Decimal
 }
 export interface Positions {
   account_id: string
@@ -104,7 +99,7 @@ export interface VaultsData {
 export interface VaultConfig {
   deposit_cap: Coin
   liquidation_threshold: Decimal
-  max_ltv: Decimal
+  max_loan_to_value: Decimal
   whitelisted: boolean
 }
 export interface VaultPositionValue {

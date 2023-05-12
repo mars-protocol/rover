@@ -2,7 +2,6 @@ use cosmwasm_std::{
     entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Reply, Response,
 };
 use cw2::set_contract_version;
-
 use mars_rover::{
     adapters::vault::VAULT_REQUEST_REPLY_ID,
     error::{ContractError, ContractResult},
@@ -14,11 +13,9 @@ use crate::{
     instantiate::store_config,
     query::{
         query_all_coin_balances, query_all_debt_shares, query_all_lent_shares,
-        query_all_total_debt_shares, query_all_total_lent_shares,
-        query_all_total_vault_coin_balances, query_all_vault_positions, query_config,
-        query_positions, query_total_debt_shares, query_total_lent_shares,
-        query_total_vault_coin_balance, query_vault_config, query_vault_position_value,
-        query_vault_utilization, query_vaults_config,
+        query_all_total_debt_shares, query_all_total_lent_shares, query_all_vault_positions,
+        query_config, query_positions, query_total_debt_shares, query_total_lent_shares,
+        query_vault_position_value, query_vault_utilization,
     },
     repay::repay_from_wallet,
     update_config::{update_config, update_nft_config, update_owner},
@@ -81,13 +78,6 @@ pub fn reply(deps: DepsMut, _: Env, reply: Reply) -> ContractResult<Response> {
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
     let res = match msg {
         QueryMsg::Config {} => to_binary(&query_config(deps)?),
-        QueryMsg::VaultConfig {
-            vault,
-        } => to_binary(&query_vault_config(deps, vault)?),
-        QueryMsg::VaultsConfig {
-            start_after,
-            limit,
-        } => to_binary(&query_vaults_config(deps, start_after, limit)?),
         QueryMsg::VaultUtilization {
             vault,
         } => to_binary(&query_vault_utilization(deps, env, vault)?),
@@ -116,18 +106,6 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> ContractResult<Binary> {
             start_after,
             limit,
         } => to_binary(&query_all_total_lent_shares(deps, start_after, limit)?),
-        QueryMsg::TotalVaultCoinBalance {
-            vault,
-        } => to_binary(&query_total_vault_coin_balance(deps, &vault, &env.contract.address)?),
-        QueryMsg::AllTotalVaultCoinBalances {
-            start_after,
-            limit,
-        } => to_binary(&query_all_total_vault_coin_balances(
-            deps,
-            &env.contract.address,
-            start_after,
-            limit,
-        )?),
         QueryMsg::AllVaultPositions {
             start_after,
             limit,

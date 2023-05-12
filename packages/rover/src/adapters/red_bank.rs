@@ -1,6 +1,6 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{
-    Addr, Api, Coin, CosmosMsg, QuerierWrapper, QueryRequest, StdResult, to_binary, Uint128,
+    to_binary, Addr, Api, Coin, CosmosMsg, QuerierWrapper, QueryRequest, StdResult, Uint128,
     WasmMsg, WasmQuery,
 };
 use mars_red_bank_types::red_bank;

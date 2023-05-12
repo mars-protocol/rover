@@ -1,9 +1,10 @@
 use std::str::FromStr;
 
 use cosmwasm_std::{Coin, Decimal, StdError, Uint128};
-use mars_params::types::AssetParamsUpdate::AddOrUpdate;
-use mars_params::types::{AssetParams, HighLeverageStrategyParams, RedBankSettings, RoverSettings};
-
+use mars_params::types::{
+    AssetParams, AssetParamsUpdate::AddOrUpdate, HighLeverageStrategyParams, RedBankSettings,
+    RoverSettings, VaultConfigUpdate,
+};
 use mars_rover::{
     adapters::vault::{
         LockingVaultAmount, UnlockingPositions, Vault, VaultAmount, VaultPosition,
@@ -23,8 +24,19 @@ fn raises_when_credit_manager_not_set() {
     assert_eq!(
         err,
         StdError::generic_err(
-            "Querier contract error: The credit manager address has not been set in config"
-                .to_string()
+            "Querier contract error: credit_manger address has not been set in config".to_string()
+        )
+    );
+}
+
+#[test]
+fn raises_when_params_contract_not_set() {
+    let mock = MockEnv::new().skip_params_config().build().unwrap();
+    let err: StdError = mock.query_health("xyz").unwrap_err();
+    assert_eq!(
+        err,
+        StdError::generic_err(
+            "Querier contract error: params address has not been set in config".to_string()
         )
     );
 }
@@ -148,7 +160,7 @@ fn adds_vault_base_denoms_to_oracle_and_red_bank() {
 }
 
 #[test]
-fn allowed_coins_work() {
+fn whitelisted_coins_work() {
     let mut mock = MockEnv::new().build().unwrap();
 
     let umars = "umars";
@@ -256,9 +268,6 @@ fn vault_whitelist_affects_max_ltv() {
         },
     );
 
-    let max_loan_to_value = Decimal::from_atomics(4523u128, 4).unwrap();
-    let liquidation_threshold = Decimal::from_atomics(5u128, 1).unwrap();
-
     let update = AddOrUpdate {
         denom: vault_base_token.to_string(),
         params: AssetParams {
@@ -274,8 +283,8 @@ fn vault_whitelist_affects_max_ltv() {
                 borrow_enabled: false,
                 deposit_cap: Default::default(),
             },
-            max_loan_to_value,
-            liquidation_threshold,
+            max_loan_to_value: Decimal::from_str("0.4523").unwrap(),
+            liquidation_threshold: Decimal::from_str("0.5").unwrap(),
             liquidation_bonus: Decimal::from_atomics(9u128, 2).unwrap(),
         },
     };
@@ -284,20 +293,18 @@ fn vault_whitelist_affects_max_ltv() {
 
     mock.set_price(vault_base_token, Decimal::one());
 
-    let vault_config = mock.query_vault_config(&vault.clone().into());
-    let vault_max_ltv = vault_config.config.max_ltv;
-    let vault_liq_threshold = vault_config.config.liquidation_threshold;
+    let mut vault_config = mock.query_vault_config(&vault.clone().into());
 
     let health = mock.query_health(account_id).unwrap();
     assert_eq!(health.total_debt_value, Uint128::zero());
     assert_eq!(health.total_collateral_value, base_token_amount);
     assert_eq!(
         health.max_ltv_adjusted_collateral,
-        base_token_amount.checked_mul_floor(vault_max_ltv).unwrap()
+        base_token_amount.checked_mul_floor(vault_config.max_loan_to_value).unwrap()
     );
     assert_eq!(
         health.liquidation_threshold_adjusted_collateral,
-        base_token_amount.checked_mul_floor(vault_liq_threshold).unwrap()
+        base_token_amount.checked_mul_floor(vault_config.liquidation_threshold).unwrap()
     );
     assert_eq!(health.max_ltv_health_factor, None);
     assert_eq!(health.liquidation_health_factor, None);
@@ -305,7 +312,13 @@ fn vault_whitelist_affects_max_ltv() {
     assert!(!health.above_max_ltv);
 
     // After de-listing, maxLTV drops to zero
-    mock.vault_allowed(&vault.into(), false);
+    vault_config.whitelisted = false;
+
+    mock.update_vault_params(VaultConfigUpdate::AddOrUpdate {
+        addr: vault.address.to_string(),
+        config: vault_config,
+    });
+
     let health = mock.query_health(account_id).unwrap();
     assert_eq!(health.max_ltv_adjusted_collateral, Uint128::zero());
 }

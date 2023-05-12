@@ -473,16 +473,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cw-item-set"
-version = "0.7.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dea5a233bd67babedbe96a514178a64b0c597f1f38bc474fa8d63e3f26bdceb2"
-dependencies = [
- "cosmwasm-std",
- "cw-storage-plus 1.0.1",
-]
-
-[[package]]
 name = "cw-multi-test"
 version = "0.16.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1351,7 +1341,6 @@ dependencies = [
  "anyhow",
  "cosmwasm-schema",
  "cosmwasm-std",
- "cw-item-set",
  "cw-multi-test",
  "cw-paginate",
  "cw-storage-plus 1.0.1",
@@ -1580,9 +1569,7 @@ dependencies = [
 name = "mars-swapper-mock"
 version = "2.0.0"
 dependencies = [
- "anyhow",
  "cosmwasm-std",
- "cw-multi-test",
  "cw-storage-plus 1.0.1",
  "mars-rover",
  "thiserror",
@@ -1592,7 +1579,6 @@ dependencies = [
 name = "mars-swapper-osmosis"
 version = "2.0.0"
 dependencies = [
- "anyhow",
  "cosmwasm-schema",
  "cosmwasm-std",
  "cw-storage-plus 1.0.1",
@@ -1674,7 +1660,6 @@ version = "2.0.0"
 dependencies = [
  "anyhow",
  "cosmwasm-std",
- "cw-utils 1.0.1",
  "mars-owner",
  "mars-v3-zapper-base",
  "osmosis-std 0.15.2",

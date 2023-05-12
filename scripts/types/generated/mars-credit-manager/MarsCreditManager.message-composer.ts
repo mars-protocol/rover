@@ -15,24 +15,21 @@ import {
   ParamsBaseForString,
   RedBankBaseForString,
   SwapperBaseForString,
-  Decimal,
   ZapperBaseForString,
   InstantiateMsg,
-  VaultInstantiateConfig,
-  VaultConfig,
-  Coin,
-  VaultBaseForString,
   ExecuteMsg,
   Action,
   ActionAmount,
   LiquidateRequestForVaultBaseForString,
   VaultPositionType,
-  EmergencyUpdate,
+  Decimal,
   OwnerUpdate,
   CallbackMsg,
   Addr,
   LiquidateRequestForVaultBaseForAddr,
+  Coin,
   ActionCoin,
+  VaultBaseForString,
   ConfigUpdates,
   NftConfigUpdates,
   VaultBaseForAddr,
@@ -52,22 +49,17 @@ import {
   DebtShares,
   ArrayOfLentShares,
   LentShares,
-  ArrayOfVaultWithBalance,
-  VaultWithBalance,
   ArrayOfVaultPositionResponseItem,
   VaultPositionResponseItem,
-  ArrayOfString,
   ConfigResponse,
   OwnerResponse,
   ArrayOfCoin,
   Positions,
   DebtAmount,
   LentAmount,
-  VaultConfigResponse,
   VaultPositionValue,
   CoinValue,
   VaultUtilizationResponse,
-  ArrayOfVaultConfigResponse,
 } from './MarsCreditManager.types'
 export interface MarsCreditManagerMessage {
   contractAddress: string
@@ -99,10 +91,6 @@ export interface MarsCreditManagerMessage {
     },
     funds?: Coin[],
   ) => MsgExecuteContractEncodeObject
-  emergencyConfigUpdate: (
-    emergencyUpdate: EmergencyUpdate,
-    funds?: Coin[],
-  ) => MsgExecuteContractEncodeObject
   updateOwner: (ownerUpdate: OwnerUpdate, funds?: Coin[]) => MsgExecuteContractEncodeObject
   updateNftConfig: (
     {
@@ -127,7 +115,6 @@ export class MarsCreditManagerMessageComposer implements MarsCreditManagerMessag
     this.updateCreditAccount = this.updateCreditAccount.bind(this)
     this.repayFromWallet = this.repayFromWallet.bind(this)
     this.updateConfig = this.updateConfig.bind(this)
-    this.emergencyConfigUpdate = this.emergencyConfigUpdate.bind(this)
     this.updateOwner = this.updateOwner.bind(this)
     this.updateNftConfig = this.updateNftConfig.bind(this)
     this.callback = this.callback.bind(this)
@@ -217,24 +204,6 @@ export class MarsCreditManagerMessageComposer implements MarsCreditManagerMessag
             update_config: {
               updates,
             },
-          }),
-        ),
-        funds,
-      }),
-    }
-  }
-  emergencyConfigUpdate = (
-    emergencyUpdate: EmergencyUpdate,
-    funds?: Coin[],
-  ): MsgExecuteContractEncodeObject => {
-    return {
-      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
-      value: MsgExecuteContract.fromPartial({
-        sender: this.sender,
-        contract: this.contractAddress,
-        msg: toUtf8(
-          JSON.stringify({
-            emergency_config_update: emergencyUpdate,
           }),
         ),
         funds,

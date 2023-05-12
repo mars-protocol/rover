@@ -42,7 +42,6 @@ cosmwasm-std       = "1.2.5"
 cw2                = "1.0.1"
 cw721              = { git = "https://github.com/CosmWasm/cw-nfts/", branch = "main" }
 cw721-base         = { git = "https://github.com/CosmWasm/cw-nfts/", branch = "main", features = ["library"] }
-cw-item-set        = { version = "0.7.1", default-features = false, features = ["iterator"] }
 cw-multi-test      = "0.16.4"
 cw-paginate        = "0.2.1"
 cw-utils           = "1.0.1"

@@ -4,9 +4,9 @@ use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response,
 use mars_rover::msg::QueryMsg;
 
 use crate::{
-    execute::{set_position_response, set_vault_config},
+    execute::set_position_response,
     msg::{ExecuteMsg, InstantiateMsg},
-    query::{query_config, query_positions, query_vault_config},
+    query::{query_config, query_positions},
     state::CONFIG,
 };
 
@@ -33,10 +33,6 @@ pub fn execute(
             account_id,
             positions,
         } => set_position_response(deps, account_id, positions),
-        ExecuteMsg::SetVaultConfig {
-            address,
-            config,
-        } => set_vault_config(deps, &address, config),
     }
 }
 
@@ -47,9 +43,6 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
             account_id,
         } => to_binary(&query_positions(deps, account_id)?),
         QueryMsg::Config {} => to_binary(&query_config(deps)?),
-        QueryMsg::VaultConfig {
-            vault,
-        } => to_binary(&query_vault_config(deps, vault)?),
         _ => unimplemented!("query msg not supported"),
     }
 }

@@ -185,7 +185,6 @@ fn delisted_assets_can_be_repaid() {
         &Addr::unchecked(config.ownership.owner.unwrap()),
         ConfigUpdates {
             account_nft: None,
-            vault_configs: None,
             oracle: None,
             red_bank: None,
             max_unlocking_positions: None,

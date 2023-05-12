@@ -14,24 +14,21 @@ import {
   ParamsBaseForString,
   RedBankBaseForString,
   SwapperBaseForString,
-  Decimal,
   ZapperBaseForString,
   InstantiateMsg,
-  VaultInstantiateConfig,
-  VaultConfig,
-  Coin,
-  VaultBaseForString,
   ExecuteMsg,
   Action,
   ActionAmount,
   LiquidateRequestForVaultBaseForString,
   VaultPositionType,
-  EmergencyUpdate,
+  Decimal,
   OwnerUpdate,
   CallbackMsg,
   Addr,
   LiquidateRequestForVaultBaseForAddr,
+  Coin,
   ActionCoin,
+  VaultBaseForString,
   ConfigUpdates,
   NftConfigUpdates,
   VaultBaseForAddr,
@@ -51,42 +48,22 @@ import {
   DebtShares,
   ArrayOfLentShares,
   LentShares,
-  ArrayOfVaultWithBalance,
-  VaultWithBalance,
   ArrayOfVaultPositionResponseItem,
   VaultPositionResponseItem,
-  ArrayOfString,
   ConfigResponse,
   OwnerResponse,
   ArrayOfCoin,
   Positions,
   DebtAmount,
   LentAmount,
-  VaultConfigResponse,
   VaultPositionValue,
   CoinValue,
   VaultUtilizationResponse,
-  ArrayOfVaultConfigResponse,
 } from './MarsCreditManager.types'
 export interface MarsCreditManagerReadOnlyInterface {
   contractAddress: string
   config: () => Promise<ConfigResponse>
-  vaultConfig: ({ vault }: { vault: VaultBaseForString }) => Promise<VaultConfigResponse>
-  vaultsConfig: ({
-    limit,
-    startAfter,
-  }: {
-    limit?: number
-    startAfter?: VaultBaseForString
-  }) => Promise<ArrayOfVaultConfigResponse>
   vaultUtilization: ({ vault }: { vault: VaultBaseForString }) => Promise<VaultUtilizationResponse>
-  allowedCoins: ({
-    limit,
-    startAfter,
-  }: {
-    limit?: number
-    startAfter?: string
-  }) => Promise<ArrayOfString>
   positions: ({ accountId }: { accountId: string }) => Promise<Positions>
   allCoinBalances: ({
     limit,
@@ -132,14 +109,6 @@ export interface MarsCreditManagerReadOnlyInterface {
     limit?: number
     startAfter?: string[][]
   }) => Promise<ArrayOfVaultPositionResponseItem>
-  totalVaultCoinBalance: ({ vault }: { vault: VaultBaseForString }) => Promise<Uint128>
-  allTotalVaultCoinBalances: ({
-    limit,
-    startAfter,
-  }: {
-    limit?: number
-    startAfter?: VaultBaseForString
-  }) => Promise<ArrayOfVaultWithBalance>
   estimateProvideLiquidity: ({
     coinsIn,
     lpTokenOut,
@@ -162,10 +131,7 @@ export class MarsCreditManagerQueryClient implements MarsCreditManagerReadOnlyIn
     this.client = client
     this.contractAddress = contractAddress
     this.config = this.config.bind(this)
-    this.vaultConfig = this.vaultConfig.bind(this)
-    this.vaultsConfig = this.vaultsConfig.bind(this)
     this.vaultUtilization = this.vaultUtilization.bind(this)
-    this.allowedCoins = this.allowedCoins.bind(this)
     this.positions = this.positions.bind(this)
     this.allCoinBalances = this.allCoinBalances.bind(this)
     this.allDebtShares = this.allDebtShares.bind(this)
@@ -175,8 +141,6 @@ export class MarsCreditManagerQueryClient implements MarsCreditManagerReadOnlyIn
     this.totalLentShares = this.totalLentShares.bind(this)
     this.allTotalLentShares = this.allTotalLentShares.bind(this)
     this.allVaultPositions = this.allVaultPositions.bind(this)
-    this.totalVaultCoinBalance = this.totalVaultCoinBalance.bind(this)
-    this.allTotalVaultCoinBalances = this.allTotalVaultCoinBalances.bind(this)
     this.estimateProvideLiquidity = this.estimateProvideLiquidity.bind(this)
     this.estimateWithdrawLiquidity = this.estimateWithdrawLiquidity.bind(this)
     this.vaultPositionValue = this.vaultPositionValue.bind(this)
@@ -187,27 +151,6 @@ export class MarsCreditManagerQueryClient implements MarsCreditManagerReadOnlyIn
       config: {},
     })
   }
-  vaultConfig = async ({ vault }: { vault: VaultBaseForString }): Promise<VaultConfigResponse> => {
-    return this.client.queryContractSmart(this.contractAddress, {
-      vault_config: {
-        vault,
-      },
-    })
-  }
-  vaultsConfig = async ({
-    limit,
-    startAfter,
-  }: {
-    limit?: number
-    startAfter?: VaultBaseForString
-  }): Promise<ArrayOfVaultConfigResponse> => {
-    return this.client.queryContractSmart(this.contractAddress, {
-      vaults_config: {
-        limit,
-        start_after: startAfter,
-      },
-    })
-  }
   vaultUtilization = async ({
     vault,
   }: {
@@ -216,20 +159,6 @@ export class MarsCreditManagerQueryClient implements MarsCreditManagerReadOnlyIn
     return this.client.queryContractSmart(this.contractAddress, {
       vault_utilization: {
         vault,
-      },
-    })
-  }
-  allowedCoins = async ({
-    limit,
-    startAfter,
-  }: {
-    limit?: number
-    startAfter?: string
-  }): Promise<ArrayOfString> => {
-    return this.client.queryContractSmart(this.contractAddress, {
-      allowed_coins: {
-        limit,
-        start_after: startAfter,
       },
     })
   }
@@ -334,27 +263,6 @@ export class MarsCreditManagerQueryClient implements MarsCreditManagerReadOnlyIn
       },
     })
   }
-  totalVaultCoinBalance = async ({ vault }: { vault: VaultBaseForString }): Promise<Uint128> => {
-    return this.client.queryContractSmart(this.contractAddress, {
-      total_vault_coin_balance: {
-        vault,
-      },
-    })
-  }
-  allTotalVaultCoinBalances = async ({
-    limit,
-    startAfter,
-  }: {
-    limit?: number
-    startAfter?: VaultBaseForString
-  }): Promise<ArrayOfVaultWithBalance> => {
-    return this.client.queryContractSmart(this.contractAddress, {
-      all_total_vault_coin_balances: {
-        limit,
-        start_after: startAfter,
-      },
-    })
-  }
   estimateProvideLiquidity = async ({
     coinsIn,
     lpTokenOut,
@@ -428,12 +336,6 @@ export interface MarsCreditManagerInterface extends MarsCreditManagerReadOnlyInt
     memo?: string,
     funds?: Coin[],
   ) => Promise<ExecuteResult>
-  emergencyConfigUpdate: (
-    emergencyUpdate: EmergencyUpdate,
-    fee?: number | StdFee | 'auto',
-    memo?: string,
-    funds?: Coin[],
-  ) => Promise<ExecuteResult>
   updateOwner: (
     ownerUpdate: OwnerUpdate,
     fee?: number | StdFee | 'auto',
@@ -476,7 +378,6 @@ export class MarsCreditManagerClient
     this.updateCreditAccount = this.updateCreditAccount.bind(this)
     this.repayFromWallet = this.repayFromWallet.bind(this)
     this.updateConfig = this.updateConfig.bind(this)
-    this.emergencyConfigUpdate = this.emergencyConfigUpdate.bind(this)
     this.updateOwner = this.updateOwner.bind(this)
     this.updateNftConfig = this.updateNftConfig.bind(this)
     this.callback = this.callback.bind(this)
@@ -564,23 +465,6 @@ export class MarsCreditManagerClient
         update_config: {
           updates,
         },
-      },
-      fee,
-      memo,
-      funds,
-    )
-  }
-  emergencyConfigUpdate = async (
-    emergencyUpdate: EmergencyUpdate,
-    fee: number | StdFee | 'auto' = 'auto',
-    memo?: string,
-    funds?: Coin[],
-  ): Promise<ExecuteResult> => {
-    return await this.client.execute(
-      this.sender,
-      this.contractAddress,
-      {
-        emergency_config_update: emergencyUpdate,
       },
       fee,
       memo,

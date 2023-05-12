@@ -27,8 +27,10 @@ export interface MarsRoverHealthTypesMessage {
   updateConfig: (
     {
       creditManager,
+      params,
     }: {
-      creditManager: string
+      creditManager?: string
+      params?: string
     },
     funds?: Coin[],
   ) => MsgExecuteContractEncodeObject
@@ -62,8 +64,10 @@ export class MarsRoverHealthTypesMessageComposer implements MarsRoverHealthTypes
   updateConfig = (
     {
       creditManager,
+      params,
     }: {
-      creditManager: string
+      creditManager?: string
+      params?: string
     },
     funds?: Coin[],
   ): MsgExecuteContractEncodeObject => {
@@ -76,6 +80,7 @@ export class MarsRoverHealthTypesMessageComposer implements MarsRoverHealthTypes
           JSON.stringify({
             update_config: {
               credit_manager: creditManager,
+              params,
             },
           }),
         ),

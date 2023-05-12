@@ -1,7 +1,6 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Coin, Decimal, Uint128};
 use mars_params::types::AssetParams;
-
 use mars_rover::{msg::query::Positions, traits::Coins};
 use mars_rover_health_types::{
     Health,
@@ -159,7 +158,7 @@ impl HealthComputer {
                 .ok_or(MissingParams(values.base_coin.denom.clone()))?;
             let base_token_whitelisted = rover.whitelisted;
             let checked_vault_max_ltv = if config.whitelisted && base_token_whitelisted {
-                config.max_ltv
+                config.max_loan_to_value
             } else {
                 Decimal::zero()
             };

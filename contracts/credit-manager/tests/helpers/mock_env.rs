@@ -1,5 +1,4 @@
-use std::mem::take;
-use std::str::FromStr;
+use std::{mem::take, str::FromStr};
 
 use anyhow::Result as AnyResult;
 use cosmwasm_std::{coins, testing::MockApi, Addr, Coin, Decimal, Empty, StdResult, Uint128};
@@ -9,16 +8,6 @@ use cw_vault_standard::{
     extensions::lockup::{LockupQueryMsg, UnlockingPosition},
     msg::{ExtensionQueryMsg, VaultStandardQueryMsg::VaultExtension},
 };
-use mars_owner::OwnerUpdate;
-use mars_params::msg::ExecuteMsg::UpdateAssetParams;
-use mars_params::msg::InstantiateMsg as ParamsInstantiateMsg;
-use mars_params::types::AssetParamsUpdate;
-use mars_params::types::AssetParamsUpdate::AddOrUpdate;
-use mars_red_bank_types::red_bank::{
-    QueryMsg::{UserCollateral, UserDebt},
-    UserCollateralResponse, UserDebtResponse,
-};
-
 use mars_account_nft::{
     msg::{
         ExecuteMsg as NftExecuteMsg, InstantiateMsg as NftInstantiateMsg, QueryMsg as NftQueryMsg,
@@ -31,29 +20,40 @@ use mars_mock_oracle::msg::{
 use mars_mock_vault::{
     contract::DEFAULT_VAULT_TOKEN_PREFUND, msg::InstantiateMsg as VaultInstantiateMsg,
 };
-use mars_rover::adapters::params::Params;
+use mars_owner::OwnerUpdate;
+use mars_params::{
+    msg::{
+        ExecuteMsg::{UpdateAssetParams, UpdateVaultConfig},
+        InstantiateMsg as ParamsInstantiateMsg, QueryMsg as ParamsQueryMsg,
+    },
+    types::{
+        AssetParamsUpdate, AssetParamsUpdate::AddOrUpdate, VaultConfig, VaultConfigResponse,
+        VaultConfigUpdate,
+    },
+};
+use mars_red_bank_types::red_bank::{
+    QueryMsg::{UserCollateral, UserDebt},
+    UserCollateralResponse, UserDebtResponse,
+};
 use mars_rover::{
     adapters::{
         health::HealthContract,
         oracle::{Oracle, OracleBase, OracleUnchecked},
+        params::Params,
         red_bank::RedBankBase,
         swap::{
             EstimateExactInSwapResponse, InstantiateMsg as SwapperInstantiateMsg,
             QueryMsg::EstimateExactInSwap, Swapper, SwapperBase,
         },
-        vault::{
-            VaultBase, VaultConfig, VaultPosition, VaultPositionValue as VPositionValue,
-            VaultUnchecked,
-        },
+        vault::{Vault, VaultPosition, VaultPositionValue as VPositionValue, VaultUnchecked},
         zapper::{Zapper, ZapperBase},
     },
     msg::{
         execute::{Action, CallbackMsg},
-        instantiate::{ConfigUpdates, VaultInstantiateConfig},
+        instantiate::ConfigUpdates,
         query::{
             CoinBalanceResponseItem, ConfigResponse, DebtShares, LentShares, Positions,
-            SharesResponseItem, VaultConfigResponse, VaultPositionResponseItem,
-            VaultUtilizationResponse, VaultWithBalance,
+            SharesResponseItem, VaultPositionResponseItem, VaultUtilizationResponse,
         },
         zapper::{
             InstantiateMsg as ZapperInstantiateMsg, LpConfig, QueryMsg::EstimateProvideLiquidity,
@@ -80,6 +80,7 @@ pub struct MockEnv {
     pub rover: Addr,
     pub mars_oracle: Addr,
     pub health_contract: HealthContract,
+    pub params: Params,
 }
 
 pub struct MockEnvBuilder {
@@ -87,7 +88,6 @@ pub struct MockEnvBuilder {
     pub owner: Option<Addr>,
     pub emergency_owner: Option<Addr>,
     pub vault_configs: Option<Vec<VaultTestInfo>>,
-    pub pre_deployed_vaults: Option<Vec<VaultInstantiateConfig>>,
     pub coin_params: Option<Vec<CoinInfo>>,
     pub oracle: Option<Oracle>,
     pub params: Option<Params>,
@@ -108,7 +108,6 @@ impl MockEnv {
             owner: None,
             emergency_owner: None,
             vault_configs: None,
-            pre_deployed_vaults: None,
             coin_params: None,
             oracle: None,
             params: None,
@@ -195,6 +194,18 @@ impl MockEnv {
                 Addr::unchecked(config.ownership.owner.unwrap()),
                 Addr::unchecked(config.params),
                 &UpdateAssetParams(update),
+                &[],
+            )
+            .unwrap();
+    }
+
+    pub fn update_vault_params(&mut self, update: VaultConfigUpdate) {
+        let config = self.query_config();
+        self.app
+            .execute_contract(
+                Addr::unchecked(config.ownership.owner.unwrap()),
+                Addr::unchecked(config.params),
+                &UpdateVaultConfig(update),
                 &[],
             )
             .unwrap();
@@ -333,30 +344,41 @@ impl MockEnv {
             .unwrap()
     }
 
-    pub fn query_vault_config(&self, vault: &VaultUnchecked) -> StdResult<VaultConfigResponse> {
-        self.app.wrap().query_wasm_smart(
-            self.rover.clone(),
-            &QueryMsg::VaultConfig {
-                vault: vault.clone(),
-            },
-        )
-    }
-
-    pub fn query_vault_configs(
-        &self,
-        start_after: Option<VaultUnchecked>,
-        limit: Option<u32>,
-    ) -> Vec<VaultConfigResponse> {
+    pub fn query_vault_params(&self, vault_addr: &str) -> VaultConfig {
         self.app
             .wrap()
             .query_wasm_smart(
-                self.rover.clone(),
-                &QueryMsg::VaultsConfig {
-                    start_after,
-                    limit,
+                self.params.address(),
+                &ParamsQueryMsg::VaultConfig {
+                    address: vault_addr.to_string(),
                 },
             )
             .unwrap()
+    }
+
+    pub fn query_all_vault_params(&self) -> Vec<VaultConfigResponse> {
+        self.app
+            .wrap()
+            .query_wasm_smart(
+                self.params.address(),
+                &ParamsQueryMsg::AllVaultConfigs {
+                    start_after: None,
+                    limit: Some(30), // Max limit
+                },
+            )
+            .unwrap()
+    }
+
+    pub fn get_vault(&self, vault: &VaultTestInfo) -> VaultUnchecked {
+        let vault_params = self.query_all_vault_params();
+        let matched_vault = vault_params
+            .iter()
+            .find(|v| {
+                let info = Vault::new(v.addr.clone()).query_info(&self.app.wrap()).unwrap();
+                vault.vault_token_denom == info.vault_token
+            })
+            .unwrap();
+        VaultUnchecked::new(matched_vault.addr.to_string())
     }
 
     pub fn query_vault_utilization(
@@ -370,40 +392,6 @@ impl MockEnv {
             },
         )
     }
-
-    pub fn get_vault(&self, vault: &VaultTestInfo) -> VaultUnchecked {
-        self.query_vault_configs(None, Some(30)) // Max limit
-            .iter()
-            .find(|v| {
-                let info = v
-                    .vault
-                    .check(&MockApi::default())
-                    .unwrap()
-                    .query_info(&self.app.wrap())
-                    .unwrap();
-                vault.vault_token_denom == info.vault_token
-            })
-            .unwrap()
-            .vault
-            .clone()
-    }
-
-    // pub fn query_allowed_coins(
-    //     &self,
-    //     start_after: Option<String>,
-    //     limit: Option<u32>,
-    // ) -> Vec<String> {
-    //     self.app
-    //         .wrap()
-    //         .query_wasm_smart(
-    //             self.rover.clone(),
-    //             &QueryMsg::AllowedCoins {
-    //                 start_after,
-    //                 limit,
-    //             },
-    //         )
-    //         .unwrap()
-    // }
 
     pub fn query_all_coin_balances(
         &self,
@@ -567,15 +555,10 @@ impl MockEnv {
     }
 
     pub fn query_total_vault_coin_balance(&self, vault: &VaultUnchecked) -> Uint128 {
-        self.app
-            .wrap()
-            .query_wasm_smart(
-                self.rover.clone(),
-                &QueryMsg::TotalVaultCoinBalance {
-                    vault: vault.clone(),
-                },
-            )
-            .unwrap()
+        let info = Vault::new(Addr::unchecked(vault.address.clone()))
+            .query_info(&self.app.wrap())
+            .unwrap();
+        self.app.wrap().query_balance(self.rover.clone(), info.vault_token).unwrap().amount
     }
 
     pub fn query_all_vault_positions(
@@ -588,23 +571,6 @@ impl MockEnv {
             .query_wasm_smart(
                 self.rover.clone(),
                 &QueryMsg::AllVaultPositions {
-                    start_after,
-                    limit,
-                },
-            )
-            .unwrap()
-    }
-
-    pub fn query_all_total_vault_coin_balances(
-        &self,
-        start_after: Option<VaultUnchecked>,
-        limit: Option<u32>,
-    ) -> Vec<VaultWithBalance> {
-        self.app
-            .wrap()
-            .query_wasm_smart(
-                self.rover.clone(),
-                &QueryMsg::AllTotalVaultCoinBalances {
                     start_after,
                     limit,
                 },
@@ -664,19 +630,23 @@ impl MockEnvBuilder {
 
         let mars_oracle = self.get_oracle();
 
+        let params = self.get_params_contract();
+        self.add_params_to_contract();
+
         let health_contract = self.get_health_contract();
-        self.update_health_contract_config(rover.clone());
+        self.update_health_contract_config(&rover, params.address());
 
         self.deploy_nft_contract(&rover);
         self.fund_users();
 
-        self.add_params_to_contract();
+        self.deploy_vaults();
 
         Ok(MockEnv {
             app: take(&mut self.app),
             rover,
             mars_oracle: mars_oracle.address().clone(),
             health_contract,
+            params,
         })
     }
 
@@ -770,11 +740,6 @@ impl MockEnvBuilder {
         let swapper = self.deploy_swapper().into();
         let max_unlocking_positions = self.get_max_unlocking_positions();
 
-        let mut vault_configs = vec![];
-        vault_configs.extend(self.deploy_vaults());
-        vault_configs.extend(self.pre_deployed_vaults.clone().unwrap_or_default());
-        // TODO: self.add_vaults_to_params(vault_configs);
-
         let oracle = self.get_oracle().into();
         let zapper = self.deploy_zapper(&oracle)?.into();
         let health_contract = self.get_health_contract().into();
@@ -785,7 +750,6 @@ impl MockEnvBuilder {
             self.get_owner(),
             &InstantiateMsg {
                 owner: self.get_owner().to_string(),
-                vault_configs,
                 red_bank,
                 oracle,
                 max_unlocking_positions,
@@ -897,7 +861,7 @@ impl MockEnvBuilder {
 
     pub fn deploy_health_contract(&mut self) -> HealthContract {
         let contract_code_id = self.app.store_code(mock_health_contract());
-        let owner = Addr::unchecked("health_contract_owner");
+        let owner = self.get_owner();
 
         let addr = self
             .app
@@ -916,16 +880,16 @@ impl MockEnvBuilder {
         HealthContract::new(addr)
     }
 
-    fn update_health_contract_config(&mut self, cm_addr: Addr) {
-        let owner = Addr::unchecked("health_contract_owner");
+    fn update_health_contract_config(&mut self, cm_addr: &Addr, params: &Addr) {
         let health_contract = self.get_health_contract();
 
         self.app
             .execute_contract(
-                owner,
+                self.get_owner(),
                 health_contract.address().clone(),
                 &UpdateConfig {
-                    credit_manager: cm_addr.to_string(),
+                    credit_manager: Some(cm_addr.to_string()),
+                    params: Some(params.to_string()),
                 },
                 &[],
             )
@@ -971,10 +935,10 @@ impl MockEnvBuilder {
         RedBankBase::new(addr)
     }
 
-    fn deploy_vault(&mut self, vault: &VaultTestInfo) -> VaultInstantiateConfig {
+    fn deploy_vault(&mut self, vault: &VaultTestInfo) -> Addr {
         let code_id = self.app.store_code(mock_vault_contract());
         let oracle = self.get_oracle().into();
-        let addr = self
+        let vault_addr = self
             .app
             .instantiate_contract(
                 code_id,
@@ -990,16 +954,28 @@ impl MockEnvBuilder {
                 None,
             )
             .unwrap();
-        self.fund_vault(&addr, &vault.vault_token_denom);
-        VaultInstantiateConfig {
-            vault: VaultBase::new(addr.to_string()),
-            config: VaultConfig {
-                deposit_cap: vault.deposit_cap.clone(),
-                max_ltv: vault.max_ltv,
-                liquidation_threshold: vault.liquidation_threshold,
-                whitelisted: vault.whitelisted,
-            },
-        }
+        self.fund_vault(&vault_addr, &vault.vault_token_denom);
+
+        let params = self.get_params_contract();
+
+        self.app
+            .execute_contract(
+                self.get_owner(),
+                params.address().clone(),
+                &UpdateVaultConfig(VaultConfigUpdate::AddOrUpdate {
+                    addr: vault_addr.to_string(),
+                    config: VaultConfig {
+                        deposit_cap: vault.deposit_cap.clone(),
+                        max_loan_to_value: vault.max_ltv,
+                        liquidation_threshold: vault.liquidation_threshold,
+                        whitelisted: vault.whitelisted,
+                    },
+                }),
+                &[],
+            )
+            .unwrap();
+
+        vault_addr
     }
 
     fn deploy_swapper(&mut self) -> Swapper {
@@ -1068,7 +1044,7 @@ impl MockEnvBuilder {
             .unwrap();
     }
 
-    fn deploy_vaults(&mut self) -> Vec<VaultInstantiateConfig> {
+    fn deploy_vaults(&mut self) -> Vec<Addr> {
         self.vault_configs
             .clone()
             .unwrap_or_default()
@@ -1119,6 +1095,11 @@ impl MockEnvBuilder {
         self
     }
 
+    pub fn health_contract(&mut self, health: &str) -> &mut Self {
+        self.health_contract = Some(HealthContract::new(Addr::unchecked(health)));
+        self
+    }
+
     pub fn red_bank(&mut self, red_bank: &str) -> &mut Self {
         self.red_bank = Some(RedBankBase::new(Addr::unchecked(red_bank)));
         self
@@ -1141,23 +1122,6 @@ impl MockEnvBuilder {
 
     pub fn no_nft_contract_minter(&mut self) -> &mut Self {
         self.set_nft_contract_minter = false;
-        self
-    }
-
-    pub fn pre_deployed_vault(
-        &mut self,
-        info: &VaultTestInfo,
-        config: Option<VaultInstantiateConfig>,
-    ) -> &mut Self {
-        let config = config.unwrap_or_else(|| self.deploy_vault(info));
-        let new_list = match self.pre_deployed_vaults.clone() {
-            None => Some(vec![config]),
-            Some(mut curr) => {
-                curr.push(config);
-                Some(curr)
-            }
-        };
-        self.pre_deployed_vaults = new_list;
         self
     }
 

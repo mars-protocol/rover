@@ -1,26 +1,15 @@
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::Uint128;
 
-use crate::adapters::params::ParamsUnchecked;
-use crate::{
-    adapters::{
-        health::HealthContractUnchecked,
-        oracle::OracleUnchecked,
-        red_bank::RedBankUnchecked,
-        swap::SwapperUnchecked,
-        vault::{VaultConfig, VaultUnchecked},
-        zapper::ZapperUnchecked,
-    },
-    traits::Stringify,
+use crate::adapters::{
+    health::HealthContractUnchecked, oracle::OracleUnchecked, params::ParamsUnchecked,
+    red_bank::RedBankUnchecked, swap::SwapperUnchecked, zapper::ZapperUnchecked,
 };
 
 #[cw_serde]
 pub struct InstantiateMsg {
     /// The address with privileged access to update config
     pub owner: String,
-    /// Vaults approved by governance that implement credit manager's vault interface
-    /// Includes a deposit cap that enforces a TLV limit for risk mitigation
-    pub vault_configs: Vec<VaultInstantiateConfig>, // TODO: Remove this
     /// The Mars Protocol money market contract where we borrow assets from
     pub red_bank: RedBankUnchecked,
     /// The Mars Protocol oracle contract. We read prices of assets here.
@@ -39,36 +28,11 @@ pub struct InstantiateMsg {
     pub params: ParamsUnchecked,
 }
 
-#[cw_serde]
-pub struct VaultInstantiateConfig {
-    pub vault: VaultUnchecked,
-    pub config: VaultConfig,
-}
-
-impl Stringify for Vec<VaultInstantiateConfig> {
-    fn to_string(&self) -> String {
-        self.iter()
-            .map(|v| {
-                format!(
-                    "addr: {}, deposit_cap: {}, max_ltv: {}, liquidation_threshold: {}, whitelisted: {}",
-                    v.vault.address,
-                    v.config.deposit_cap,
-                    v.config.max_ltv,
-                    v.config.liquidation_threshold,
-                    v.config.whitelisted
-                )
-            })
-            .collect::<Vec<String>>()
-            .join(" :: ")
-    }
-}
-
 /// Used when you want to update fields on Instantiate config
 #[cw_serde]
 #[derive(Default)]
 pub struct ConfigUpdates {
     pub account_nft: Option<String>,
-    pub vault_configs: Option<Vec<VaultInstantiateConfig>>, // TODO: Remove this
     pub oracle: Option<OracleUnchecked>,
     pub red_bank: Option<RedBankUnchecked>,
     pub max_unlocking_positions: Option<Uint128>,

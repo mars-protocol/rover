@@ -29,7 +29,7 @@ pub fn request_vault_unlock(
     vault: Vault,
     amount: Uint128,
 ) -> ContractResult<Response> {
-    assert_vault_is_whitelisted(deps.storage, &vault)?;
+    assert_vault_is_whitelisted(deps.storage, &deps.querier, &vault)?;
     vault.query_lockup_duration(&deps.querier).map_err(|_| {
         ContractError::RequirementsNotMet(
             "This vault does not require lockup. Call withdraw directly.".to_string(),

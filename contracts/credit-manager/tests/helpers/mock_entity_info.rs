@@ -1,6 +1,7 @@
+use std::str::FromStr;
+
 use cosmwasm_std::{coin, Decimal};
 use cw_utils::Duration;
-use std::str::FromStr;
 
 use crate::helpers::{CoinInfo, VaultTestInfo};
 

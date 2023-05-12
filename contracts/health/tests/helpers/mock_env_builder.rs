@@ -1,22 +1,18 @@
-use std::mem::take;
-use std::str::FromStr;
+use std::{mem::take, str::FromStr};
 
 use anyhow::Result as AnyResult;
 use cosmwasm_std::{coin, Addr, Decimal, Empty};
 use cw_multi_test::{BasicApp, Executor};
 use cw_utils::Duration;
-use mars_owner::OwnerResponse;
-use mars_params::msg::InstantiateMsg as ParamsInstantiateMsg;
-
-use mars_mock_credit_manager::msg::{
-    ExecuteMsg::SetVaultConfig, InstantiateMsg as CmMockInstantiateMsg,
-};
+use mars_mock_credit_manager::msg::InstantiateMsg as CmMockInstantiateMsg;
 use mars_mock_oracle::msg::InstantiateMsg as OracleInstantiateMsg;
 use mars_mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
-use mars_rover::{
-    adapters::{oracle::OracleUnchecked, vault::VaultConfig},
-    msg::query::ConfigResponse,
+use mars_owner::OwnerResponse;
+use mars_params::{
+    msg::{ExecuteMsg::UpdateVaultConfig, InstantiateMsg as ParamsInstantiateMsg},
+    types::{VaultConfig, VaultConfigUpdate::AddOrUpdate},
 };
+use mars_rover::{adapters::oracle::OracleUnchecked, msg::query::ConfigResponse};
 use mars_rover_health_types::{ExecuteMsg::UpdateConfig, InstantiateMsg};
 
 use crate::helpers::{
@@ -34,12 +30,17 @@ pub struct MockEnvBuilder {
     pub red_bank: Option<Addr>,
     pub params: Option<Addr>,
     pub set_cm_config: bool,
+    pub set_params_config: bool,
 }
 
 impl MockEnvBuilder {
     pub fn build(&mut self) -> AnyResult<MockEnv> {
         if self.set_cm_config {
             self.add_cm_to_config();
+        }
+
+        if self.set_params_config {
+            self.add_params_to_config();
         }
 
         Ok(MockEnv {
@@ -59,6 +60,11 @@ impl MockEnvBuilder {
         self
     }
 
+    pub fn skip_params_config(&mut self) -> &mut Self {
+        self.set_params_config = false;
+        self
+    }
+
     fn add_cm_to_config(&mut self) {
         let health_contract = self.get_health_contract();
         let cm_contract = self.get_cm_contract();
@@ -68,7 +74,25 @@ impl MockEnvBuilder {
                 self.deployer.clone(),
                 health_contract,
                 &UpdateConfig {
-                    credit_manager: cm_contract.to_string(),
+                    credit_manager: Some(cm_contract.to_string()),
+                    params: None,
+                },
+                &[],
+            )
+            .unwrap();
+    }
+
+    fn add_params_to_config(&mut self) {
+        let health_contract = self.get_health_contract();
+        let params_contract = self.get_params_contract();
+
+        self.app
+            .execute_contract(
+                self.deployer.clone(),
+                health_contract,
+                &UpdateConfig {
+                    credit_manager: None,
+                    params: Some(params_contract.to_string()),
                 },
                 &[],
             )
@@ -170,23 +194,24 @@ impl MockEnvBuilder {
                 Some(self.deployer.clone().into()),
             )
             .unwrap();
-        self.cm_contract = Some(cm_addr.clone());
+        self.cm_contract = Some(cm_addr);
 
         // Set mock vault with a starting config
         let vault = self.get_vault_contract().to_string();
+        let params = self.get_params_contract();
         self.app
             .execute_contract(
                 self.deployer.clone(),
-                cm_addr,
-                &SetVaultConfig {
-                    address: vault,
+                params,
+                &UpdateVaultConfig(AddOrUpdate {
+                    addr: vault,
                     config: VaultConfig {
                         deposit_cap: coin(10000000u128, "uusdc"),
-                        max_ltv: Decimal::from_atomics(4u128, 1).unwrap(),
+                        max_loan_to_value: Decimal::from_atomics(4u128, 1).unwrap(),
                         liquidation_threshold: Decimal::from_atomics(44u128, 2).unwrap(),
                         whitelisted: true,
                     },
-                },
+                }),
                 &[],
             )
             .unwrap();

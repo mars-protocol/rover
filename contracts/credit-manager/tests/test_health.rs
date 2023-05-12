@@ -3,16 +3,14 @@ use std::ops::{Add, Mul};
 use cosmwasm_std::{coin, coins, Addr, Coin, Decimal, Uint128};
 use mars_credit_manager::borrow::DEFAULT_DEBT_SHARES_PER_COIN_BORROWED;
 use mars_mock_oracle::msg::CoinPrice;
-use mars_params::types::AssetParamsUpdate::AddOrUpdate;
+use mars_params::types::{AssetParamsUpdate::AddOrUpdate, VaultConfigUpdate};
 use mars_rover::{
-    adapters::vault::VaultConfig,
     error::ContractError,
     msg::{
         execute::{
             Action::{Borrow, Deposit, EnterVault, Repay, Withdraw},
             ActionAmount, ActionCoin,
         },
-        instantiate::{ConfigUpdates, VaultInstantiateConfig},
         query::DebtAmount,
     },
 };
@@ -702,7 +700,7 @@ fn delisted_vaults_drop_max_ltv() {
             Deposit(lp_token.to_coin(200)),
             Borrow(atom.to_coin(100)),
             EnterVault {
-                vault,
+                vault: vault.clone(),
                 coin: lp_token.to_action_coin(200),
             },
         ],
@@ -712,28 +710,13 @@ fn delisted_vaults_drop_max_ltv() {
 
     let prev_health = mock.query_health(&account_id);
 
-    let vault_configs = mock.query_vault_configs(None, None);
-    let v = vault_configs.first().unwrap();
-    let new_vault_config = VaultInstantiateConfig {
-        vault: v.vault.clone(),
-        config: VaultConfig {
-            deposit_cap: v.config.deposit_cap.clone(),
-            max_ltv: v.config.max_ltv,
-            liquidation_threshold: v.config.liquidation_threshold,
-            whitelisted: false,
-        },
-    };
-
     // Blacklist vault
-    let res = mock.query_config();
-    mock.update_config(
-        &Addr::unchecked(res.ownership.owner.unwrap()),
-        ConfigUpdates {
-            vault_configs: Some(vec![new_vault_config]),
-            ..Default::default()
-        },
-    )
-    .unwrap();
+    let mut config = mock.query_vault_params(&vault.address);
+    config.whitelisted = false;
+    mock.update_vault_params(VaultConfigUpdate::AddOrUpdate {
+        addr: vault.address,
+        config,
+    });
 
     let curr_health = mock.query_health(&account_id);
 

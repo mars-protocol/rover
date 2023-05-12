@@ -16,7 +16,7 @@ pub fn exit_vault(
     vault: Vault,
     amount: Uint128,
 ) -> ContractResult<Response> {
-    assert_vault_is_whitelisted(deps.storage, &vault)?;
+    assert_vault_is_whitelisted(deps.storage, &deps.querier, &vault)?;
 
     // Force indicates that the vault is one with a required lockup that needs to be broken
     // In this case, we'll need to withdraw from the locked bucket

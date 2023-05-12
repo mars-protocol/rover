@@ -4,19 +4,17 @@ use cw_multi_test::{App, AppResponse, BankSudo, BasicApp, Executor, SudoMsg};
 use cw_vault_standard::{
     VaultInfoResponse, VaultStandardExecuteMsg::Deposit, VaultStandardQueryMsg::Info,
 };
-use mars_params::msg::ExecuteMsg::UpdateAssetParams;
-use mars_params::types::AssetParamsUpdate;
-
-use mars_mock_credit_manager::msg::ExecuteMsg::{SetPositionsResponse, SetVaultConfig};
+use mars_mock_credit_manager::msg::ExecuteMsg::SetPositionsResponse;
 use mars_mock_oracle::msg::{CoinPrice, ExecuteMsg::ChangePrice};
 use mars_mock_vault::contract::STARTING_VAULT_SHARES;
-use mars_rover::{
-    adapters::vault::VaultUnchecked,
+use mars_params::{
     msg::{
-        query::{Positions, VaultConfigResponse as CmVaultConfig},
-        QueryMsg::VaultConfig,
+        ExecuteMsg::{UpdateAssetParams, UpdateVaultConfig},
+        QueryMsg as ParamsQueryMsg,
     },
+    types::{AssetParamsUpdate, VaultConfig, VaultConfigUpdate},
 };
+use mars_rover::{adapters::vault::VaultUnchecked, msg::query::Positions};
 use mars_rover_health_types::{ConfigResponse, ExecuteMsg::UpdateConfig, HealthResponse, QueryMsg};
 
 use crate::helpers::MockEnvBuilder;
@@ -40,6 +38,7 @@ impl MockEnv {
             deployer: Addr::unchecked("deployer"),
             health_contract: None,
             set_cm_config: true,
+            set_params_config: true,
             cm_contract: None,
             vault_contract: None,
             oracle: None,
@@ -64,13 +63,13 @@ impl MockEnv {
             .unwrap()
     }
 
-    pub fn query_vault_config(&self, vault: &VaultUnchecked) -> CmVaultConfig {
+    pub fn query_vault_config(&self, vault: &VaultUnchecked) -> VaultConfig {
         self.app
             .wrap()
             .query_wasm_smart(
-                self.cm_contract.clone(),
-                &VaultConfig {
-                    vault: vault.clone(),
+                self.params.clone(),
+                &ParamsQueryMsg::VaultConfig {
+                    address: vault.address.to_string(),
                 },
             )
             .unwrap()
@@ -79,13 +78,15 @@ impl MockEnv {
     pub fn update_config(
         &mut self,
         sender: &Addr,
-        credit_manager_addr: &Addr,
+        credit_manager: Option<String>,
+        params: Option<String>,
     ) -> AnyResult<AppResponse> {
         self.app.execute_contract(
             sender.clone(),
             self.health_contract.clone(),
             &UpdateConfig {
-                credit_manager: credit_manager_addr.to_string(),
+                credit_manager,
+                params,
             },
             &[],
         )
@@ -175,18 +176,12 @@ impl MockEnv {
             .unwrap();
     }
 
-    pub fn vault_allowed(&mut self, vault: &VaultUnchecked, allowed: bool) {
-        let mut config = self.query_vault_config(vault).config;
-        config.whitelisted = allowed;
-
+    pub fn update_vault_params(&mut self, update: VaultConfigUpdate) {
         self.app
             .execute_contract(
                 self.deployer.clone(),
-                self.cm_contract.clone(),
-                &SetVaultConfig {
-                    address: self.vault_contract.to_string(),
-                    config,
-                },
+                self.params.clone(),
+                &UpdateVaultConfig(update),
                 &[],
             )
             .unwrap();

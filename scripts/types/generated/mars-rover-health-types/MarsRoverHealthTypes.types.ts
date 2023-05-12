@@ -14,7 +14,8 @@ export type ExecuteMsg =
     }
   | {
       update_config: {
-        credit_manager: string
+        credit_manager?: string | null
+        params?: string | null
       }
     }
 export type OwnerUpdate =
@@ -42,8 +43,9 @@ export type QueryMsg =
       config: {}
     }
 export interface ConfigResponse {
-  credit_manager_addr?: string | null
+  credit_manager?: string | null
   owner_response: OwnerResponse
+  params?: string | null
 }
 export interface OwnerResponse {
   abolished: boolean

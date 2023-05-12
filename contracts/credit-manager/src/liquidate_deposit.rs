@@ -3,7 +3,6 @@ use std::ops::Add;
 use cosmwasm_std::{
     Coin, CosmosMsg, Decimal, DepsMut, Env, QuerierWrapper, Response, StdError, Storage, Uint128,
 };
-
 use mars_rover::{
     adapters::oracle::Oracle,
     error::{ContractError, ContractResult},
@@ -11,11 +10,10 @@ use mars_rover::{
     traits::Stringify,
 };
 
-use crate::state::PARAMS;
 use crate::{
     health::query_health,
     repay::current_debt_for_denom,
-    state::{COIN_BALANCES, ORACLE},
+    state::{COIN_BALANCES, ORACLE, PARAMS},
     utils::{decrement_coin_balance, increment_coin_balance},
 };
 

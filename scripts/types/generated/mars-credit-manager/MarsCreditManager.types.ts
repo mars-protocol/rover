@@ -11,10 +11,8 @@ export type OracleBaseForString = string
 export type ParamsBaseForString = string
 export type RedBankBaseForString = string
 export type SwapperBaseForString = string
-export type Decimal = string
 export type ZapperBaseForString = string
 export interface InstantiateMsg {
-  allowed_coins: string[]
   health_contract: HealthContractBaseForString
   max_unlocking_positions: Uint128
   oracle: OracleBaseForString
@@ -22,26 +20,7 @@ export interface InstantiateMsg {
   params: ParamsBaseForString
   red_bank: RedBankBaseForString
   swapper: SwapperBaseForString
-  vault_configs: VaultInstantiateConfig[]
   zapper: ZapperBaseForString
-}
-export interface VaultInstantiateConfig {
-  config: VaultConfig
-  vault: VaultBaseForString
-}
-export interface VaultConfig {
-  deposit_cap: Coin
-  liquidation_threshold: Decimal
-  max_ltv: Decimal
-  whitelisted: boolean
-}
-export interface Coin {
-  amount: Uint128
-  denom: string
-  [k: string]: unknown
-}
-export interface VaultBaseForString {
-  address: string
 }
 export type ExecuteMsg =
   | {
@@ -62,9 +41,6 @@ export type ExecuteMsg =
       update_config: {
         updates: ConfigUpdates
       }
-    }
-  | {
-      emergency_config_update: EmergencyUpdate
     }
   | {
       update_owner: OwnerUpdate
@@ -172,16 +148,7 @@ export type LiquidateRequestForVaultBaseForString =
       }
     }
 export type VaultPositionType = 'u_n_l_o_c_k_e_d' | 'l_o_c_k_e_d' | 'u_n_l_o_c_k_i_n_g'
-export type EmergencyUpdate =
-  | {
-      set_zero_max_ltv: VaultBaseForString
-    }
-  | {
-      set_zero_deposit_cap: VaultBaseForString
-    }
-  | {
-      disallow_coin: string
-    }
+export type Decimal = string
 export type OwnerUpdate =
   | {
       propose_new_owner: {
@@ -332,19 +299,25 @@ export type LiquidateRequestForVaultBaseForAddr =
         request_vault: VaultBaseForAddr
       }
     }
+export interface Coin {
+  amount: Uint128
+  denom: string
+  [k: string]: unknown
+}
 export interface ActionCoin {
   amount: ActionAmount
   denom: string
 }
+export interface VaultBaseForString {
+  address: string
+}
 export interface ConfigUpdates {
   account_nft?: string | null
-  allowed_coins?: string[] | null
   health_contract?: HealthContractBaseForString | null
   max_unlocking_positions?: Uint128 | null
   oracle?: OracleBaseForString | null
   red_bank?: RedBankBaseForString | null
   swapper?: SwapperBaseForString | null
-  vault_configs?: VaultInstantiateConfig[] | null
   zapper?: ZapperBaseForString | null
 }
 export interface NftConfigUpdates {
@@ -359,25 +332,8 @@ export type QueryMsg =
       config: {}
     }
   | {
-      vault_config: {
-        vault: VaultBaseForString
-      }
-    }
-  | {
-      vaults_config: {
-        limit?: number | null
-        start_after?: VaultBaseForString | null
-      }
-    }
-  | {
       vault_utilization: {
         vault: VaultBaseForString
-      }
-    }
-  | {
-      allowed_coins: {
-        limit?: number | null
-        start_after?: string | null
       }
     }
   | {
@@ -425,17 +381,6 @@ export type QueryMsg =
       all_vault_positions: {
         limit?: number | null
         start_after?: [string, string] | null
-      }
-    }
-  | {
-      total_vault_coin_balance: {
-        vault: VaultBaseForString
-      }
-    }
-  | {
-      all_total_vault_coin_balances: {
-        limit?: number | null
-        start_after?: VaultBaseForString | null
       }
     }
   | {
@@ -498,17 +443,11 @@ export interface LentShares {
   denom: string
   shares: Uint128
 }
-export type ArrayOfVaultWithBalance = VaultWithBalance[]
-export interface VaultWithBalance {
-  balance: Uint128
-  vault: VaultBaseForAddr
-}
 export type ArrayOfVaultPositionResponseItem = VaultPositionResponseItem[]
 export interface VaultPositionResponseItem {
   account_id: string
   position: VaultPosition
 }
-export type ArrayOfString = string[]
 export interface ConfigResponse {
   account_nft?: string | null
   health_contract: string
@@ -545,10 +484,6 @@ export interface LentAmount {
   denom: string
   shares: Uint128
 }
-export interface VaultConfigResponse {
-  config: VaultConfig
-  vault: VaultBaseForString
-}
 export interface VaultPositionValue {
   base_coin: CoinValue
   vault_coin: CoinValue
@@ -562,4 +497,3 @@ export interface VaultUtilizationResponse {
   utilization: Coin
   vault: VaultBaseForString
 }
-export type ArrayOfVaultConfigResponse = VaultConfigResponse[]

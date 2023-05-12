@@ -2,9 +2,8 @@ use std::collections::HashMap;
 
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Addr, Decimal, Uint128};
-use mars_params::types::AssetParams;
-
-use mars_rover::adapters::vault::{VaultConfig, VaultPositionValue};
+use mars_params::types::{AssetParams, VaultConfig};
+use mars_rover::adapters::vault::VaultPositionValue;
 
 /// Used as storage when trying to compute Health
 #[cw_serde]

@@ -1,15 +1,9 @@
 use cosmwasm_std::{Addr, Uint128};
 use cw_storage_plus::{Item, Map};
 use mars_owner::Owner;
-
-use mars_rover::adapters::params::Params;
 use mars_rover::adapters::{
-    health::HealthContract,
-    oracle::Oracle,
-    red_bank::RedBank,
-    swap::Swapper,
-    vault::{VaultConfig, VaultPositionAmount},
-    zapper::Zapper,
+    health::HealthContract, oracle::Oracle, params::Params, red_bank::RedBank, swap::Swapper,
+    vault::VaultPositionAmount, zapper::Zapper,
 };
 
 use crate::vault::RequestTempStorage;
@@ -20,17 +14,12 @@ pub const ACCOUNT_NFT: Item<Addr> = Item::new("account_nft");
 pub const ORACLE: Item<Oracle> = Item::new("oracle");
 pub const RED_BANK: Item<RedBank> = Item::new("red_bank");
 pub const SWAPPER: Item<Swapper> = Item::new("swapper");
-pub const VAULT_CONFIGS: Map<&Addr, VaultConfig> = Map::new("vault_configs"); // TODO: Remove this
 pub const ZAPPER: Item<Zapper> = Item::new("zapper");
 pub const HEALTH_CONTRACT: Item<HealthContract> = Item::new("health_contract");
 pub const PARAMS: Item<Params> = Item::new("params");
 
 // Config
 pub const OWNER: Owner = Owner::new("owner");
-// TODO:
-//       - Remove VAULT_CONFIGS and replace with query_vault_config(). Get to build. Get tests to pass.
-//       - Update build scripts so that it compiles. May need to remove some asset params in instantiate.
-//          - Don't sweat too bad because there is a lot we need to update there.
 pub const MAX_UNLOCKING_POSITIONS: Item<Uint128> = Item::new("max_unlocking_positions");
 
 // Positions

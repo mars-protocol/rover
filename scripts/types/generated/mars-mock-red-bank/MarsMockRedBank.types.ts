@@ -5,15 +5,8 @@
  * and run the @cosmwasm/ts-codegen generate command to regenerate this file.
  */
 
-export type Decimal = string
 export interface InstantiateMsg {
-  coins: CoinMarketInfo[]
-}
-export interface CoinMarketInfo {
-  denom: string
-  liquidation_bonus: Decimal
-  liquidation_threshold: Decimal
-  max_ltv: Decimal
+  [k: string]: unknown
 }
 export type ExecuteMsg =
   | {
@@ -92,6 +85,7 @@ export type OwnerUpdate =
   | 'clear_proposed'
   | 'accept_proposed'
   | 'abolish_owner_role'
+export type Decimal = string
 export type Uint128 = string
 export interface CreateOrUpdateConfig {
   address_provider?: string | null

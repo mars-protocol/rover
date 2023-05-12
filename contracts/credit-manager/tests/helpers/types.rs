@@ -1,9 +1,10 @@
+use std::str::FromStr;
+
 use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{coin, Addr, Coin, Decimal, Uint128};
 use cw_utils::Duration;
 use mars_params::types::{AssetParams, HighLeverageStrategyParams, RedBankSettings, RoverSettings};
 use mars_rover::msg::execute::{ActionAmount, ActionCoin};
-use std::str::FromStr;
 
 #[cw_serde]
 pub struct AccountToFund {

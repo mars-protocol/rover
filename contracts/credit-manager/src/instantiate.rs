@@ -1,16 +1,9 @@
-use std::collections::HashSet;
-
-use cosmwasm_std::{Api, DepsMut, QuerierWrapper, StdResult};
+use cosmwasm_std::DepsMut;
 use mars_owner::OwnerInit::SetInitialOwner;
-
-use mars_rover::{
-    error::{ContractError::InvalidConfig, ContractResult},
-    msg::{instantiate::VaultInstantiateConfig, InstantiateMsg},
-};
+use mars_rover::{error::ContractResult, msg::InstantiateMsg};
 
 use crate::state::{
-    HEALTH_CONTRACT, MAX_UNLOCKING_POSITIONS, ORACLE, OWNER, PARAMS, RED_BANK,
-    SWAPPER, VAULT_CONFIGS, ZAPPER,
+    HEALTH_CONTRACT, MAX_UNLOCKING_POSITIONS, ORACLE, OWNER, PARAMS, RED_BANK, SWAPPER, ZAPPER,
 };
 
 pub fn store_config(deps: DepsMut, msg: &InstantiateMsg) -> ContractResult<()> {
@@ -30,51 +23,5 @@ pub fn store_config(deps: DepsMut, msg: &InstantiateMsg) -> ContractResult<()> {
     HEALTH_CONTRACT.save(deps.storage, &msg.health_contract.check(deps.api)?)?;
     PARAMS.save(deps.storage, &msg.params.check(deps.api)?)?;
 
-    assert_no_duplicate_vaults(deps.api, &deps.querier, &msg.vault_configs)?;
-    msg.vault_configs.iter().try_for_each(|v| -> ContractResult<_> {
-        v.config.check()?;
-        let vault = v.vault.check(deps.api)?;
-        Ok(VAULT_CONFIGS.save(deps.storage, &vault.address, &v.config)?)
-    })?;
-
-    Ok(())
-}
-
-pub fn assert_no_duplicate_vaults(
-    api: &dyn Api,
-    querier: &QuerierWrapper,
-    vaults: &[VaultInstantiateConfig],
-) -> ContractResult<()> {
-    let set: HashSet<_> = vaults.iter().map(|v| v.vault.address.clone()).collect();
-    if set.len() != vaults.len() {
-        return Err(InvalidConfig {
-            reason: "Duplicate vault configs present".to_string(),
-        });
-    }
-
-    let set: HashSet<_> = vaults
-        .iter()
-        .map(|v| {
-            let vault = v.vault.check(api)?;
-            let info = vault.query_info(querier)?;
-            Ok(info.vault_token)
-        })
-        .collect::<StdResult<_>>()?;
-    if set.len() != vaults.len() {
-        return Err(InvalidConfig {
-            reason: "Multiple vaults share the same vault token".to_string(),
-        });
-    }
-
-    Ok(())
-}
-
-pub fn assert_no_duplicate_coins(denoms: &[String]) -> ContractResult<()> {
-    let set: HashSet<_> = denoms.iter().collect();
-    if set.len() != denoms.len() {
-        return Err(InvalidConfig {
-            reason: "Duplicate coin configs present".to_string(),
-        });
-    }
     Ok(())
 }

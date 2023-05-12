@@ -86,7 +86,8 @@ export function useMarsRoverHealthTypesHealthQuery<TData = HealthResponse>({
 export interface MarsRoverHealthTypesUpdateConfigMutation {
   client: MarsRoverHealthTypesClient
   msg: {
-    creditManager: string
+    creditManager?: string
+    params?: string
   }
   args?: {
     fee?: number | StdFee | 'auto'

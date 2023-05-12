@@ -17,7 +17,6 @@ import {
   VaultAmount1,
   UnlockingPositions,
   Addr,
-  Decimal,
   Positions,
   DebtAmount,
   Coin,
@@ -26,7 +25,6 @@ import {
   LockingVaultAmount,
   VaultUnlockingPosition,
   VaultBaseForAddr,
-  VaultConfig,
   QueryMsg,
   VaultBaseForString,
   ArrayOfCoinBalanceResponseItem,
@@ -37,19 +35,14 @@ import {
   DebtShares,
   ArrayOfLentShares,
   LentShares,
-  ArrayOfVaultWithBalance,
-  VaultWithBalance,
   ArrayOfVaultPositionResponseItem,
   VaultPositionResponseItem,
-  ArrayOfString,
   ConfigResponse,
   OwnerResponse,
   ArrayOfCoin,
-  VaultConfigResponse,
   VaultPositionValue,
   CoinValue,
   VaultUtilizationResponse,
-  ArrayOfVaultConfigResponse,
 } from './MarsMockCreditManager.types'
 export interface MarsMockCreditManagerMessage {
   contractAddress: string
@@ -64,17 +57,6 @@ export interface MarsMockCreditManagerMessage {
     },
     funds?: Coin[],
   ) => MsgExecuteContractEncodeObject
-  setAllowedCoins: (funds?: Coin[]) => MsgExecuteContractEncodeObject
-  setVaultConfig: (
-    {
-      address,
-      config,
-    }: {
-      address: string
-      config: VaultConfig
-    },
-    funds?: Coin[],
-  ) => MsgExecuteContractEncodeObject
 }
 export class MarsMockCreditManagerMessageComposer implements MarsMockCreditManagerMessage {
   sender: string
@@ -84,8 +66,6 @@ export class MarsMockCreditManagerMessageComposer implements MarsMockCreditManag
     this.sender = sender
     this.contractAddress = contractAddress
     this.setPositionsResponse = this.setPositionsResponse.bind(this)
-    this.setAllowedCoins = this.setAllowedCoins.bind(this)
-    this.setVaultConfig = this.setVaultConfig.bind(this)
   }
 
   setPositionsResponse = (
@@ -108,48 +88,6 @@ export class MarsMockCreditManagerMessageComposer implements MarsMockCreditManag
             set_positions_response: {
               account_id: accountId,
               positions,
-            },
-          }),
-        ),
-        funds,
-      }),
-    }
-  }
-  setAllowedCoins = (funds?: Coin[]): MsgExecuteContractEncodeObject => {
-    return {
-      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
-      value: MsgExecuteContract.fromPartial({
-        sender: this.sender,
-        contract: this.contractAddress,
-        msg: toUtf8(
-          JSON.stringify({
-            set_allowed_coins: {},
-          }),
-        ),
-        funds,
-      }),
-    }
-  }
-  setVaultConfig = (
-    {
-      address,
-      config,
-    }: {
-      address: string
-      config: VaultConfig
-    },
-    funds?: Coin[],
-  ): MsgExecuteContractEncodeObject => {
-    return {
-      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
-      value: MsgExecuteContract.fromPartial({
-        sender: this.sender,
-        contract: this.contractAddress,
-        msg: toUtf8(
-          JSON.stringify({
-            set_vault_config: {
-              address,
-              config,
             },
           }),
         ),

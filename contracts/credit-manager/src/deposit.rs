@@ -1,5 +1,4 @@
 use cosmwasm_std::{Coin, QuerierWrapper, Response, Storage, Uint128};
-
 use mars_rover::{
     coins::Coins,
     error::{ContractError, ContractResult},

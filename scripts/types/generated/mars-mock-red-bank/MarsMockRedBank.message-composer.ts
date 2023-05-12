@@ -10,11 +10,10 @@ import { MsgExecuteContractEncodeObject } from 'cosmwasm'
 import { MsgExecuteContract } from 'cosmjs-types/cosmwasm/wasm/v1/tx'
 import { toUtf8 } from '@cosmjs/encoding'
 import {
-  Decimal,
   InstantiateMsg,
-  CoinMarketInfo,
   ExecuteMsg,
   OwnerUpdate,
+  Decimal,
   Uint128,
   CreateOrUpdateConfig,
   InitOrUpdateAssetParams,

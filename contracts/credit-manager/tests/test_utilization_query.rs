@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use cosmwasm_std::{Addr, Decimal, Uint128};
 use mars_rover::{
     adapters::vault::VaultUnchecked,
@@ -7,7 +9,6 @@ use mars_rover::{
         ActionCoin,
     },
 };
-use std::str::FromStr;
 
 use crate::helpers::{
     ujake_info, unlocked_vault_info, uosmo_info, AccountToFund, CoinInfo, MockEnv, VaultTestInfo,
@@ -107,8 +108,8 @@ fn utilization_in_other_denom() {
         base_token_denom: jake_info.denom.clone(),
         lockup: None,
         deposit_cap: osmo_info.to_coin(50_000_000),
-        max_ltv: Default::default(),
-        liquidation_threshold: Default::default(),
+        max_ltv: Decimal::from_str("0.6").unwrap(),
+        liquidation_threshold: Decimal::from_str("0.7").unwrap(),
         whitelisted: true,
     };
 

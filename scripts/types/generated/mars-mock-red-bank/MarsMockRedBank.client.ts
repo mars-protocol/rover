@@ -8,11 +8,10 @@
 import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from '@cosmjs/cosmwasm-stargate'
 import { Coin, StdFee } from '@cosmjs/amino'
 import {
-  Decimal,
   InstantiateMsg,
-  CoinMarketInfo,
   ExecuteMsg,
   OwnerUpdate,
+  Decimal,
   Uint128,
   CreateOrUpdateConfig,
   InitOrUpdateAssetParams,

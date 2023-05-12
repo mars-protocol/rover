@@ -59,8 +59,10 @@ export interface MarsRoverHealthTypesInterface extends MarsRoverHealthTypesReadO
   updateConfig: (
     {
       creditManager,
+      params,
     }: {
-      creditManager: string
+      creditManager?: string
+      params?: string
     },
     fee?: number | StdFee | 'auto',
     memo?: string,
@@ -104,8 +106,10 @@ export class MarsRoverHealthTypesClient
   updateConfig = async (
     {
       creditManager,
+      params,
     }: {
-      creditManager: string
+      creditManager?: string
+      params?: string
     },
     fee: number | StdFee | 'auto' = 'auto',
     memo?: string,
@@ -117,6 +121,7 @@ export class MarsRoverHealthTypesClient
       {
         update_config: {
           credit_manager: creditManager,
+          params,
         },
       },
       fee,
