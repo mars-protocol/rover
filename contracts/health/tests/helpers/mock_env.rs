@@ -26,7 +26,6 @@ pub struct MockEnv {
     pub cm_contract: Addr,
     pub vault_contract: Addr,
     pub oracle: Addr,
-    pub red_bank: Addr,
     pub params: Addr,
 }
 
@@ -42,7 +41,6 @@ impl MockEnv {
             cm_contract: None,
             vault_contract: None,
             oracle: None,
-            red_bank: None,
             params: None,
         }
     }

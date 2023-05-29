@@ -1,7 +1,7 @@
 use std::{mem::take, str::FromStr};
 
 use anyhow::Result as AnyResult;
-use cosmwasm_std::{coin, Addr, Decimal, Empty};
+use cosmwasm_std::{coin, Addr, Decimal};
 use cw_multi_test::{BasicApp, Executor};
 use cw_utils::Duration;
 use mars_mock_credit_manager::msg::InstantiateMsg as CmMockInstantiateMsg;
@@ -17,7 +17,7 @@ use mars_rover_health_types::{ExecuteMsg::UpdateConfig, InstantiateMsg};
 
 use crate::helpers::{
     mock_credit_manager_contract, mock_health_contract, mock_oracle_contract, mock_params_contract,
-    mock_red_bank_contract, mock_vault_contract, MockEnv,
+    mock_vault_contract, MockEnv,
 };
 
 pub struct MockEnvBuilder {
@@ -27,7 +27,6 @@ pub struct MockEnvBuilder {
     pub cm_contract: Option<Addr>,
     pub vault_contract: Option<Addr>,
     pub oracle: Option<Addr>,
-    pub red_bank: Option<Addr>,
     pub params: Option<Addr>,
     pub set_cm_config: bool,
     pub set_params_config: bool,
@@ -48,7 +47,6 @@ impl MockEnvBuilder {
             health_contract: self.get_health_contract(),
             vault_contract: self.get_vault_contract(),
             oracle: self.get_oracle(),
-            red_bank: self.get_red_bank(),
             cm_contract: self.get_cm_contract(),
             app: take(&mut self.app),
             params: self.get_params_contract(),
@@ -126,31 +124,6 @@ impl MockEnvBuilder {
         self.oracle = Some(addr);
     }
 
-    fn get_red_bank(&mut self) -> Addr {
-        if self.red_bank.is_none() {
-            self.deploy_red_bank()
-        }
-        self.red_bank.clone().unwrap()
-    }
-
-    fn deploy_red_bank(&mut self) {
-        let contract = mock_red_bank_contract();
-        let code_id = self.app.store_code(contract);
-
-        let addr = self
-            .app
-            .instantiate_contract(
-                code_id,
-                self.deployer.clone(),
-                &Empty {},
-                &[],
-                "mock-red-bank",
-                None,
-            )
-            .unwrap();
-        self.red_bank = Some(addr);
-    }
-
     fn get_cm_contract(&mut self) -> Addr {
         if self.cm_contract.is_none() {
             self.deploy_cm_contract()
@@ -161,7 +134,6 @@ impl MockEnvBuilder {
     fn deploy_cm_contract(&mut self) {
         let contract = mock_credit_manager_contract();
         let code_id = self.app.store_code(contract);
-        let red_bank = self.get_red_bank().to_string();
         let oracle = self.get_oracle().to_string();
         let params = self.get_params_contract().to_string();
 
@@ -179,7 +151,7 @@ impl MockEnvBuilder {
                             initialized: true,
                             abolished: false,
                         },
-                        red_bank,
+                        red_bank: "n/a".to_string(),
                         oracle,
                         params,
                         account_nft: None,
