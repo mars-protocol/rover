@@ -1,8 +1,4 @@
 import { Duration, VaultInfoResponse } from './generated/mars-mock-vault/MarsMockVault.types'
-import {
-  VaultConfig,
-  VaultInstantiateConfig,
-} from './generated/mars-credit-manager/MarsCreditManager.types'
 import { PriceSource } from './priceSource'
 
 export enum VaultType {

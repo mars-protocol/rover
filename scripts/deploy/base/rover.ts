@@ -13,7 +13,6 @@ import {
   Action,
   Coin,
   ConfigUpdates,
-  VaultInstantiateConfig,
 } from '../../types/generated/mars-credit-manager/MarsCreditManager.types'
 import { MarsMockVaultQueryClient } from '../../types/generated/mars-mock-vault/MarsMockVault.client'
 
