@@ -1449,12 +1449,12 @@ dependencies = [
 
 [[package]]
 name = "mars-params"
-version = "2.0.0"
+version = "1.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1cc45773e9dfeb2400c1d5c2be40fee04ab77b73d191755fa2145b37f423204f"
 dependencies = [
- "anyhow",
  "cosmwasm-schema",
  "cosmwasm-std",
- "cw-multi-test",
  "cw-storage-plus 1.0.1",
  "cw2 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "mars-owner",
