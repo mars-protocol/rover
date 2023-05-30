@@ -1,7 +1,7 @@
 import codegen from '@cosmwasm/ts-codegen'
 import { join, resolve } from 'path'
 import { printGreen, printRed } from '../utils/chalk'
-import { readdir } from 'fs/promises'
+import { readdir, rm, rename } from 'fs/promises'
 import simpleGit from 'simple-git'
 
 const generateTypes = async () => {
@@ -39,12 +39,24 @@ const generateTypes = async () => {
   }
 }
 
-const fetchMarsParamsTypes = async () => {
-  const res = await simpleGit().clone('https://github.com/mars-protocol/mars-common')
-  console.log(res)
+const fetchSchemafromGithub = async ({
+  githubRepo,
+  pathToSchema,
+}: {
+  githubRepo: string
+  pathToSchema: string
+}) => {
+  await simpleGit().clone(githubRepo)
+  const schemaDirName = pathToSchema.split('/').pop()!
+  const repoDirName = githubRepo.split('/').pop()!
+  await rename(pathToSchema, `../schemas/${schemaDirName}`)
+  await rm(`./${repoDirName}`, { recursive: true, force: true })
 }
 
 void (async function () {
-  await fetchMarsParamsTypes()
-  // await generateTypes()
+  await fetchSchemafromGithub({
+    githubRepo: 'https://github.com/mars-protocol/mars-common',
+    pathToSchema: './mars-common/schemas/mars-params',
+  })
+  await generateTypes()
 })()

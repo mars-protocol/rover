@@ -1,11 +1,9 @@
 use cosmwasm_std::{coin, coins, Addr, Uint128};
 use cw_utils::PaymentError;
+use mars_params::types::AssetParamsUpdate::AddOrUpdate;
 use mars_rover::{
     error::ContractError,
-    msg::{
-        execute::Action::{Borrow, Deposit},
-        instantiate::ConfigUpdates,
-    },
+    msg::execute::Action::{Borrow, Deposit},
 };
 
 use crate::helpers::{assert_err, uosmo_info, AccountToFund, MockEnv};
@@ -150,7 +148,7 @@ fn repay_of_more_than_total_debt() {
 
 #[test]
 fn delisted_assets_can_be_repaid() {
-    let coin_info = uosmo_info();
+    let mut coin_info = uosmo_info();
     let debtor = Addr::unchecked("debtor");
     let repayer = Addr::unchecked("debtor");
 
@@ -180,23 +178,14 @@ fn delisted_assets_can_be_repaid() {
     .unwrap();
 
     // Delist the asset
-    let config = mock.query_config();
-    mock.update_config(
-        &Addr::unchecked(config.ownership.owner.unwrap()),
-        ConfigUpdates {
-            account_nft: None,
-            oracle: None,
-            red_bank: None,
-            max_unlocking_positions: None,
-            swapper: None,
-            zapper: None,
-            health_contract: None,
-        },
-    )
-    .unwrap();
+    coin_info.whitelisted = false;
+    mock.update_asset_params(AddOrUpdate {
+        denom: coin_info.denom.clone(),
+        params: coin_info.clone().into(),
+    });
 
-    // let allowed_coins = mock.query_allowed_coins(None, None);
-    // assert_eq!(0, allowed_coins.len());
+    let params = mock.query_asset_params(&coin_info.denom);
+    assert!(!params.rover.whitelisted);
 
     // There should be no error in repaying for this asset
     mock.repay_from_wallet(&repayer, &account_id, &[coin(12, coin_info.denom)]).unwrap();

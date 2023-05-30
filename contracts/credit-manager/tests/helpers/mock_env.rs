@@ -27,8 +27,8 @@ use mars_params::{
         InstantiateMsg as ParamsInstantiateMsg, QueryMsg as ParamsQueryMsg,
     },
     types::{
-        AssetParamsUpdate, AssetParamsUpdate::AddOrUpdate, VaultConfig, VaultConfigResponse,
-        VaultConfigUpdate,
+        AssetParams, AssetParamsUpdate, AssetParamsUpdate::AddOrUpdate, VaultConfig,
+        VaultConfigResponse, VaultConfigUpdate,
     },
 };
 use mars_red_bank_types::red_bank::{
@@ -351,6 +351,18 @@ impl MockEnv {
                 self.params.address(),
                 &ParamsQueryMsg::VaultConfig {
                     address: vault_addr.to_string(),
+                },
+            )
+            .unwrap()
+    }
+
+    pub fn query_asset_params(&self, denom: &str) -> AssetParams {
+        self.app
+            .wrap()
+            .query_wasm_smart(
+                self.params.address(),
+                &ParamsQueryMsg::AssetParams {
+                    denom: denom.to_string(),
                 },
             )
             .unwrap()
