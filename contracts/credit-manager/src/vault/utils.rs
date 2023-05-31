@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, Coin, Deps, QuerierWrapper, StdResult, Storage, Uint128};
+use cosmwasm_std::{Addr, Coin, Deps, DepsMut, StdResult, Storage, Uint128};
 use mars_rover::{
     adapters::vault::{
         LockingVaultAmount, UnlockingPositions, Vault, VaultAmount, VaultPosition,
@@ -12,26 +12,18 @@ use crate::{
     update_coin_balances::query_balance,
 };
 
-pub fn assert_vault_is_whitelisted(
-    storage: &mut dyn Storage,
-    querier: &QuerierWrapper,
-    vault: &Vault,
-) -> ContractResult<()> {
-    let is_whitelisted = vault_is_whitelisted(storage, querier, vault)?;
+pub fn assert_vault_is_whitelisted(deps: &mut DepsMut, vault: &Vault) -> ContractResult<()> {
+    let is_whitelisted = vault_is_whitelisted(deps, vault)?;
     if !is_whitelisted {
         return Err(ContractError::NotWhitelisted(vault.address.to_string()));
     }
     Ok(())
 }
 
-pub fn vault_is_whitelisted(
-    storage: &mut dyn Storage,
-    querier: &QuerierWrapper,
-    vault: &Vault,
-) -> ContractResult<bool> {
+pub fn vault_is_whitelisted(deps: &mut DepsMut, vault: &Vault) -> ContractResult<bool> {
     Ok(PARAMS
-        .load(storage)?
-        .query_vault_config(querier, &vault.address)
+        .load(deps.storage)?
+        .query_vault_config(&deps.querier, &vault.address)
         .map(|c| c.whitelisted)
         .unwrap_or(false))
 }

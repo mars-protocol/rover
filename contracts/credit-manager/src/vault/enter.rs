@@ -20,7 +20,7 @@ use crate::{
 };
 
 pub fn enter_vault(
-    deps: DepsMut,
+    mut deps: DepsMut,
     rover_addr: &Addr,
     account_id: &str,
     vault: Vault,
@@ -37,8 +37,8 @@ pub fn enter_vault(
         amount,
     };
 
-    assert_coin_is_whitelisted(deps.storage, &deps.querier, &coin.denom)?;
-    assert_vault_is_whitelisted(deps.storage, &deps.querier, &vault)?;
+    assert_coin_is_whitelisted(&mut deps, &coin.denom)?;
+    assert_vault_is_whitelisted(&mut deps, &vault)?;
     assert_denom_matches_vault_reqs(deps.querier, &vault, &coin_to_enter)?;
     assert_deposit_is_under_cap(deps.as_ref(), &vault, &coin_to_enter, rover_addr)?;
 
