@@ -220,9 +220,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chrono"
-version = "0.4.25"
+version = "0.4.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fdbc37d37da9e5bce8173f3a41b71d9bf3c674deebbaceacd0ebdabde76efb03"
+checksum = "ec837a71355b28f6556dbd569b37b3f363091c0bd4b2e735674521b4c5fd9bc5"
 dependencies = [
  "android-tzdata",
  "num-traits",
@@ -1436,9 +1436,9 @@ dependencies = [
 
 [[package]]
 name = "mars-owner"
-version = "1.1.0"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8ca010da465b4a5ea7274f59132d22b7c10765295c73d5744add2c1fea6c5e38"
+checksum = "acd53908ffc561da878ce5ff4f5ec9f25a193af28ec0b6e7c8e6d1a0866d9dfc"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
@@ -1449,9 +1449,9 @@ dependencies = [
 
 [[package]]
 name = "mars-params"
-version = "1.0.3"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1cc45773e9dfeb2400c1d5c2be40fee04ab77b73d191755fa2145b37f423204f"
+checksum = "ed319ed66b221fcaef2a189deacc49b404f5ce9df1d03c58d8444d271fb10f22"
 dependencies = [
  "cosmwasm-schema",
  "cosmwasm-std",
@@ -1686,9 +1686,9 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
 name = "mio"
-version = "0.8.7"
+version = "0.8.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eebffdb73fe72e917997fad08bdbf31ac50b0fa91cec93e69a0662e4264d454c"
+checksum = "927a765cd3fc26206e66b296465fa9d3e5ab003e651c1b3c060e7956d96b19d2"
 dependencies = [
  "libc",
  "wasi",

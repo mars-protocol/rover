@@ -649,7 +649,6 @@ fn delisted_deposits_drop_max_ltv() {
     // Blacklist osmo in params contract
     uosmo_info.whitelisted = false;
     mock.update_asset_params(AddOrUpdate {
-        denom: uosmo_info.denom.clone(),
         params: uosmo_info.into(),
     });
 
@@ -714,8 +713,7 @@ fn delisted_vaults_drop_max_ltv() {
     let mut config = mock.query_vault_params(&vault.address);
     config.whitelisted = false;
     mock.update_vault_params(VaultConfigUpdate::AddOrUpdate {
-        addr: vault.address,
-        config,
+        config: config.into(),
     });
 
     let curr_health = mock.query_health(&account_id);
@@ -778,7 +776,6 @@ fn vault_base_token_delisting_drops_max_ltv() {
     // Blacklist LP token in params contract
     lp_token.whitelisted = false;
     mock.update_asset_params(AddOrUpdate {
-        denom: lp_token.denom.clone(),
         params: lp_token.into(),
     });
 

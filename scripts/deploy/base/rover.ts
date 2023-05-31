@@ -1,5 +1,5 @@
 import { Storage } from './storage'
-import { DeploymentConfig, TestActions, VaultAddrConfig, VaultInfo } from '../../types/config'
+import { DeploymentConfig, TestActions, VaultInfo } from '../../types/config'
 import { difference } from 'lodash'
 import assert from 'assert'
 import { printBlue, printGreen } from '../../utils/chalk'
@@ -15,6 +15,7 @@ import {
   ConfigUpdates,
 } from '../../types/generated/mars-credit-manager/MarsCreditManager.types'
 import { MarsMockVaultQueryClient } from '../../types/generated/mars-mock-vault/MarsMockVault.client'
+import { VaultConfigBaseForString } from '../../types/generated/mars-params/MarsParams.types'
 
 export class Rover {
   private exec: MarsCreditManagerClient
@@ -183,7 +184,7 @@ export class Rover {
     )
   }
 
-  async vaultDeposit(v: VaultAddrConfig, info: VaultInfo) {
+  async vaultDeposit(v: VaultConfigBaseForString, info: VaultInfo) {
     const oldRoverBalance = await this.cwClient.getBalance(
       this.storage.addresses.creditManager!,
       info.tokens.vault_token,
@@ -219,7 +220,7 @@ export class Rover {
     )
   }
 
-  async vaultWithdraw(v: VaultAddrConfig, info: VaultInfo) {
+  async vaultWithdraw(v: VaultConfigBaseForString, info: VaultInfo) {
     const oldBalance = await this.getAccountBalance(info.tokens.base_token)
     await this.updateCreditAccount([
       {
@@ -238,7 +239,7 @@ export class Rover {
     )
   }
 
-  async vaultRequestUnlock(v: VaultAddrConfig, info: VaultInfo) {
+  async vaultRequestUnlock(v: VaultConfigBaseForString, info: VaultInfo) {
     const oldBalance = await this.getVaultBalance(v.addr)
     await this.updateCreditAccount([
       {
@@ -268,7 +269,7 @@ export class Rover {
     printGreen(`Withdrew all balances back to wallet`)
   }
 
-  async getVaultInfo(v: VaultAddrConfig): Promise<VaultInfo> {
+  async getVaultInfo(v: VaultConfigBaseForString): Promise<VaultInfo> {
     const client = new MarsMockVaultQueryClient(this.cwClient, v.addr)
     return {
       tokens: await client.info(),
@@ -276,7 +277,7 @@ export class Rover {
     }
   }
 
-  private async getLockup(v: VaultAddrConfig): Promise<VaultInfo['lockup']> {
+  private async getLockup(v: VaultConfigBaseForString): Promise<VaultInfo['lockup']> {
     try {
       return await this.cwClient.queryContractSmart(v.addr, {
         vault_extension: {

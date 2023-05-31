@@ -28,7 +28,7 @@ use mars_params::{
     },
     types::{
         AssetParams, AssetParamsUpdate, AssetParamsUpdate::AddOrUpdate, VaultConfig,
-        VaultConfigResponse, VaultConfigUpdate,
+        VaultConfigUnchecked, VaultConfigUpdate,
     },
 };
 use mars_red_bank_types::red_bank::{
@@ -368,7 +368,7 @@ impl MockEnv {
             .unwrap()
     }
 
-    pub fn query_all_vault_params(&self) -> Vec<VaultConfigResponse> {
+    pub fn query_all_vault_params(&self) -> Vec<VaultConfig> {
         self.app
             .wrap()
             .query_wasm_smart(
@@ -705,7 +705,6 @@ impl MockEnvBuilder {
                     self.get_owner(),
                     params_contract.address().clone(),
                     &UpdateAssetParams(AddOrUpdate {
-                        denom: coin_info.denom.to_string(),
                         params: coin_info.into(),
                     }),
                     &[],
@@ -975,8 +974,8 @@ impl MockEnvBuilder {
                 self.get_owner(),
                 params.address().clone(),
                 &UpdateVaultConfig(VaultConfigUpdate::AddOrUpdate {
-                    addr: vault_addr.to_string(),
-                    config: VaultConfig {
+                    config: VaultConfigUnchecked {
+                        addr: vault_addr.to_string(),
                         deposit_cap: vault.deposit_cap.clone(),
                         max_loan_to_value: vault.max_ltv,
                         liquidation_threshold: vault.liquidation_threshold,

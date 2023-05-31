@@ -10,26 +10,24 @@ const gammPool497 = 'gamm/pool/497'
 const vaultOsmoAtom1 = 'osmo1zktjv92f76epswjvyxzzt3yyskpw7k6jsyu0kmq4zzc5fphrjumqlahctp'
 const vaultOsmoAtom7 = 'osmo167j3yttwzcm3785tzk4jse2qdkppcy2xxrn5u6srqv7s93wnq6yqw8zhg5'
 const vaultOsmoAtom14 = 'osmo1tp2m6g39h8mvhnu3plqjyen5s63023gj8w873l8wvly0cd77l6hsaa73wt'
-const atomOsmoConfig = {
-  config: {
-    deposit_cap: { denom: uatom, amount: '1000000000' }, // 1000 atom
-    max_loan_to_value: '0.63',
-    liquidation_threshold: '0.65',
-    whitelisted: true,
-  },
-}
+const atomOsmoConfig = (addr: string) => ({
+  addr,
+  deposit_cap: { denom: uatom, amount: '1000000000' }, // 1000 atom
+  max_loan_to_value: '0.63',
+  liquidation_threshold: '0.65',
+  whitelisted: true,
+})
 
 const vaultJunoOsmo1 = 'osmo1r6h0pafu3wq0kf6yv09qhc8qvuku2d6fua0rpwwv46h7hd8u586scxspjf'
 const vaultJunoOsmo7 = 'osmo1gr5epxn67q6202l3hy0mcnu7qc039v22pa6x2tsk23zwg235n9jsq6pmes'
 const vaultJunoOsmo14 = 'osmo1d6knwkelyr9eklewnn9htkess4ttpxpf2cze9ec0xfw7e3fj0ggssqzfpp'
-const junoOsmoConfig = {
-  config: {
-    deposit_cap: { denom: uatom, amount: '500000000' }, // 500 atom
-    max_loan_to_value: '0.65',
-    liquidation_threshold: '0.66',
-    whitelisted: true,
-  },
-}
+const junoOsmoConfig = (addr: string) => ({
+  addr,
+  deposit_cap: { denom: uatom, amount: '500000000' }, // 500 atom
+  max_loan_to_value: '0.65',
+  liquidation_threshold: '0.66',
+  whitelisted: true,
+})
 
 export const osmosisTestnetConfig: DeploymentConfig = {
   allowedCoins: [uosmo, uatom, ujuno, gammPool1, gammPool497],
@@ -57,30 +55,12 @@ export const osmosisTestnetConfig: DeploymentConfig = {
   ],
   // Latest from: https://stats.apollo.farm/api/vaults/v1/all
   vaults: [
-    {
-      addr: vaultOsmoAtom1,
-      ...atomOsmoConfig,
-    },
-    {
-      addr: vaultOsmoAtom7,
-      ...atomOsmoConfig,
-    },
-    {
-      addr: vaultOsmoAtom14,
-      ...atomOsmoConfig,
-    },
-    {
-      addr: vaultJunoOsmo1,
-      ...junoOsmoConfig,
-    },
-    {
-      addr: vaultJunoOsmo7,
-      ...junoOsmoConfig,
-    },
-    {
-      addr: vaultJunoOsmo14,
-      ...junoOsmoConfig,
-    },
+    atomOsmoConfig(vaultOsmoAtom1),
+    atomOsmoConfig(vaultOsmoAtom7),
+    atomOsmoConfig(vaultOsmoAtom14),
+    junoOsmoConfig(vaultJunoOsmo1),
+    junoOsmoConfig(vaultJunoOsmo7),
+    junoOsmoConfig(vaultJunoOsmo14),
   ],
   swapperContractName: 'mars_swapper_osmosis',
   zapperContractName: 'mars_zapper_osmosis',

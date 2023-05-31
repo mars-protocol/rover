@@ -118,8 +118,8 @@ fn adds_vault_base_denoms_to_oracle_and_red_bank() {
     let liquidation_threshold = Decimal::from_atomics(5u128, 1).unwrap();
 
     let update = AddOrUpdate {
-        denom: vault_base_token.to_string(),
         params: AssetParams {
+            denom: vault_base_token.to_string(),
             rover: RoverSettings {
                 whitelisted: true,
                 hls: HighLeverageStrategyParams {
@@ -172,6 +172,7 @@ fn whitelisted_coins_work() {
     let liquidation_bonus = Decimal::from_atomics(9u128, 2).unwrap();
 
     let mut asset_params = AssetParams {
+        denom: umars.to_string(),
         rover: RoverSettings {
             whitelisted: false,
             hls: HighLeverageStrategyParams {
@@ -190,7 +191,6 @@ fn whitelisted_coins_work() {
     };
 
     let update = AddOrUpdate {
-        denom: umars.to_string(),
         params: asset_params.clone(),
     };
 
@@ -229,7 +229,6 @@ fn whitelisted_coins_work() {
     // Add to whitelist
     asset_params.rover.whitelisted = true;
     mock.update_asset_params(AddOrUpdate {
-        denom: umars.to_string(),
         params: asset_params,
     });
     let health = mock.query_health(account_id).unwrap();
@@ -269,8 +268,8 @@ fn vault_whitelist_affects_max_ltv() {
     );
 
     let update = AddOrUpdate {
-        denom: vault_base_token.to_string(),
         params: AssetParams {
+            denom: vault_base_token.to_string(),
             rover: RoverSettings {
                 whitelisted: true,
                 hls: HighLeverageStrategyParams {
@@ -293,7 +292,7 @@ fn vault_whitelist_affects_max_ltv() {
 
     mock.set_price(vault_base_token, Decimal::one());
 
-    let mut vault_config = mock.query_vault_config(&vault.clone().into());
+    let mut vault_config = mock.query_vault_config(&vault.into());
 
     let health = mock.query_health(account_id).unwrap();
     assert_eq!(health.total_debt_value, Uint128::zero());
@@ -315,8 +314,7 @@ fn vault_whitelist_affects_max_ltv() {
     vault_config.whitelisted = false;
 
     mock.update_vault_params(VaultConfigUpdate::AddOrUpdate {
-        addr: vault.address.to_string(),
-        config: vault_config,
+        config: vault_config.into(),
     });
 
     let health = mock.query_health(account_id).unwrap();

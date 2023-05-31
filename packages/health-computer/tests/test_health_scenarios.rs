@@ -636,6 +636,7 @@ fn unlocked_vault() {
         vault_configs: HashMap::from([(
             vault.address.clone(),
             VaultConfig {
+                addr: vault.address.clone(),
                 deposit_cap: Default::default(),
                 max_loan_to_value: Decimal::from_str("0.4").unwrap(),
                 liquidation_threshold: Decimal::from_str("0.5").unwrap(),
@@ -724,6 +725,7 @@ fn locked_vault() {
         vault_configs: HashMap::from([(
             vault.address.clone(),
             VaultConfig {
+                addr: vault.address.clone(),
                 deposit_cap: Default::default(),
                 max_loan_to_value: Decimal::from_str("0.4").unwrap(),
                 liquidation_threshold: Decimal::from_str("0.5").unwrap(),
@@ -815,6 +817,7 @@ fn locked_vault_with_unlocking_positions() {
         vault_configs: HashMap::from([(
             vault.address.clone(),
             VaultConfig {
+                addr: vault.address.clone(),
                 deposit_cap: Default::default(),
                 max_loan_to_value: Decimal::from_str("0.4").unwrap(),
                 liquidation_threshold: Decimal::from_str("0.5").unwrap(),
@@ -915,6 +918,7 @@ fn vault_is_not_whitelisted() {
         vault_configs: HashMap::from([(
             vault.address.clone(),
             VaultConfig {
+                addr: vault.address.clone(),
                 deposit_cap: Default::default(),
                 max_loan_to_value: Decimal::from_str("0.4").unwrap(),
                 liquidation_threshold: Decimal::from_str("0.5").unwrap(),
@@ -1009,6 +1013,7 @@ fn vault_base_token_is_not_whitelisted() {
         vault_configs: HashMap::from([(
             vault.address.clone(),
             VaultConfig {
+                addr: vault.address.clone(),
                 deposit_cap: Default::default(),
                 max_loan_to_value: Decimal::from_str("0.4").unwrap(),
                 liquidation_threshold: Decimal::from_str("0.5").unwrap(),

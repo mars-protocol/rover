@@ -180,7 +180,6 @@ fn delisted_assets_can_be_repaid() {
     // Delist the asset
     coin_info.whitelisted = false;
     mock.update_asset_params(AddOrUpdate {
-        denom: coin_info.denom.clone(),
         params: coin_info.clone().into(),
     });
 

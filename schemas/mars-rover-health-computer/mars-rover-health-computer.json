@@ -28,6 +28,7 @@
     "AssetParams": {
       "type": "object",
       "required": [
+        "denom",
         "liquidation_bonus",
         "liquidation_threshold",
         "max_loan_to_value",
@@ -35,6 +36,9 @@
         "rover"
       ],
       "properties": {
+        "denom": {
+          "type": "string"
+        },
         "liquidation_bonus": {
           "$ref": "#/definitions/Decimal"
         },
@@ -308,15 +312,19 @@
       },
       "additionalProperties": false
     },
-    "VaultConfig": {
+    "VaultConfigBase_for_Addr": {
       "type": "object",
       "required": [
+        "addr",
         "deposit_cap",
         "liquidation_threshold",
         "max_loan_to_value",
         "whitelisted"
       ],
       "properties": {
+        "addr": {
+          "$ref": "#/definitions/Addr"
+        },
         "deposit_cap": {
           "$ref": "#/definitions/Coin"
         },
@@ -436,7 +444,7 @@
         "vault_configs": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/VaultConfig"
+            "$ref": "#/definitions/VaultConfigBase_for_Addr"
           }
         },
         "vault_values": {

@@ -28,7 +28,7 @@ import {
   VaultUnlockingPosition,
   VaultBaseForAddr,
   VaultsData,
-  VaultConfig,
+  VaultConfigBaseForAddr,
   VaultPositionValue,
   CoinValue,
 } from './MarsRoverHealthComputer.types'

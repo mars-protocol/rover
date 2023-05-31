@@ -23,12 +23,13 @@ import {
   RedBankSettings,
   RoverSettings,
   HighLeverageStrategyParams,
-  VaultConfig,
+  VaultConfigBaseForString,
   Coin,
   QueryMsg,
-  ArrayOfAssetParamsResponse,
-  AssetParamsResponse,
-  ArrayOfVaultConfig,
+  ArrayOfAssetParams,
+  Addr,
+  ArrayOfVaultConfigBaseForAddr,
+  VaultConfigBaseForAddr,
   OwnerResponse,
 } from './MarsParams.types'
 export interface MarsParamsMessage {

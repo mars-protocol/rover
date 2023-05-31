@@ -65,6 +65,7 @@ impl CoinInfo {
 impl From<CoinInfo> for AssetParams {
     fn from(c: CoinInfo) -> Self {
         Self {
+            denom: c.denom,
             rover: RoverSettings {
                 whitelisted: c.whitelisted,
                 hls: HighLeverageStrategyParams {

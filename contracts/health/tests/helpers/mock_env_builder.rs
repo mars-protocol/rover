@@ -10,7 +10,7 @@ use mars_mock_vault::msg::InstantiateMsg as VaultInstantiateMsg;
 use mars_owner::OwnerResponse;
 use mars_params::{
     msg::{ExecuteMsg::UpdateVaultConfig, InstantiateMsg as ParamsInstantiateMsg},
-    types::{VaultConfig, VaultConfigUpdate::AddOrUpdate},
+    types::{VaultConfigUnchecked, VaultConfigUpdate::AddOrUpdate},
 };
 use mars_rover::{adapters::oracle::OracleUnchecked, msg::query::ConfigResponse};
 use mars_rover_health_types::{ExecuteMsg::UpdateConfig, InstantiateMsg};
@@ -169,15 +169,15 @@ impl MockEnvBuilder {
         self.cm_contract = Some(cm_addr);
 
         // Set mock vault with a starting config
-        let vault = self.get_vault_contract().to_string();
+        let vault = self.get_vault_contract();
         let params = self.get_params_contract();
         self.app
             .execute_contract(
                 self.deployer.clone(),
                 params,
                 &UpdateVaultConfig(AddOrUpdate {
-                    addr: vault,
-                    config: VaultConfig {
+                    config: VaultConfigUnchecked {
+                        addr: vault.to_string(),
                         deposit_cap: coin(10000000u128, "uusdc"),
                         max_loan_to_value: Decimal::from_atomics(4u128, 1).unwrap(),
                         liquidation_threshold: Decimal::from_atomics(44u128, 2).unwrap(),

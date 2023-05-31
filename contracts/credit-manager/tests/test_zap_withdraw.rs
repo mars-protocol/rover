@@ -100,7 +100,6 @@ fn coins_out_must_be_whitelisted() {
     // update params to disallow denoms out
     osmo.whitelisted = false;
     mock.update_asset_params(AddOrUpdate {
-        denom: osmo.denom.clone(),
         params: osmo.clone().into(),
     });
 

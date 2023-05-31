@@ -22,12 +22,13 @@ import {
   RedBankSettings,
   RoverSettings,
   HighLeverageStrategyParams,
-  VaultConfig,
+  VaultConfigBaseForString,
   Coin,
   QueryMsg,
-  ArrayOfAssetParamsResponse,
-  AssetParamsResponse,
-  ArrayOfVaultConfig,
+  ArrayOfAssetParams,
+  Addr,
+  ArrayOfVaultConfigBaseForAddr,
+  VaultConfigBaseForAddr,
   OwnerResponse,
 } from './MarsParams.types'
 export interface MarsParamsReadOnlyInterface {
@@ -40,15 +41,15 @@ export interface MarsParamsReadOnlyInterface {
   }: {
     limit?: number
     startAfter?: string
-  }) => Promise<ArrayOfAssetParamsResponse>
-  vaultConfig: ({ address }: { address: string }) => Promise<VaultConfig>
+  }) => Promise<ArrayOfAssetParams>
+  vaultConfig: ({ address }: { address: string }) => Promise<VaultConfigBaseForAddr>
   allVaultConfigs: ({
     limit,
     startAfter,
   }: {
     limit?: number
     startAfter?: string
-  }) => Promise<ArrayOfVaultConfig>
+  }) => Promise<ArrayOfVaultConfigBaseForAddr>
   maxCloseFactor: () => Promise<Decimal>
 }
 export class MarsParamsQueryClient implements MarsParamsReadOnlyInterface {
@@ -84,7 +85,7 @@ export class MarsParamsQueryClient implements MarsParamsReadOnlyInterface {
   }: {
     limit?: number
     startAfter?: string
-  }): Promise<ArrayOfAssetParamsResponse> => {
+  }): Promise<ArrayOfAssetParams> => {
     return this.client.queryContractSmart(this.contractAddress, {
       all_asset_params: {
         limit,
@@ -92,7 +93,7 @@ export class MarsParamsQueryClient implements MarsParamsReadOnlyInterface {
       },
     })
   }
-  vaultConfig = async ({ address }: { address: string }): Promise<VaultConfig> => {
+  vaultConfig = async ({ address }: { address: string }): Promise<VaultConfigBaseForAddr> => {
     return this.client.queryContractSmart(this.contractAddress, {
       vault_config: {
         address,
@@ -105,7 +106,7 @@ export class MarsParamsQueryClient implements MarsParamsReadOnlyInterface {
   }: {
     limit?: number
     startAfter?: string
-  }): Promise<ArrayOfVaultConfig> => {
+  }): Promise<ArrayOfVaultConfigBaseForAddr> => {
     return this.client.queryContractSmart(this.contractAddress, {
       all_vault_configs: {
         limit,

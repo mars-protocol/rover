@@ -133,6 +133,7 @@ fn missing_market_data_for_vault_base_token() {
         vault_configs: HashMap::from([(
             vault.address.clone(),
             VaultConfig {
+                addr: vault.address.clone(),
                 deposit_cap: Default::default(),
                 max_loan_to_value: Default::default(),
                 liquidation_threshold: Default::default(),
@@ -174,6 +175,7 @@ fn missing_vault_value() {
         vault_configs: HashMap::from([(
             vault.address.clone(),
             VaultConfig {
+                addr: vault.address.clone(),
                 deposit_cap: Default::default(),
                 max_loan_to_value: Default::default(),
                 liquidation_threshold: Default::default(),

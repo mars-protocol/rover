@@ -35,21 +35,17 @@ export const osmosisMainnetConfig: DeploymentConfig = {
   vaults: [
     {
       addr: 'osmo1g3kmqpp8608szfp0pdag3r6z85npph7wmccat8lgl3mp407kv73qlj7qwp',
-      config: {
-        deposit_cap: { denom: axlUSDC, amount: '2000000000000' }, // $2M
-        max_loan_to_value: '0.63',
-        liquidation_threshold: '0.65',
-        whitelisted: true,
-      },
+      deposit_cap: { denom: axlUSDC, amount: '2000000000000' }, // $2M
+      max_loan_to_value: '0.63',
+      liquidation_threshold: '0.65',
+      whitelisted: true,
     },
     {
       addr: 'osmo1jfmwayj8jqp9tfy4v4eks5c2jpnqdumn8x8xvfllng0wfes770qqp7jl4j',
-      config: {
-        deposit_cap: { denom: axlUSDC, amount: '750000000000' }, // $750k
-        max_loan_to_value: '0.65',
-        liquidation_threshold: '0.66',
-        whitelisted: true,
-      },
+      deposit_cap: { denom: axlUSDC, amount: '750000000000' }, // $750k
+      max_loan_to_value: '0.65',
+      liquidation_threshold: '0.66',
+      whitelisted: true,
     },
   ],
   swapperContractName: 'mars_swapper_osmosis',

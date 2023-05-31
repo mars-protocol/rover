@@ -32,6 +32,7 @@ export interface DenomsData {
   }
 }
 export interface AssetParams {
+  denom: string
   liquidation_bonus: Decimal
   liquidation_threshold: Decimal
   max_loan_to_value: Decimal
@@ -90,13 +91,14 @@ export interface VaultBaseForAddr {
 }
 export interface VaultsData {
   vault_configs: {
-    [k: string]: VaultConfig
+    [k: string]: VaultConfigBaseForAddr
   }
   vault_values: {
     [k: string]: VaultPositionValue
   }
 }
-export interface VaultConfig {
+export interface VaultConfigBaseForAddr {
+  addr: Addr
   deposit_cap: Coin
   liquidation_threshold: Decimal
   max_loan_to_value: Decimal
