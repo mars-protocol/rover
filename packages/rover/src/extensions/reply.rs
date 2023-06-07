@@ -16,8 +16,14 @@ pub struct UnlockEvent {
     pub id: u64,
 }
 
+#[cw_serde]
+pub struct MintEvent {
+    pub token_id: String,
+}
+
 pub trait AttrParse {
     fn parse_unlock_event(self) -> StdResult<UnlockEvent>;
+    fn parse_mint_event(self) -> StdResult<MintEvent>;
 }
 
 impl AttrParse for Reply {
@@ -47,5 +53,9 @@ impl AttrParse for Reply {
                 })
             }
         }
+    }
+
+    fn parse_mint_event(self) -> StdResult<MintEvent> {
+        todo!()
     }
 }
