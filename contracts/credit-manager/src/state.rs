@@ -36,3 +36,6 @@ pub const VAULT_POSITIONS: Map<(&str, Addr), VaultPositionAmount> = Map::new("va
 // Temporary state to save variables to be used on reply handling
 pub const VAULT_REQUEST_TEMP_STORAGE: Item<RequestTempStorage> =
     Item::new("vault_request_temp_var");
+
+// (account id, addr) for rewards-collector contract
+pub const REWARDS_COLLECTOR: Item<(String, String)> = Item::new("rewards_collector");
