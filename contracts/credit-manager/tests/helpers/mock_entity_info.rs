@@ -113,7 +113,7 @@ pub fn generate_mock_vault(lockup: Option<Duration>) -> VaultTestInfo {
         liquidation_threshold: Decimal::from_str("0.7").unwrap(),
         whitelisted: true,
         hls: Some(HlsParamsUnchecked {
-            max_loan_to_value: lp_token.hls.clone().unwrap().max_loan_to_value,
+            max_loan_to_value: lp_token.hls.as_ref().unwrap().max_loan_to_value,
             liquidation_threshold: lp_token.hls.unwrap().liquidation_threshold,
             correlations: vec![],
         }),

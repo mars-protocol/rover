@@ -119,7 +119,7 @@ impl HealthComputer {
                 match self.kind {
                     AccountKind::Default => *max_loan_to_value,
                     AccountKind::HighLeveredStrategy => {
-                        hls.clone().ok_or(MissingHLSParams(c.denom.clone()))?.max_loan_to_value
+                        hls.as_ref().ok_or(MissingHLSParams(c.denom.clone()))?.max_loan_to_value
                     }
                 }
             } else {
@@ -132,7 +132,7 @@ impl HealthComputer {
             let checked_liquidation_threshold = match self.kind {
                 AccountKind::Default => *liquidation_threshold,
                 AccountKind::HighLeveredStrategy => {
-                    hls.clone().ok_or(MissingHLSParams(c.denom.clone()))?.liquidation_threshold
+                    hls.as_ref().ok_or(MissingHLSParams(c.denom.clone()))?.liquidation_threshold
                 }
             };
             let liq_adjusted = coin_value.checked_mul_floor(checked_liquidation_threshold)?;
@@ -185,7 +185,7 @@ impl HealthComputer {
                 match self.kind.clone() {
                     AccountKind::Default => *max_loan_to_value,
                     AccountKind::HighLeveredStrategy => {
-                        hls.clone().ok_or(MissingHLSParams(addr.to_string()))?.max_loan_to_value
+                        hls.as_ref().ok_or(MissingHLSParams(addr.to_string()))?.max_loan_to_value
                     }
                 }
             } else {
@@ -201,7 +201,7 @@ impl HealthComputer {
             let checked_liquidation_threshold = match self.kind.clone() {
                 AccountKind::Default => *liquidation_threshold,
                 AccountKind::HighLeveredStrategy => {
-                    hls.clone().ok_or(MissingHLSParams(addr.to_string()))?.liquidation_threshold
+                    hls.as_ref().ok_or(MissingHLSParams(addr.to_string()))?.liquidation_threshold
                 }
             };
 

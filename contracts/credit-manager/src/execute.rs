@@ -215,10 +215,11 @@ pub fn dispatch_actions(
     }
 
     callbacks.extend([
+        // Ensures the account state abides by the rules of the account kind
         CallbackMsg::AssertAccountReqs {
             account_id: account_id.to_string(),
         },
-        // after user selected actions, we assert LTV is either:
+        // After user selected actions, we assert LTV is either:
         // - Healthy, if prior to actions MaxLTV health factor >= 1 or None
         // - Not further weakened, if prior to actions MaxLTV health factor < 1
         // Else, throw error and revert all actions

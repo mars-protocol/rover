@@ -61,7 +61,7 @@ fn hls_account_kind_passed_along() {
     assert_eq!(
         health.max_ltv_adjusted_collateral,
         base_token_amount
-            .checked_mul_floor(vault_config.hls.clone().unwrap().max_loan_to_value)
+            .checked_mul_floor(vault_config.hls.as_ref().unwrap().max_loan_to_value)
             .unwrap()
     );
     assert_eq!(

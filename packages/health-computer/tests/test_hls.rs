@@ -52,7 +52,7 @@ fn hls_deposit() {
     assert_eq!(
         health.max_ltv_adjusted_collateral,
         collateral_value
-            .checked_mul_floor(ustars.params.credit_manager.hls.clone().unwrap().max_loan_to_value)
+            .checked_mul_floor(ustars.params.credit_manager.hls.as_ref().unwrap().max_loan_to_value)
             .unwrap()
     );
     assert_eq!(

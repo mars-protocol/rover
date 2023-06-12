@@ -264,8 +264,9 @@ fn successful_with_asset_correlations() {
     let total_debt_value = atom_info.price * Uint128::new(150) + Uint128::one();
     let lp_collateral_value = lp_token.price * Uint128::new(300);
     let atom_collateral_value = atom_info.price * Uint128::new(150);
-    let lp_hls_max_ltv = lp_collateral_value * lp_token.hls.clone().unwrap().max_loan_to_value;
-    let atom_hls_max_ltv = atom_collateral_value * atom_info.hls.clone().unwrap().max_loan_to_value;
+    let lp_hls_max_ltv = lp_collateral_value * lp_token.hls.as_ref().unwrap().max_loan_to_value;
+    let atom_hls_max_ltv =
+        atom_collateral_value * atom_info.hls.as_ref().unwrap().max_loan_to_value;
     let lp_hls_liq = lp_collateral_value * lp_token.hls.unwrap().liquidation_threshold;
     let atom_hls_liq = atom_collateral_value * atom_info.hls.unwrap().liquidation_threshold;
 
@@ -341,8 +342,9 @@ fn successful_with_vault_correlations() {
     let total_debt_value = atom_info.price * Uint128::new(150) + Uint128::one();
     let lp_collateral_value = lp_token.price * Uint128::new(300);
     let atom_collateral_value = atom_info.price * Uint128::new(150);
-    let lp_hls_max_ltv = lp_collateral_value * lp_token.hls.clone().unwrap().max_loan_to_value;
-    let atom_hls_max_ltv = atom_collateral_value * atom_info.hls.clone().unwrap().max_loan_to_value;
+    let lp_hls_max_ltv = lp_collateral_value * lp_token.hls.as_ref().unwrap().max_loan_to_value;
+    let atom_hls_max_ltv =
+        atom_collateral_value * atom_info.hls.as_ref().unwrap().max_loan_to_value;
     let lp_hls_liq = lp_collateral_value * lp_token.hls.unwrap().liquidation_threshold;
     let atom_hls_liq = atom_collateral_value * atom_info.hls.unwrap().liquidation_threshold;
 
