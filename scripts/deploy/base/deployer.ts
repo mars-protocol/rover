@@ -401,7 +401,10 @@ export class Deployer {
   }
 
   private async transferCoin(recipient: string, coin: Coin) {
-    await this.cwClient.sendTokens(this.deployerAddr, recipient, [coin], {amount: [{amount: '1000', denom: 'uosmo'}], gas: '8000'})
+    await this.cwClient.sendTokens(this.deployerAddr, recipient, [coin], {
+      amount: [{ amount: '1000', denom: 'uosmo' }],
+      gas: '8000',
+    })
     const balance = await this.cwClient.getBalance(recipient, coin.denom)
     printBlue(`New balance: ${balance.amount} ${balance.denom}`)
   }
