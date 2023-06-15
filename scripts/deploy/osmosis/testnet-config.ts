@@ -3,7 +3,6 @@ import { DeploymentConfig, VaultType } from '../../types/config'
 // Note: since osmo-test-5 upgrade, testnet and mainnet denoms are no longer the same. Reference asset info here: https://docs.osmosis.zone/osmosis-core/asset-info/
 const uosmo = 'uosmo'
 const uatom = 'ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477'
-const aUSDC = 'ibc/6F34E1BD664C36CE49ACC28E60D62559A5F96C4F9A6CCE4FC5A67B2852E24CFE' // axelar
 const nUSDC = 'ibc/B3504E092456BA618CC28AC671A71FB08C6CA0FD0BE7C8A5B5A3E2DD933CC9E4' // noble
 const atom_osmo = 'gamm/pool/12'
 const nUSDC_osmo = 'gamm/pool/6'
@@ -15,14 +14,14 @@ const nUSDC_OSMO_vault_14 = 'osmo1fmq9hw224fgz8lk48wyd0gfg028kvvzggt6c3zvnaqkw23
 
 const nUSDC_OSMO_Config = (addr: string) => ({
   addr,
-  deposit_cap: { denom: aUSDC, amount: '1000000000' }, // 1000 atom
+  deposit_cap: { denom: nUSDC, amount: '1000000000' }, // 1000 atom
   max_loan_to_value: '0.63',
   liquidation_threshold: '0.65',
   whitelisted: true,
 })
 
 export const osmosisTestnetConfig: DeploymentConfig = {
-  allowedCoins: [uosmo, uatom, aUSDC, nUSDC, atom_osmo, nUSDC_osmo, aUSDC_osmo],
+  allowedCoins: [uosmo, uatom, nUSDC, nUSDC, atom_osmo, nUSDC_osmo, aUSDC_osmo],
   chain: {
     baseDenom: uosmo,
     defaultGasPrice: 0.1,
@@ -61,7 +60,7 @@ export const osmosisTestnetConfig: DeploymentConfig = {
         grantCreditLine: true,
       },
       {
-        denom: aUSDC,
+        denom: nUSDC,
         priceSource: { geometric_twap: { pool_id: 5, window_size: 1800 } },
         grantCreditLine: true,
       },
@@ -91,7 +90,7 @@ export const osmosisTestnetConfig: DeploymentConfig = {
       withdrawAmount: '1000000',
       mock: {
         config: {
-          deposit_cap: { denom: aUSDC, amount: '100000000' }, // 100 usdc
+          deposit_cap: { denom: nUSDC, amount: '100000000' }, // 100 usdc
           liquidation_threshold: '0.585',
           max_loan_to_value: '0.569',
           whitelisted: true,
