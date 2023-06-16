@@ -86,7 +86,7 @@ export class Deployer {
     await this.instantiate('healthContract', this.storage.codeIds.healthContract!, msg)
   }
 
-  async setCmOnHealthContract() {
+  async setConfigOnHealthContract() {
     if (this.storage.actions.healthContractConfigUpdate) {
       printGray('Credit manager address')
     } else {
@@ -96,8 +96,11 @@ export class Deployer {
         this.storage.addresses.healthContract!,
       )
 
-      printBlue('Setting credit manager address on health contract config')
-      await hExec.updateConfig({ creditManager: this.storage.addresses.creditManager! })
+      printBlue('Setting credit manager address & params on health contract config')
+      await hExec.updateConfig({
+        creditManager: this.storage.addresses.creditManager!,
+        params: this.config.params.addr,
+      })
     }
     this.storage.actions.healthContractConfigUpdate = true
   }
