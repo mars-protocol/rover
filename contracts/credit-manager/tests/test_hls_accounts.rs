@@ -154,7 +154,7 @@ fn wrong_correlations_does_not_qualify() {
         res,
         ContractError::HLS {
             reason: format!(
-                "{} deposit is not a correlated asset to {}",
+                "{} deposit is not a correlated asset to debt {}",
                 jake_info.denom, atom_info.denom
             ),
         },
@@ -177,7 +177,7 @@ fn wrong_correlations_does_not_qualify() {
         res,
         ContractError::HLS {
             reason: format!(
-                "{} deposit is not a correlated asset to {}",
+                "{} deposit is not a correlated asset to debt {}",
                 jake_info.denom, atom_info.denom
             ),
         },
@@ -201,7 +201,7 @@ fn wrong_correlations_does_not_qualify() {
         res,
         ContractError::HLS {
             reason: format!(
-                "{} lend is not a correlated asset to {}",
+                "{} lend is not a correlated asset to debt {}",
                 jake_info.denom, atom_info.denom
             ),
         },
@@ -228,7 +228,7 @@ fn wrong_correlations_does_not_qualify() {
         res,
         ContractError::HLS {
             reason: format!(
-                "{} vault is not a correlated asset to {}",
+                "{} vault is not a correlated asset to debt {}",
                 vault.address, atom_info.denom
             ),
         },
@@ -252,18 +252,24 @@ fn successful_with_asset_correlations() {
 
     let account_id = mock.create_hls_account(&user);
 
+    let lp_deposit_amount = 300;
+    let atom_borrow_amount = 150;
+
     mock.update_credit_account(
         &account_id,
         &user,
-        vec![Deposit(lp_token.to_coin(300)), Borrow(atom_info.to_coin(150))],
-        &[lp_token.to_coin(300)],
+        vec![
+            Deposit(lp_token.to_coin(lp_deposit_amount)),
+            Borrow(atom_info.to_coin(atom_borrow_amount)),
+        ],
+        &[lp_token.to_coin(lp_deposit_amount)],
     )
     .unwrap();
 
     let hls_health = mock.query_health(&account_id, AccountKind::HighLeveredStrategy);
-    let total_debt_value = atom_info.price * Uint128::new(150) + Uint128::one();
-    let lp_collateral_value = lp_token.price * Uint128::new(300);
-    let atom_collateral_value = atom_info.price * Uint128::new(150);
+    let total_debt_value = atom_info.price * Uint128::new(atom_borrow_amount) + Uint128::one();
+    let lp_collateral_value = lp_token.price * Uint128::new(lp_deposit_amount);
+    let atom_collateral_value = atom_info.price * Uint128::new(atom_borrow_amount);
     let lp_hls_max_ltv = lp_collateral_value * lp_token.hls.as_ref().unwrap().max_loan_to_value;
     let atom_hls_max_ltv =
         atom_collateral_value * atom_info.hls.as_ref().unwrap().max_loan_to_value;
@@ -322,26 +328,29 @@ fn successful_with_vault_correlations() {
 
     let account_id = mock.create_hls_account(&user);
 
+    let lp_deposit_amount = 300;
+    let atom_borrow_amount = 150;
+
     let vault = mock.get_vault(&leverage_vault);
     mock.update_credit_account(
         &account_id,
         &user,
         vec![
-            Deposit(lp_token.to_coin(300)),
+            Deposit(lp_token.to_coin(lp_deposit_amount)),
             EnterVault {
                 vault,
-                coin: lp_token.to_action_coin(300),
+                coin: lp_token.to_action_coin(lp_deposit_amount),
             },
-            Borrow(atom_info.to_coin(150)),
+            Borrow(atom_info.to_coin(atom_borrow_amount)),
         ],
-        &[lp_token.to_coin(300)],
+        &[lp_token.to_coin(lp_deposit_amount)],
     )
     .unwrap();
 
     let hls_health = mock.query_health(&account_id, AccountKind::HighLeveredStrategy);
-    let total_debt_value = atom_info.price * Uint128::new(150) + Uint128::one();
-    let lp_collateral_value = lp_token.price * Uint128::new(300);
-    let atom_collateral_value = atom_info.price * Uint128::new(150);
+    let total_debt_value = atom_info.price * Uint128::new(atom_borrow_amount) + Uint128::one();
+    let lp_collateral_value = lp_token.price * Uint128::new(lp_deposit_amount);
+    let atom_collateral_value = atom_info.price * Uint128::new(atom_borrow_amount);
     let lp_hls_max_ltv = lp_collateral_value * lp_token.hls.as_ref().unwrap().max_loan_to_value;
     let atom_hls_max_ltv =
         atom_collateral_value * atom_info.hls.as_ref().unwrap().max_loan_to_value;

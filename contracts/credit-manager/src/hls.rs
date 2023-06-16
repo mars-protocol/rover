@@ -54,13 +54,11 @@ fn assert_hls_rules(deps: Deps, env: &Env, account_id: &str) -> ContractResult<(
                     HlsAssetType::Coin {
                         denom,
                     } => &deposit.denom == denom,
-                    HlsAssetType::Vault {
-                        ..
-                    } => false,
+                    _ => false,
                 })
                 .ok_or_else(|| ContractError::HLS {
                     reason: format!(
-                        "{} deposit is not a correlated asset to {}",
+                        "{} deposit is not a correlated asset to debt {}",
                         deposit.denom, debt.denom
                     ),
                 })?;
@@ -74,13 +72,11 @@ fn assert_hls_rules(deps: Deps, env: &Env, account_id: &str) -> ContractResult<(
                     HlsAssetType::Coin {
                         denom,
                     } => &lend.denom == denom,
-                    HlsAssetType::Vault {
-                        ..
-                    } => false,
+                    _ => false,
                 })
                 .ok_or_else(|| ContractError::HLS {
                     reason: format!(
-                        "{} lend is not a correlated asset to {}",
+                        "{} lend is not a correlated asset to debt {}",
                         lend.denom, debt.denom
                     ),
                 })?;
@@ -91,16 +87,14 @@ fn assert_hls_rules(deps: Deps, env: &Env, account_id: &str) -> ContractResult<(
             hls.correlations
                 .iter()
                 .find(|h| match h {
-                    HlsAssetType::Coin {
-                        ..
-                    } => false,
                     HlsAssetType::Vault {
                         addr,
                     } => v.vault.address == addr,
+                    _ => false,
                 })
                 .ok_or_else(|| ContractError::HLS {
                     reason: format!(
-                        "{} vault is not a correlated asset to {}",
+                        "{} vault is not a correlated asset to debt {}",
                         v.vault.address, debt.denom
                     ),
                 })?;

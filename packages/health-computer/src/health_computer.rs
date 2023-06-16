@@ -182,7 +182,7 @@ impl HealthComputer {
 
             // If vault or base token has been de-listed, drop MaxLTV to zero
             let checked_vault_max_ltv = if *whitelisted && base_params.credit_manager.whitelisted {
-                match self.kind.clone() {
+                match self.kind {
                     AccountKind::Default => *max_loan_to_value,
                     AccountKind::HighLeveredStrategy => {
                         hls.as_ref().ok_or(MissingHLSParams(addr.to_string()))?.max_loan_to_value
@@ -198,7 +198,7 @@ impl HealthComputer {
                 .checked_mul_floor(checked_vault_max_ltv)?
                 .checked_add(max_ltv_adjusted_collateral)?;
 
-            let checked_liquidation_threshold = match self.kind.clone() {
+            let checked_liquidation_threshold = match self.kind {
                 AccountKind::Default => *liquidation_threshold,
                 AccountKind::HighLeveredStrategy => {
                     hls.as_ref().ok_or(MissingHLSParams(addr.to_string()))?.liquidation_threshold
