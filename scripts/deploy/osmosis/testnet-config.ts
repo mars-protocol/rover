@@ -2,11 +2,8 @@ import { DeploymentConfig, VaultType } from '../../types/config'
 
 // Note: since osmo-test-5 upgrade, testnet and mainnet denoms are no longer the same. Reference asset info here: https://docs.osmosis.zone/osmosis-core/asset-info/
 const uosmo = 'uosmo'
-const uatom = 'ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477'
 const nUSDC = 'ibc/B3504E092456BA618CC28AC671A71FB08C6CA0FD0BE7C8A5B5A3E2DD933CC9E4' // noble
-const atom_osmo = 'gamm/pool/12'
 const nUSDC_osmo = 'gamm/pool/6'
-const aUSDC_osmo = 'gamm/pool/5'
 
 const nUSDC_OSMO_vault_1 = 'osmo1q40xvrzpldwq5he4ftsf7zm2jf80tj373qaven38yqrvhex8r9rs8n94kv'
 const nUSDC_OSMO_vault_7 = 'osmo14lu7m4ganxs20258dazafrjfaulmfxruq9n0r0th90gs46jk3tuqwfkqwn'
@@ -21,7 +18,7 @@ const nUSDC_OSMO_Config = (addr: string) => ({
 })
 
 export const osmosisTestnetConfig: DeploymentConfig = {
-  allowedCoins: [uosmo, uatom, nUSDC, nUSDC, atom_osmo, nUSDC_osmo, aUSDC_osmo],
+  allowedCoins: [uosmo, nUSDC, nUSDC, nUSDC_osmo],
   chain: {
     baseDenom: uosmo,
     defaultGasPrice: 0.1,
@@ -38,8 +35,6 @@ export const osmosisTestnetConfig: DeploymentConfig = {
   redBank: { addr: 'osmo1dl4rylasnd7mtfzlkdqn2gr0ss4gvyykpvr6d7t5ylzf6z535n9s5jjt8u' },
   params: { addr: 'osmo1xvg28lrr72662t9u0hntt76lyax9zvptdvdmff4k2q9dhjm8x6ws9zym4v' },
   swapRoutes: [
-    { denomIn: uosmo, denomOut: uatom, route: [{ token_out_denom: uatom, pool_id: '12' }] },
-    { denomIn: uatom, denomOut: uosmo, route: [{ token_out_denom: uosmo, pool_id: '12' }] },
     { denomIn: uosmo, denomOut: nUSDC, route: [{ token_out_denom: nUSDC, pool_id: '6' }] },
     { denomIn: nUSDC, denomOut: uosmo, route: [{ token_out_denom: uosmo, pool_id: '6' }] },
   ],
@@ -55,33 +50,13 @@ export const osmosisTestnetConfig: DeploymentConfig = {
     allowedCoinsConfig: [
       { denom: uosmo, priceSource: { fixed: { price: '1' } }, grantCreditLine: true },
       {
-        denom: uatom,
-        priceSource: { geometric_twap: { pool_id: 1, window_size: 1800 } },
-        grantCreditLine: true,
-      },
-      {
         denom: nUSDC,
         priceSource: { geometric_twap: { pool_id: 5, window_size: 1800 } },
         grantCreditLine: true,
       },
       {
-        denom: nUSDC,
-        priceSource: { geometric_twap: { pool_id: 6, window_size: 1800 } },
-        grantCreditLine: true,
-      },
-      {
-        denom: atom_osmo,
-        priceSource: { xyk_liquidity_token: { pool_id: 12 } },
-        grantCreditLine: false,
-      },
-      {
         denom: nUSDC_osmo,
         priceSource: { xyk_liquidity_token: { pool_id: 6 } },
-        grantCreditLine: false,
-      },
-      {
-        denom: aUSDC_osmo,
-        priceSource: { xyk_liquidity_token: { pool_id: 5 } },
         grantCreditLine: false,
       },
     ],
@@ -98,7 +73,7 @@ export const osmosisTestnetConfig: DeploymentConfig = {
         vaultTokenDenom: uosmo,
         type: VaultType.LOCKED,
         lockup: { time: 900 }, // 15 mins
-        baseToken: atom_osmo,
+        baseToken: nUSDC_osmo,
       },
     },
     outpostsDeployerMnemonic:
@@ -109,14 +84,14 @@ export const osmosisTestnetConfig: DeploymentConfig = {
     depositAmount: '100',
     lendAmount: '10',
     reclaimAmount: '5',
-    secondaryDenom: uatom,
-    startingAmountForTestUser: '250000',
+    secondaryDenom: nUSDC,
+    startingAmountForTestUser: '4000000',
     swap: {
       slippage: '0.4',
       amount: '40',
       route: [
         {
-          token_out_denom: uatom,
+          token_out_denom: nUSDC,
           pool_id: '1',
         },
       ],
@@ -126,12 +101,12 @@ export const osmosisTestnetConfig: DeploymentConfig = {
     zap: {
       coinsIn: [
         {
-          denom: uatom,
+          denom: nUSDC,
           amount: '1',
         },
         { denom: uosmo, amount: '3' },
       ],
-      denomOut: atom_osmo,
+      denomOut: nUSDC_osmo,
     },
   },
 }

@@ -60,9 +60,8 @@ const fetchSchemafromGithub = async ({
 
 void (async function () {
   await fetchSchemafromGithub({
-    // TODO: HLS PR should update the commit hash to latest
     githubRepo: 'https://github.com/mars-protocol/mars-common',
-    commit: 'f1077562d3471e01f4e78a14ab30b019d578b3c1',
+    commit: '1449b4b1cd21d318a48310345ea8c99a0c3cf16c',
     pathToSchema: './mars-common/schemas/mars-params',
   })
   await generateTypes()
