@@ -1,5 +1,5 @@
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, Uint128};
+use cosmwasm_std::{Coin, Decimal, StdResult, Uint128};
 use mars_params::types::{
     asset::{AssetParams, CmSettings},
     vault::VaultConfig,
@@ -8,7 +8,8 @@ use mars_rover::{msg::query::Positions, traits::Coins};
 use mars_rover_health_types::{
     AccountKind, Health,
     HealthError::{
-        MissingHLSParams, MissingParams, MissingPrice, MissingVaultConfig, MissingVaultValues,
+        DenomNotPresent, MissingHLSParams, MissingParams, MissingPrice, MissingVaultConfig,
+        MissingVaultValues,
     },
     HealthResult,
 };
@@ -31,9 +32,9 @@ impl HealthComputer {
             total_collateral_value,
             max_ltv_adjusted_collateral,
             liquidation_threshold_adjusted_collateral,
-        } = self.calculate_collateral_value()?;
+        } = self.total_collateral_value()?;
 
-        let total_debt_value = self.calculate_total_debt_value()?;
+        let total_debt_value = self.total_debt_value()?;
 
         let max_ltv_health_factor = if total_debt_value.is_zero() {
             None
@@ -60,7 +61,91 @@ impl HealthComputer {
         })
     }
 
-    fn calculate_total_debt_value(&self) -> HealthResult<Uint128> {
+    /// The max this account can withdraw of `withdraw_denom` and maintain max_ltv >= 1
+    pub fn max_withdraw_amount(&self, withdraw_denom: &str) -> HealthResult<Uint128> {
+        let withdraw_coin = self
+            .positions
+            .deposits
+            .iter()
+            .find(|c| c.denom == withdraw_denom)
+            .ok_or(DenomNotPresent(withdraw_denom.to_string()))?;
+
+        let params = self
+            .denoms_data
+            .params
+            .get(withdraw_denom)
+            .ok_or(MissingParams(withdraw_denom.to_string()))?;
+
+        // If no debt or coin is blacklisted (meaning does not contribute to max ltv hf),
+        // the total amount deposited can be withdrawn
+        if self.positions.debts.is_empty() || !params.credit_manager.whitelisted {
+            return Ok(withdraw_coin.amount);
+        }
+
+        // Given the formula:
+        //      max ltv health = assets value * max ltv / debt value
+        // The max can be calculated via:
+        //      max withdraw denom amount = (debt value - (max_ltv adjusted collateral value - withdraw denom max_ltv adjusted value)) / (withdraw denom price * withdraw denom max ltv)
+        let total_cv = self.total_collateral_value()?;
+        let withdraw_cv = self.coins_value(&[withdraw_coin.clone()])?;
+        let debt_value = self.total_debt_value()?;
+        let price = self
+            .denoms_data
+            .prices
+            .get(withdraw_denom)
+            .ok_or(MissingPrice(withdraw_denom.to_string()))?;
+
+        let total_adj_val_minus_withdraw = total_cv
+            .max_ltv_adjusted_collateral
+            .checked_sub(withdraw_cv.max_ltv_adjusted_collateral)?;
+
+        if debt_value <= total_adj_val_minus_withdraw {
+            return Ok(withdraw_coin.amount);
+        }
+
+        let withdraw_denom_max_ltv = match self.kind {
+            AccountKind::Default => params.max_loan_to_value,
+            AccountKind::HighLeveredStrategy => {
+                params
+                    .credit_manager
+                    .hls
+                    .as_ref()
+                    .ok_or(MissingHLSParams(withdraw_denom.to_string()))?
+                    .max_loan_to_value
+            }
+        };
+
+        // The amount required to be in the account for max LTV to equal 1
+        let withdraw_denom_req = debt_value
+            .checked_sub(total_adj_val_minus_withdraw)?
+            .checked_add(Uint128::new(1))? // Meant to reflect conservative rounding
+            .checked_div_ceil(price.checked_mul(withdraw_denom_max_ltv)?)?;
+
+        // If required amount is greater or equal to the deposit, then none can be taken
+        if withdraw_denom_req >= withdraw_coin.amount {
+            Ok(Uint128::zero())
+        } else {
+            // The formula in fact looks like this in practice:
+            //      debt value = rounddown(roundown(amount * price) * max ltv)
+            //      amount ≈ debt value / max_ltv * price
+            // This means it is always quite close, but never precisely right.
+            // This brute-force method keeps looping until increasing withdraw causes it to go unhealthy
+            let mut withdraw_max = withdraw_coin.amount.checked_sub(withdraw_denom_req)?;
+
+            while let Ok(h) = decrement(self, withdraw_denom, withdraw_max + Uint128::one()) {
+                let still_healthy = !h.compute_health()?.is_above_max_ltv();
+                if still_healthy {
+                    withdraw_max = withdraw_max.checked_add(Uint128::one())?;
+                } else {
+                    break;
+                }
+            }
+
+            Ok(withdraw_max)
+        }
+    }
+
+    fn total_debt_value(&self) -> HealthResult<Uint128> {
         let mut total = Uint128::zero();
         for debt in &self.positions.debts {
             let coin_price =
@@ -71,10 +156,10 @@ impl HealthComputer {
         Ok(total)
     }
 
-    fn calculate_collateral_value(&self) -> HealthResult<CollateralValue> {
-        let deposits = self.calculate_coins_value(&self.positions.deposits)?;
-        let lends = self.calculate_coins_value(&self.positions.lends.to_coins())?;
-        let vaults = self.calculate_vaults_value()?;
+    fn total_collateral_value(&self) -> HealthResult<CollateralValue> {
+        let deposits = self.coins_value(&self.positions.deposits)?;
+        let lends = self.coins_value(&self.positions.lends.to_coins())?;
+        let vaults = self.vaults_value()?;
 
         Ok(CollateralValue {
             total_collateral_value: deposits
@@ -92,7 +177,7 @@ impl HealthComputer {
         })
     }
 
-    fn calculate_coins_value(&self, coins: &[Coin]) -> HealthResult<CollateralValue> {
+    fn coins_value(&self, coins: &[Coin]) -> HealthResult<CollateralValue> {
         let mut total_collateral_value = Uint128::zero();
         let mut max_ltv_adjusted_collateral = Uint128::zero();
         let mut liquidation_threshold_adjusted_collateral = Uint128::zero();
@@ -146,7 +231,7 @@ impl HealthComputer {
         })
     }
 
-    fn calculate_vaults_value(&self) -> HealthResult<CollateralValue> {
+    fn vaults_value(&self) -> HealthResult<CollateralValue> {
         let mut total_collateral_value = Uint128::zero();
         let mut max_ltv_adjusted_collateral = Uint128::zero();
         let mut liquidation_threshold_adjusted_collateral = Uint128::zero();
@@ -212,7 +297,7 @@ impl HealthComputer {
                 .checked_add(liquidation_threshold_adjusted_collateral)?;
 
             // Step 2: Calculate Base coin values
-            let res = self.calculate_coins_value(&[Coin {
+            let res = self.coins_value(&[Coin {
                 denom: values.base_coin.denom.clone(),
                 amount: v.amount.unlocking().total(),
             }])?;
@@ -231,4 +316,16 @@ impl HealthComputer {
             liquidation_threshold_adjusted_collateral,
         })
     }
+}
+
+pub fn decrement(
+    h: &HealthComputer,
+    deposit: &str,
+    withdraw: Uint128,
+) -> StdResult<HealthComputer> {
+    let mut new_h = h.clone();
+    let matched_coin =
+        new_h.positions.deposits.iter_mut().find(|coin| coin.denom == deposit).unwrap();
+    matched_coin.amount = matched_coin.amount.checked_sub(withdraw)?;
+    Ok(new_h)
 }
