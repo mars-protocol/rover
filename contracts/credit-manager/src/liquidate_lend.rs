@@ -68,7 +68,7 @@ pub fn liquidate_lend(
     )?;
 
     // Transfer protocol fee to rewards-collector account
-    let (rewards_collector_account, _) = REWARDS_COLLECTOR.load(deps.storage)?;
+    let rewards_collector_account = REWARDS_COLLECTOR.load(deps.storage)?.account_id;
     let protocol_fee_shares = shares_from_liquidatee.checked_sub(shares_to_liquidator)?;
     increment_lent_shares(
         deps.storage,
@@ -83,5 +83,9 @@ pub fn liquidate_lend(
         .add_attribute("account_id", liquidator_account_id)
         .add_attribute("liquidatee_account_id", liquidatee_account_id)
         .add_attribute("coin_debt_repaid", debt.to_string())
-        .add_attribute("coin_liquidated", liquidatee_request.to_string()))
+        .add_attribute("coin_liquidated", liquidatee_request.to_string())
+        .add_attribute(
+            "protocol_fee_coin",
+            Coin::new(protocol_fee_shares.u128(), request_coin_denom).to_string(),
+        ))
 }

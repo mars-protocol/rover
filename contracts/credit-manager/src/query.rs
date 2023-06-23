@@ -21,7 +21,6 @@ use crate::{
 };
 
 pub fn query_config(deps: Deps) -> ContractResult<ConfigResponse> {
-    let rc_opt = REWARDS_COLLECTOR.may_load(deps.storage)?;
     Ok(ConfigResponse {
         ownership: OWNER.query(deps.storage)?,
         account_nft: ACCOUNT_NFT.may_load(deps.storage)?.map(|a| a.address().into()),
@@ -32,7 +31,7 @@ pub fn query_config(deps: Deps) -> ContractResult<ConfigResponse> {
         swapper: SWAPPER.load(deps.storage)?.address().into(),
         zapper: ZAPPER.load(deps.storage)?.address().into(),
         health_contract: HEALTH_CONTRACT.load(deps.storage)?.address().into(),
-        rewards_collector: rc_opt.map(|rc| rc.1),
+        rewards_collector: REWARDS_COLLECTOR.may_load(deps.storage)?.map(|rc| rc.address),
     })
 }
 

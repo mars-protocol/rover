@@ -3,7 +3,7 @@ use std::{
     ops::Add,
 };
 
-use cosmwasm_std::{Coin, Decimal, DepsMut, Env, Fraction, QuerierWrapper, StdError, Uint128};
+use cosmwasm_std::{Coin, Decimal, DepsMut, Env, QuerierWrapper, StdError, Uint128};
 use mars_params::types::asset::AssetParams;
 use mars_rover::{
     adapters::oracle::Oracle,
@@ -138,10 +138,8 @@ fn calculate_liquidation_amounts(
     let max_debt_repayable_denominator = target_health_factor
         - (collateral_params.liquidation_threshold * (Decimal::one() + updated_tlf));
 
-    let max_debt_repayable_value = max_debt_repayable_numerator.multiply_ratio(
-        max_debt_repayable_denominator.denominator(),
-        max_debt_repayable_denominator.numerator(),
-    );
+    let max_debt_repayable_value =
+        max_debt_repayable_numerator.checked_div_floor(max_debt_repayable_denominator)?;
 
     let max_debt_repayable_amount = max_debt_repayable_value.checked_div_floor(debt_price)?;
 

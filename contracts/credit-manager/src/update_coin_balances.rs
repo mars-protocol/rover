@@ -66,7 +66,7 @@ pub fn update_coin_balance_after_vault_liquidation(
         let protocol_fee_amt = amount_to_increment.checked_mul_ceil(protocol_fee)?;
         amount_to_increment = amount_to_increment.checked_sub(protocol_fee_amt)?;
 
-        let (rewards_collector_account, _) = REWARDS_COLLECTOR.load(deps.storage)?;
+        let rewards_collector_account = REWARDS_COLLECTOR.load(deps.storage)?.account_id;
         increment_coin_balance(
             deps.storage,
             &rewards_collector_account,

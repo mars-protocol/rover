@@ -8,8 +8,8 @@ use mars_rover_health_types::AccountKind;
 use crate::{
     execute::create_credit_account,
     state::{
-        ACCOUNT_NFT, HEALTH_CONTRACT, MAX_UNLOCKING_POSITIONS, ORACLE, OWNER, RED_BANK,
-        REWARDS_COLLECTOR, SWAPPER, ZAPPER,
+        RewardsCollector, ACCOUNT_NFT, HEALTH_CONTRACT, MAX_UNLOCKING_POSITIONS, ORACLE, OWNER,
+        RED_BANK, REWARDS_COLLECTOR, SWAPPER, ZAPPER,
     },
 };
 
@@ -82,8 +82,13 @@ pub fn update_config(
 
         let account_nft = ACCOUNT_NFT.load(deps.storage)?;
         let next_id = account_nft.query_next_id(&deps.querier)?;
-        REWARDS_COLLECTOR
-            .save(deps.storage, &(next_id.clone(), rewards_collector_addr.to_string()))?;
+        REWARDS_COLLECTOR.save(
+            deps.storage,
+            &RewardsCollector {
+                address: rewards_collector_addr.to_string(),
+                account_id: next_id.clone(),
+            },
+        )?;
 
         let res = create_credit_account(deps, rewards_collector_addr, AccountKind::Default)?;
 

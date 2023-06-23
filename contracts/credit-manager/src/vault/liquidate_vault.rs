@@ -98,17 +98,16 @@ fn liquidate_unlocked(
     let vault_withdraw_msg =
         request_vault.withdraw_msg(&deps.querier, liquidatee_request.amount)?;
 
-    let protocol_fee = Decimal::checked_from_ratio(
-        liquidatee_request.amount.checked_sub(liquidator_request.amount)?,
-        liquidatee_request.amount,
-    )?;
+    let protocol_fee = liquidatee_request.amount.checked_sub(liquidator_request.amount)?;
+    let protocol_fee_percentage =
+        Decimal::checked_from_ratio(protocol_fee, liquidatee_request.amount)?;
 
     let update_coin_balance_msg = update_balance_after_vault_liquidation_msg(
         &deps.querier,
         &env.contract.address,
         liquidator_account_id,
         &vault_info.base_token,
-        protocol_fee,
+        protocol_fee_percentage,
     )?;
 
     Ok(Response::new()
@@ -119,7 +118,11 @@ fn liquidate_unlocked(
         .add_attribute("account_id", liquidator_account_id)
         .add_attribute("liquidatee_account_id", liquidatee_account_id)
         .add_attribute("coin_debt_repaid", debt.to_string())
-        .add_attribute("coin_liquidated", liquidatee_request.to_string()))
+        .add_attribute("coin_liquidated", liquidatee_request.to_string())
+        .add_attribute(
+            "protocol_fee_coin",
+            Coin::new(protocol_fee.u128(), liquidatee_request.denom).to_string(),
+        ))
 }
 
 /// Converts vault coins to their underlying value. This allows for pricing and liquidation
@@ -200,17 +203,16 @@ fn liquidate_unlocking(
         total_to_liquidate = total_to_liquidate.checked_sub(amount)?;
     }
 
-    let protocol_fee = Decimal::checked_from_ratio(
-        liquidatee_request.amount.checked_sub(liquidator_request.amount)?,
-        liquidatee_request.amount,
-    )?;
+    let protocol_fee = liquidatee_request.amount.checked_sub(liquidator_request.amount)?;
+    let protocol_fee_percentage =
+        Decimal::checked_from_ratio(protocol_fee, liquidatee_request.amount)?;
 
     let update_coin_balance_msg = update_balance_after_vault_liquidation_msg(
         &deps.querier,
         &env.contract.address,
         liquidator_account_id,
         &vault_info.base_token,
-        protocol_fee,
+        protocol_fee_percentage,
     )?;
 
     Ok(Response::new()
@@ -221,7 +223,11 @@ fn liquidate_unlocking(
         .add_attribute("account_id", liquidator_account_id)
         .add_attribute("liquidatee_account_id", liquidatee_account_id)
         .add_attribute("coin_debt_repaid", debt.to_string())
-        .add_attribute("coin_liquidated", liquidatee_request.to_string()))
+        .add_attribute("coin_liquidated", liquidatee_request.to_string())
+        .add_attribute(
+            "protocol_fee_coin",
+            Coin::new(protocol_fee.u128(), liquidatee_request.denom).to_string(),
+        ))
 }
 
 fn liquidate_locked(
@@ -258,17 +264,16 @@ fn liquidate_locked(
     let vault_withdraw_msg =
         request_vault.force_withdraw_locked_msg(&deps.querier, liquidatee_request.amount)?;
 
-    let protocol_fee = Decimal::checked_from_ratio(
-        liquidatee_request.amount.checked_sub(liquidator_request.amount)?,
-        liquidatee_request.amount,
-    )?;
+    let protocol_fee = liquidatee_request.amount.checked_sub(liquidator_request.amount)?;
+    let protocol_fee_percentage =
+        Decimal::checked_from_ratio(protocol_fee, liquidatee_request.amount)?;
 
     let update_coin_balance_msg = update_balance_after_vault_liquidation_msg(
         &deps.querier,
         &env.contract.address,
         liquidator_account_id,
         &vault_info.base_token,
-        protocol_fee,
+        protocol_fee_percentage,
     )?;
 
     Ok(Response::new()
@@ -279,5 +284,9 @@ fn liquidate_locked(
         .add_attribute("account_id", liquidator_account_id)
         .add_attribute("liquidatee_account_id", liquidatee_account_id)
         .add_attribute("coin_debt_repaid", debt.to_string())
-        .add_attribute("coin_liquidated", liquidatee_request.to_string()))
+        .add_attribute("coin_liquidated", liquidatee_request.to_string())
+        .add_attribute(
+            "protocol_fee_coin",
+            Coin::new(protocol_fee.u128(), liquidatee_request.denom).to_string(),
+        ))
 }

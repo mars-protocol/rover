@@ -1,3 +1,4 @@
+use cosmwasm_schema::cw_serde;
 use cosmwasm_std::{Addr, Uint128};
 use cw_storage_plus::{Item, Map};
 use mars_owner::Owner;
@@ -8,6 +9,12 @@ use mars_rover::adapters::{
 use mars_rover_health_types::AccountKind;
 
 use crate::vault::RequestTempStorage;
+
+#[cw_serde]
+pub struct RewardsCollector {
+    pub address: String,
+    pub account_id: String,
+}
 
 // Contract dependencies
 // NOTE: Ensure assert_not_contract_in_config() is updated when an external contract is added here
@@ -38,4 +45,4 @@ pub const VAULT_REQUEST_TEMP_STORAGE: Item<RequestTempStorage> =
     Item::new("vault_request_temp_var");
 
 // (account id, addr) for rewards-collector contract
-pub const REWARDS_COLLECTOR: Item<(String, String)> = Item::new("rewards_collector");
+pub const REWARDS_COLLECTOR: Item<RewardsCollector> = Item::new("rewards_collector");
