@@ -13,10 +13,10 @@ pub fn compute_health_js(health_computer: JsValue) -> JsValue {
 }
 
 #[wasm_bindgen]
-pub fn max_withdraw_js(health_computer: JsValue, withdraw_denom: JsValue) -> JsValue {
+pub fn max_withdraw_estimate_js(health_computer: JsValue, withdraw_denom: JsValue) -> JsValue {
     let c: HealthComputer = deserialize(health_computer);
     let denom: String = deserialize(withdraw_denom);
-    let max = c.max_withdraw_amount(&denom).unwrap();
+    let max = c.max_withdraw_amount_estimate(&denom).unwrap();
     serialize(max)
 }
 

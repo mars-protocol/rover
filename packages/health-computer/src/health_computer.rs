@@ -1,5 +1,7 @@
+use std::cmp::min;
+
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::{Coin, Decimal, StdResult, Uint128};
+use cosmwasm_std::{Coin, Decimal, Uint128};
 use mars_params::types::{
     asset::{AssetParams, CmSettings},
     vault::VaultConfig,
@@ -62,7 +64,9 @@ impl HealthComputer {
     }
 
     /// The max this account can withdraw of `withdraw_denom` and maintain max_ltv >= 1
-    pub fn max_withdraw_amount(&self, withdraw_denom: &str) -> HealthResult<Uint128> {
+    /// Note: This is an estimate. Guarantees to leave account healthy, but in edge cases,
+    /// due to rounding, it may be slightly too conservative.
+    pub fn max_withdraw_amount_estimate(&self, withdraw_denom: &str) -> HealthResult<Uint128> {
         let withdraw_coin = self
             .positions
             .deposits
@@ -83,25 +87,20 @@ impl HealthComputer {
         }
 
         // Given the formula:
-        //      max ltv health = assets value * max ltv / debt value
-        // The max can be calculated via:
-        //      max withdraw denom amount = (debt value - (max_ltv adjusted collateral value - withdraw denom max_ltv adjusted value)) / (withdraw denom price * withdraw denom max ltv)
-        let total_cv = self.total_collateral_value()?;
-        let withdraw_cv = self.coins_value(&[withdraw_coin.clone()])?;
+        //      max ltv health factor = max ltv adjusted value / debt value
+        //          where: max ltv adjusted value = price * amount * max ltv
+        // The max can be calculated as:
+        //      1 = (total max ltv adjusted value - withdraw denom max ltv adjusted value) / debt value
+        // Re-arranging this to isolate max withdraw amount renders:
+        //      max withdraw amount = (total max ltv adjusted value - debt value) / (withdraw denom price * withdraw denom max ltv)
+        let total_max_ltv_adjusted_value =
+            self.total_collateral_value()?.max_ltv_adjusted_collateral;
         let debt_value = self.total_debt_value()?;
-        let price = self
+        let withdraw_denom_price = self
             .denoms_data
             .prices
             .get(withdraw_denom)
             .ok_or(MissingPrice(withdraw_denom.to_string()))?;
-
-        let total_adj_val_minus_withdraw = total_cv
-            .max_ltv_adjusted_collateral
-            .checked_sub(withdraw_cv.max_ltv_adjusted_collateral)?;
-
-        if debt_value <= total_adj_val_minus_withdraw {
-            return Ok(withdraw_coin.amount);
-        }
 
         let withdraw_denom_max_ltv = match self.kind {
             AccountKind::Default => params.max_loan_to_value,
@@ -115,34 +114,21 @@ impl HealthComputer {
             }
         };
 
-        // The amount required to be in the account for max LTV to equal 1
-        let withdraw_denom_req = debt_value
-            .checked_sub(total_adj_val_minus_withdraw)?
-            .checked_add(Uint128::new(1))? // Meant to reflect conservative rounding
-            .checked_div_ceil(price.checked_mul(withdraw_denom_max_ltv)?)?;
-
-        // If required amount is greater or equal to the deposit, then none can be taken
-        if withdraw_denom_req >= withdraw_coin.amount {
-            Ok(Uint128::zero())
-        } else {
-            // The formula in fact looks like this in practice:
-            //      debt value = rounddown(roundown(amount * price) * max ltv)
-            //      amount ≈ debt value / max_ltv * price
-            // This means it is always quite close, but never precisely right.
-            // This brute-force method keeps looping until increasing withdraw causes it to go unhealthy
-            let mut withdraw_max = withdraw_coin.amount.checked_sub(withdraw_denom_req)?;
-
-            while let Ok(h) = decrement(self, withdraw_denom, withdraw_max + Uint128::one()) {
-                let still_healthy = !h.compute_health()?.is_above_max_ltv();
-                if still_healthy {
-                    withdraw_max = withdraw_max.checked_add(Uint128::one())?;
-                } else {
-                    break;
-                }
-            }
-
-            Ok(withdraw_max)
+        if debt_value >= total_max_ltv_adjusted_value {
+            return Ok(Uint128::zero());
         }
+
+        // The formula in fact looks like this in practice:
+        //      hf = rounddown(roundown(amount * price) * max ltv) / debt value
+        // Which means re-arranging this to isolate withdraw amount is an estimate,
+        // quite close, but never precisely right. For this reason, the - 1 below is meant
+        // to err on the side of being more conservative vs aggressive.
+        let max_withdraw_amount = total_max_ltv_adjusted_value
+            .checked_sub(debt_value)?
+            .checked_sub(Uint128::one())?
+            .checked_div_floor(withdraw_denom_price.checked_mul(withdraw_denom_max_ltv)?)?;
+
+        Ok(min(max_withdraw_amount, withdraw_coin.amount))
     }
 
     fn total_debt_value(&self) -> HealthResult<Uint128> {
@@ -316,16 +302,4 @@ impl HealthComputer {
             liquidation_threshold_adjusted_collateral,
         })
     }
-}
-
-pub fn decrement(
-    h: &HealthComputer,
-    deposit: &str,
-    withdraw: Uint128,
-) -> StdResult<HealthComputer> {
-    let mut new_h = h.clone();
-    let matched_coin =
-        new_h.positions.deposits.iter_mut().find(|coin| coin.denom == deposit).unwrap();
-    matched_coin.amount = matched_coin.amount.checked_sub(withdraw)?;
-    Ok(new_h)
 }

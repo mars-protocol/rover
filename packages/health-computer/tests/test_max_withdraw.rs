@@ -57,7 +57,7 @@ fn missing_price_data() {
         vaults_data,
     };
 
-    let err: HealthError = h.max_withdraw_amount(&udai.denom).unwrap_err();
+    let err: HealthError = h.max_withdraw_amount_estimate(&udai.denom).unwrap_err();
     assert_eq!(err, HealthError::MissingPrice(udai.denom));
 }
 
@@ -103,7 +103,7 @@ fn missing_params() {
         vaults_data,
     };
 
-    let err: HealthError = h.max_withdraw_amount(&umars.denom).unwrap_err();
+    let err: HealthError = h.max_withdraw_amount_estimate(&umars.denom).unwrap_err();
     assert_eq!(err, HealthError::MissingParams(umars.denom));
 }
 
@@ -132,7 +132,7 @@ fn deposit_not_present() {
         vaults_data,
     };
 
-    let err: HealthError = h.max_withdraw_amount("xyz").unwrap_err();
+    let err: HealthError = h.max_withdraw_amount_estimate("xyz").unwrap_err();
     assert_eq!(err, HealthError::DenomNotPresent("xyz".to_string()));
 }
 
@@ -189,7 +189,7 @@ fn blacklisted_assets_should_be_able_be_fully_withdrawn() {
     assert!(health.max_ltv_health_factor < Some(Decimal::one()));
 
     // Can fully withdraw blacklisted asset even if unhealthy
-    let max_withdraw_amount = h.max_withdraw_amount(&umars.denom).unwrap();
+    let max_withdraw_amount = h.max_withdraw_amount_estimate(&umars.denom).unwrap();
     assert_eq!(total_deposit, max_withdraw_amount);
 }
 
@@ -240,7 +240,7 @@ fn zero_when_unhealthy() {
 
     let health = h.compute_health().unwrap();
     assert!(health.max_ltv_health_factor < Some(Decimal::one()));
-    let max_withdraw_amount = h.max_withdraw_amount(&udai.denom).unwrap();
+    let max_withdraw_amount = h.max_withdraw_amount_estimate(&udai.denom).unwrap();
     assert_eq!(Uint128::zero(), max_withdraw_amount);
 }
 
@@ -272,7 +272,7 @@ fn no_debts() {
         vaults_data,
     };
 
-    let max_withdraw_amount = h.max_withdraw_amount(&ustars.denom).unwrap();
+    let max_withdraw_amount = h.max_withdraw_amount_estimate(&ustars.denom).unwrap();
     assert_eq!(deposit_amount, max_withdraw_amount);
 }
 
@@ -316,7 +316,7 @@ fn should_allow_max_withdraw() {
     };
 
     // Max when debt value is smaller than collateral value - withdraw denom value
-    let max_withdraw_amount = h.max_withdraw_amount(&udai.denom).unwrap();
+    let max_withdraw_amount = h.max_withdraw_amount_estimate(&udai.denom).unwrap();
     assert_eq!(deposit_amount, max_withdraw_amount);
 }
 
@@ -385,7 +385,7 @@ fn hls_with_max_withdraw() {
                 DebtAmount {
                     denom: ustars.denom.clone(),
                     shares: Default::default(),
-                    amount: Uint128::new(200),
+                    amount: Uint128::new(800),
                 },
             ],
             lends: vec![],
@@ -398,8 +398,8 @@ fn hls_with_max_withdraw() {
         vaults_data,
     };
 
-    let max_before = h.max_withdraw_amount(&ustars.denom).unwrap();
+    let max_before = h.max_withdraw_amount_estimate(&ustars.denom).unwrap();
     h.kind = AccountKind::HighLeveredStrategy;
-    let max_after = h.max_withdraw_amount(&ustars.denom).unwrap();
+    let max_after = h.max_withdraw_amount_estimate(&ustars.denom).unwrap();
     assert!(max_after > max_before)
 }

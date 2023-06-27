@@ -10,4 +10,4 @@ export function compute_health_js(health_computer: any): any
  * @param {any} withdraw_denom
  * @returns {any}
  */
-export function max_withdraw_js(health_computer: any, withdraw_denom: any): any
+export function max_withdraw_estimate_js(health_computer: any, withdraw_denom: any): any

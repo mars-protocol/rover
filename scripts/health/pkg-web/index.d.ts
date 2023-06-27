@@ -10,14 +10,14 @@ export function compute_health_js(health_computer: any): any
  * @param {any} withdraw_denom
  * @returns {any}
  */
-export function max_withdraw_js(health_computer: any, withdraw_denom: any): any
+export function max_withdraw_estimate_js(health_computer: any, withdraw_denom: any): any
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module
 
 export interface InitOutput {
   readonly memory: WebAssembly.Memory
   readonly compute_health_js: (a: number) => number
-  readonly max_withdraw_js: (a: number, b: number) => number
+  readonly max_withdraw_estimate_js: (a: number, b: number) => number
   readonly allocate: (a: number) => number
   readonly deallocate: (a: number) => void
   readonly requires_stargate: () => void

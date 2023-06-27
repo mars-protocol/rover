@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use cosmwasm_std::{Addr, Coin, Decimal, Uint128};
 use mars_params::types::{
-    asset::{AssetParams, CmSettings, RedBankSettings},
+    asset::{AssetParams, CmSettings, LiquidationBonus, RedBankSettings},
     hls::HlsParams,
     vault::VaultConfig,
 };
@@ -66,7 +66,13 @@ fn random_coin_info() -> impl Strategy<Value = AssetParams> {
                 },
                 max_loan_to_value,
                 liquidation_threshold,
-                liquidation_bonus: Decimal::from_atomics(10u128, 2).unwrap(),
+                liquidation_bonus: LiquidationBonus {
+                    starting_lb: Default::default(),
+                    slope: Default::default(),
+                    min_lb: Default::default(),
+                    max_lb: Default::default(),
+                },
+                protocol_liquidation_fee: Default::default(),
             }
         },
     )

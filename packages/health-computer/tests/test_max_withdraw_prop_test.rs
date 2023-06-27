@@ -1,5 +1,5 @@
-use cosmwasm_std::Uint128;
-use mars_rover_health_computer::decrement;
+use cosmwasm_std::{StdResult, Uint128};
+use mars_rover_health_computer::HealthComputer;
 use proptest::{prelude::ProptestConfig, prop_assume, test_runner::TestRunner};
 
 use crate::helpers::random_health_computer;
@@ -24,7 +24,7 @@ fn withdraw_amount_renders_healthy_max_ltv() {
             let random_deposit = h.positions.deposits.first().unwrap().clone();
             let params = h.denoms_data.params.get(&random_deposit.denom).unwrap();
 
-            let max_withdraw = h.max_withdraw_amount(&random_deposit.denom).unwrap();
+            let max_withdraw = h.max_withdraw_amount_estimate(&random_deposit.denom).unwrap();
             let health_before = h.compute_health().unwrap();
             if health_before.is_above_max_ltv() && params.credit_manager.whitelisted {
                 assert_eq!(Uint128::zero(), max_withdraw);
@@ -41,17 +41,17 @@ fn withdraw_amount_renders_healthy_max_ltv() {
                 } else {
                     // if was healthy, ensure still healthy
                     assert!(!health_after.is_above_max_ltv());
-
-                    // removing even more should not be possible
-                    if max_withdraw > Uint128::zero() {
-                        if let Ok(next_h) = decrement(&h_new, &random_deposit.denom, Uint128::one())
-                        {
-                            assert!(next_h.compute_health().unwrap().is_above_max_ltv());
-                        }
-                    }
                 }
             }
             Ok(())
         })
         .unwrap();
+}
+
+fn decrement(h: &HealthComputer, deposit: &str, withdraw: Uint128) -> StdResult<HealthComputer> {
+    let mut new_h = h.clone();
+    let matched_coin =
+        new_h.positions.deposits.iter_mut().find(|coin| coin.denom == deposit).unwrap();
+    matched_coin.amount = matched_coin.amount.checked_sub(withdraw)?;
+    Ok(new_h)
 }
