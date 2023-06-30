@@ -113,7 +113,7 @@ pub enum LiquidateRequest<T> {
 #[cw_serde]
 pub enum Action {
     /// Deposit coin of specified denom and amount. Verifies if the correct amount is sent with transaction.
-    Deposit(Coin),
+    Deposit(ActionCoin),
     /// Withdraw coin of specified denom and amount
     Withdraw(Coin),
     /// Borrow coin of specified amount from Red Bank
