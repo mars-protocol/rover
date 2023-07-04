@@ -8,8 +8,8 @@ use crate::error::{ContractError, ContractResult};
 
 #[cw_serde]
 pub enum GuardState {
-    Inactive,
-    Active,
+    Unlocked,
+    Locked,
 }
 
 /// Contracts we call from Credit Manager should not be attempting to execute actions.
@@ -24,53 +24,50 @@ impl<'a> ReentrancyGuard<'a> {
         Self(Item::new(namespace))
     }
 
-    /// Ensures the guard has not already been set and sets to active
-    pub fn check_and_set(&self, storage: &mut dyn Storage) -> ContractResult<()> {
-        self.check_is_inactive(storage)?;
-        self.update(storage, GuardState::Active)?;
+    /// Ensures the guard is unlocked and sets lock
+    pub fn try_lock(&self, storage: &mut dyn Storage) -> ContractResult<()> {
+        self.assert_unlocked(storage)?;
+        self.transition_state(storage, GuardState::Locked)?;
         Ok(())
     }
 
-    /// Sets guard to inactive and returns response to be used for callback
-    pub fn remove<C>(&self, storage: &mut dyn Storage) -> ContractResult<Response<C>>
+    /// Sets guard to unlocked and returns response to be used for callback
+    pub fn try_unlock<C>(&self, storage: &mut dyn Storage) -> ContractResult<Response<C>>
     where
         C: Clone + Debug + PartialEq + JsonSchema,
     {
-        self.update(storage, GuardState::Inactive)?;
+        self.transition_state(storage, GuardState::Unlocked)?;
         Ok(Response::new().add_attribute("action", "remove_reentrancy_guard"))
     }
 
-    fn check_is_inactive(&self, storage: &mut dyn Storage) -> ContractResult<()> {
+    fn assert_unlocked(&self, storage: &mut dyn Storage) -> ContractResult<()> {
         match self.state(storage)? {
-            GuardState::Active => {
+            GuardState::Locked => {
                 Err(ContractError::ReentrancyGuard("Reentrancy guard is active".to_string()))
             }
-            GuardState::Inactive => Ok(()),
+            GuardState::Unlocked => Ok(()),
         }
     }
 
     fn state(&self, storage: &dyn Storage) -> StdResult<GuardState> {
-        Ok(self.0.may_load(storage)?.unwrap_or(GuardState::Inactive))
-    }
-
-    fn update(&self, storage: &mut dyn Storage, new_state: GuardState) -> ContractResult<()> {
-        let new_state = self.transition_state(storage, new_state)?;
-        Ok(self.0.save(storage, &new_state)?)
+        Ok(self.0.may_load(storage)?.unwrap_or(GuardState::Unlocked))
     }
 
     fn transition_state(
         &self,
         storage: &mut dyn Storage,
         new_state: GuardState,
-    ) -> ContractResult<GuardState> {
+    ) -> ContractResult<()> {
         let current_state = self.state(storage)?;
 
-        match (current_state, new_state) {
-            (GuardState::Active, GuardState::Inactive) => Ok(GuardState::Inactive),
-            (GuardState::Inactive, GuardState::Active) => Ok(GuardState::Active),
+        let new_state = match (current_state, new_state) {
+            (GuardState::Locked, GuardState::Unlocked) => Ok(GuardState::Unlocked),
+            (GuardState::Unlocked, GuardState::Locked) => Ok(GuardState::Locked),
             _ => Err(ContractError::ReentrancyGuard(
                 "Invalid reentrancy guard state transition".to_string(),
             )),
-        }
+        }?;
+
+        Ok(self.0.save(storage, &new_state)?)
     }
 }

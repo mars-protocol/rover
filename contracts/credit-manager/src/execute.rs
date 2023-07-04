@@ -64,7 +64,7 @@ pub fn dispatch_actions(
     actions: Vec<Action>,
 ) -> ContractResult<Response> {
     assert_is_token_owner(&deps, &info.sender, account_id)?;
-    REENTRANCY_GUARD.check_and_set(deps.storage)?;
+    REENTRANCY_GUARD.try_lock(deps.storage)?;
 
     let mut response = Response::new();
     let mut callbacks: Vec<CallbackMsg> = vec![];
@@ -387,6 +387,6 @@ pub fn execute_callback(
         CallbackMsg::AssertAccountReqs {
             account_id,
         } => assert_account_requirements(deps, env, account_id),
-        CallbackMsg::RemoveReentrancyGuard {} => REENTRANCY_GUARD.remove(deps.storage),
+        CallbackMsg::RemoveReentrancyGuard {} => REENTRANCY_GUARD.try_unlock(deps.storage),
     }
 }
