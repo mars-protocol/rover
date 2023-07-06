@@ -113,13 +113,13 @@ pub enum LiquidateRequest<T> {
 #[cw_serde]
 pub enum Action {
     /// Deposit coin of specified denom and amount. Verifies if the correct amount is sent with transaction.
-    Deposit(ActionCoin),
+    Deposit(Coin),
     /// Withdraw coin of specified denom and amount
     Withdraw(Coin),
     /// Borrow coin of specified amount from Red Bank
     Borrow(Coin),
     /// Lend coin to the Red Bank
-    Lend(Coin),
+    Lend(ActionCoin),
     /// Reclaim the coins that were lent to the Red Bank.
     Reclaim(ActionCoin),
     /// Repay coin of specified amount back to Red Bank. If `amount: AccountBalance` is passed,
@@ -216,7 +216,7 @@ pub enum CallbackMsg {
     /// Lend coin to the Red Bank
     Lend {
         account_id: String,
-        coin: Coin,
+        coin: ActionCoin,
     },
     /// Reclaim lent coin from the Red Bank;
     /// Decrement the token's lent shares and increment the coin amount;
