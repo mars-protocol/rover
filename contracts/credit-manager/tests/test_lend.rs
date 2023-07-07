@@ -2,13 +2,14 @@ use std::ops::{Add, Mul};
 
 use cosmwasm_std::{coin, coins, Addr, OverflowError, OverflowOperation, Uint128};
 use mars_credit_manager::lend::DEFAULT_LENT_SHARES_PER_COIN;
+use mars_rover::msg::execute::ActionCoin;
 use mars_rover::{
     error::ContractError,
     msg::execute::Action::{Deposit, Lend},
 };
 
 use crate::helpers::{
-    assert_err, uosmo_info, AccountToFund, MockEnv, DEFAULT_RED_BANK_COIN_BALANCE,
+    assert_err, something_info, uosmo_info, AccountToFund, MockEnv, DEFAULT_RED_BANK_COIN_BALANCE,
 };
 
 pub mod helpers;
@@ -37,22 +38,22 @@ fn only_token_owner_can_lend() {
     )
 }
 
-// #[test]
-// fn can_only_lend_what_is_whitelisted() {
-//     let coin_info = uosmo_info();
-//     let user = Addr::unchecked("user");
-//     let mut mock = MockEnv::new().set_params(&[coin_info]).build().unwrap();
-//     let account_id = mock.create_credit_account(&user).unwrap();
-//
-//     let res = mock.update_credit_account(
-//         &account_id,
-//         &user,
-//         vec![Lend(ActionCoin(234, "usomething"))],
-//         &[],
-//     );
-//
-//     assert_err(res, ContractError::NotWhitelisted(String::from("usomething")))
-// }
+#[test]
+fn can_only_lend_what_is_whitelisted() {
+    let coin_info = something_info();
+    let user = Addr::unchecked("user");
+    let mut mock = MockEnv::new().set_params(&[coin_info.clone()]).build().unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
+
+    let res = mock.update_credit_account(
+        &account_id,
+        &user,
+        vec![Lend(coin_info.to_action_coin(50))],
+        &[],
+    );
+
+    assert_err(res, ContractError::NotWhitelisted(String::from("something")))
+}
 
 #[test]
 fn lending_zero_raises() {
