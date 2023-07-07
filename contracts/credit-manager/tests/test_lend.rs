@@ -2,7 +2,6 @@ use std::ops::{Add, Mul};
 
 use cosmwasm_std::{coin, coins, Addr, OverflowError, OverflowOperation, Uint128};
 use mars_credit_manager::lend::DEFAULT_LENT_SHARES_PER_COIN;
-use mars_rover::msg::execute::ActionCoin;
 use mars_rover::{
     error::ContractError,
     msg::execute::Action::{Deposit, Lend},

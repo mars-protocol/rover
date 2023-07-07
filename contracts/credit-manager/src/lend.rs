@@ -1,17 +1,13 @@
-use cosmwasm_schema::schemars::_serde_json::to_string;
-use cosmwasm_std::{coin, Addr, Coin, Deps, DepsMut, Env, Response, Storage, Uint128};
-use mars_rover::msg::execute::ActionAmount;
+use cosmwasm_std::{Addr, Coin, Deps, DepsMut, Env, Response, Storage, Uint128};
 use mars_rover::{
     error::{ContractError, ContractResult},
-    msg::execute::ActionCoin,
+    msg::execute::{ActionAmount, ActionCoin},
 };
-use std::cmp::min;
 
-use crate::reclaim::{current_lent_amount_for_denom, lent_amount_to_shares};
-use crate::utils::lent_shares_to_amount;
 use crate::{
+    reclaim::lent_amount_to_shares,
     state::{LENT_SHARES, RED_BANK, TOTAL_LENT_SHARES},
-    utils::{assert_coin_is_whitelisted, decrement_coin_balance},
+    utils::{assert_coin_is_whitelisted, decrement_coin_balance, lent_shares_to_amount},
 };
 
 pub static DEFAULT_LENT_SHARES_PER_COIN: Uint128 = Uint128::new(1_000_000);
@@ -46,6 +42,7 @@ pub fn lend(
     TOTAL_LENT_SHARES.update(deps.storage, &amount_to_lend.denom, add_shares)?;
     LENT_SHARES.update(deps.storage, (account_id, &amount_to_lend.denom), add_shares)?;
 
+    assert_lend_amount(deps.storage, account_id, &amount_to_lend, total_lent)?;
     decrement_coin_balance(deps.storage, account_id, &amount_to_lend)?;
 
     let red_bank = RED_BANK.load(deps.storage)?;
@@ -112,7 +109,7 @@ fn assert_lend_amount(
     Ok(())
 }
 
-fn default_lent_amount(deps: Deps, env: &Env, coin: &Coin) -> ContractResult<Uint128> {
+fn default_lent_amount(_deps: Deps, _env: &Env, coin: &Coin) -> ContractResult<Uint128> {
     let amount = coin.amount.checked_mul(DEFAULT_LENT_SHARES_PER_COIN)?;
     Ok(amount)
 }
