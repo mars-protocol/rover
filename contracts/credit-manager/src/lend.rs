@@ -20,17 +20,17 @@ pub fn lend(
 ) -> ContractResult<Response> {
     is_zero_balance(deps.as_ref(), account_id, coin)?;
     assert_coin_is_whitelisted(&mut deps, &coin.denom)?;
-
-    let total_lent =
-        calculate_total_lent(deps.as_ref(), &env.contract.address, &coin.denom.to_string())?;
-
     let amount_to_lend = &Coin {
         denom: coin.denom.to_string(),
         amount: coin.amount.value().unwrap_or(Uint128::MAX),
     };
 
+    // total rover lent amount in Redbank for asset
+    let red_bank = RED_BANK.load(deps.storage)?;
+    let total_lent = red_bank.query_lent(&deps.querier, rover_addr, denom)?;
+
     let lent_shares_to_add = if total_lent.is_zero() {
-        default_lent_amount(deps.as_ref(), &env, amount_to_lend)?
+        amount_to_lend.amount.checked_mul(DEFAULT_LENT_SHARES_PER_COIN)?
     } else {
         lent_amount_to_shares(deps.as_ref(), &env, amount_to_lend)?
     };
@@ -107,11 +107,6 @@ fn assert_lend_amount(
         return Err(ContractError::NoAmount);
     }
     Ok(())
-}
-
-fn default_lent_amount(_deps: Deps, _env: &Env, coin: &Coin) -> ContractResult<Uint128> {
-    let amount = coin.amount.checked_mul(DEFAULT_LENT_SHARES_PER_COIN)?;
-    Ok(amount)
 }
 
 fn calculate_total_lent(deps: Deps, rover_addr: &Addr, denom: &str) -> ContractResult<Uint128> {

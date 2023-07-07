@@ -8,7 +8,7 @@ use mars_rover::{
 };
 
 use crate::helpers::{
-    assert_err, something_info, uosmo_info, AccountToFund, MockEnv, DEFAULT_RED_BANK_COIN_BALANCE,
+    assert_err, blacklisted_coin, uosmo_info, AccountToFund, MockEnv, DEFAULT_RED_BANK_COIN_BALANCE,
 };
 
 pub mod helpers;
@@ -39,7 +39,7 @@ fn only_token_owner_can_lend() {
 
 #[test]
 fn can_only_lend_what_is_whitelisted() {
-    let coin_info = something_info();
+    let coin_info = blacklisted_coin();
     let user = Addr::unchecked("user");
     let mut mock = MockEnv::new().set_params(&[coin_info.clone()]).build().unwrap();
     let account_id = mock.create_credit_account(&user).unwrap();
@@ -51,7 +51,7 @@ fn can_only_lend_what_is_whitelisted() {
         &[],
     );
 
-    assert_err(res, ContractError::NotWhitelisted(String::from("something")))
+    assert_err(res, ContractError::NotWhitelisted(String::from("uluna")))
 }
 
 #[test]
