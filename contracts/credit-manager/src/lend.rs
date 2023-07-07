@@ -18,7 +18,7 @@ pub fn lend(
     account_id: &str,
     coin: &ActionCoin,
 ) -> ContractResult<Response> {
-    is_zero_balance(deps.as_ref(), account_id, &coin)?;
+    is_zero_balance(deps.as_ref(), account_id, coin)?;
     assert_coin_is_whitelisted(&mut deps, &coin.denom)?;
 
     let total_lent =
@@ -30,9 +30,9 @@ pub fn lend(
     };
 
     let lent_shares_to_add = if total_lent.is_zero() {
-        default_lent_amount(deps.as_ref(), &env, &amount_to_lend)?
+        default_lent_amount(deps.as_ref(), &env, amount_to_lend)?
     } else {
-        lent_amount_to_shares(deps.as_ref(), &env, &amount_to_lend)?
+        lent_amount_to_shares(deps.as_ref(), &env, amount_to_lend)?
     };
 
     let add_shares = |shares: Option<Uint128>| -> ContractResult<Uint128> {
@@ -42,11 +42,11 @@ pub fn lend(
     TOTAL_LENT_SHARES.update(deps.storage, &amount_to_lend.denom, add_shares)?;
     LENT_SHARES.update(deps.storage, (account_id, &amount_to_lend.denom), add_shares)?;
 
-    assert_lend_amount(deps.storage, account_id, &amount_to_lend, total_lent)?;
-    decrement_coin_balance(deps.storage, account_id, &amount_to_lend)?;
+    assert_lend_amount(deps.storage, account_id, amount_to_lend, total_lent)?;
+    decrement_coin_balance(deps.storage, account_id, amount_to_lend)?;
 
     let red_bank = RED_BANK.load(deps.storage)?;
-    let red_bank_lend_msg = red_bank.lend_msg(&amount_to_lend)?;
+    let red_bank_lend_msg = red_bank.lend_msg(amount_to_lend)?;
 
     Ok(Response::new()
         .add_message(red_bank_lend_msg)
