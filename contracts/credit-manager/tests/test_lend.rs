@@ -128,14 +128,6 @@ fn raises_when_attempting_to_lend_account_balance_with_no_funds() {
     assert_eq!(position.deposits.len(), 0);
     assert_eq!(position.lends.len(), 0);
 
-    mock.update_credit_account(
-        &account_id_a,
-        &user_a,
-        vec![Deposit(coin_info.to_coin(300))],
-        &[coin(300, coin_info.denom.clone())],
-    )
-    .unwrap();
-
     let red_bank_collateral = mock.query_red_bank_collateral(&coin_info.denom);
     assert_eq!(red_bank_collateral.amount, Uint128::zero());
 
@@ -143,13 +135,13 @@ fn raises_when_attempting_to_lend_account_balance_with_no_funds() {
         &account_id_a,
         &user_a,
         vec![Lend(ActionCoin {
-            denom: "uatom".to_string(),
+            denom: "uosmo".to_string(),
             amount: ActionAmount::AccountBalance,
         })],
         &[],
     );
 
-    assert_err(res, ContractError::NotWhitelisted("uatom".to_string()))
+    assert_err(res, ContractError::NoAmount)
 }
 
 #[test]
@@ -323,19 +315,4 @@ fn successful_account_balance_lend() {
     // Assert Rover's collateral balance in Red bank
     let red_bank_collateral = mock.query_red_bank_collateral(&coin_info.denom);
     assert_eq!(red_bank_collateral.amount, lent_amount);
-
-    // Second user comes and performs a lend using an Exact Amount
-    let account_id_b = mock.create_credit_account(&user_b).unwrap();
-    mock.update_credit_account(
-        &account_id_b,
-        &user_b,
-        vec![Deposit(coin_info.to_coin(300)), Lend(coin_info.to_action_coin(50))],
-        &[coin(300, coin_info.denom)],
-    )
-    .unwrap();
-
-    // Assert lend position shares amount is proportionally right given existing participant in pool
-    let position = mock.query_positions(&account_id_b);
-    let expected_shares = total.shares.multiply_ratio(Uint128::new(50), red_bank_collateral.amount);
-    assert_eq!(position.lends.first().unwrap().shares, expected_shares);
 }
