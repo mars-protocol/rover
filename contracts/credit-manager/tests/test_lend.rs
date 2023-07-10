@@ -142,12 +142,10 @@ fn raises_when_attempting_to_lend_account_balance_with_no_funds() {
     let res = mock.update_credit_account(
         &account_id_a,
         &user_a,
-        vec![Lend {
-            0: ActionCoin {
-                denom: "uatom".to_string(),
-                amount: ActionAmount::AccountBalance,
-            },
-        }],
+        vec![Lend(ActionCoin {
+            denom: "uatom".to_string(),
+            amount: ActionAmount::AccountBalance,
+        })],
         &[],
     );
 
@@ -288,12 +286,10 @@ fn successful_account_balance_lend() {
     mock.update_credit_account(
         &account_id_a,
         &user_a,
-        vec![Lend {
-            0: ActionCoin {
-                denom: "uosmo".to_string(),
-                amount: ActionAmount::AccountBalance,
-            },
-        }],
+        vec![Lend(ActionCoin {
+            denom: "uosmo".to_string(),
+            amount: ActionAmount::AccountBalance,
+        })],
         &[],
     )
     .unwrap();
