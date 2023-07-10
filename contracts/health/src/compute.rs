@@ -79,7 +79,7 @@ pub fn health_state(deps: Deps, account_id: &str, kind: AccountKind) -> HealthRe
     let q = HealthQuerier::new(&deps)?;
     let positions = q.query_positions(account_id)?;
 
-    // Helpful to not have to not have to do computations & query the oracle for cases
+    // Helpful to not have to do computations & query the oracle for cases
     // like liquidations where oracle circuit breakers may hinder it.
     if positions.debts.is_empty() {
         return Ok(HealthState::Healthy);

@@ -28,14 +28,7 @@ fn zero_debts_results_in_healthy_state() {
 
     let state = mock.query_health_state(account_id, AccountKind::Default).unwrap();
 
-    match state {
-        HealthState::Healthy => {}
-        HealthState::Unhealthy {
-            ..
-        } => {
-            panic!("Should not have been unhealthy with zero debts")
-        }
-    }
+    assert_eq!(state, HealthState::Healthy);
 }
 
 #[test]
@@ -68,14 +61,7 @@ fn computing_health_when_healthy() {
     );
 
     let state = mock.query_health_state(account_id, AccountKind::Default).unwrap();
-    match state {
-        HealthState::Healthy => {}
-        HealthState::Unhealthy {
-            ..
-        } => {
-            panic!("Should have been healthy")
-        }
-    }
+    assert_eq!(state, HealthState::Healthy);
 }
 
 #[test]
@@ -108,12 +94,5 @@ fn computing_health_when_unhealthy() {
     );
 
     let state = mock.query_health_state(account_id, AccountKind::Default).unwrap();
-    match state {
-        HealthState::Healthy => {
-            panic!("Should have been unhealthy")
-        }
-        HealthState::Unhealthy {
-            ..
-        } => {}
-    }
+    assert!(matches!(state, HealthState::Unhealthy { .. }));
 }
