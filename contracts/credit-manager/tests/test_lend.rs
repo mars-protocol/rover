@@ -2,6 +2,7 @@ use std::ops::{Add, Mul};
 
 use cosmwasm_std::{coin, coins, Addr, OverflowError, OverflowOperation, Uint128};
 use mars_credit_manager::lend::DEFAULT_LENT_SHARES_PER_COIN;
+use mars_rover::msg::execute::{ActionAmount, ActionCoin};
 use mars_rover::{
     error::ContractError,
     msg::execute::Action::{Deposit, Lend},
@@ -105,6 +106,53 @@ fn raises_when_not_enough_assets_to_lend() {
 }
 
 #[test]
+fn raises_when_attempting_to_lend_account_balance_with_no_funds() {
+    let coin_info = uosmo_info();
+
+    let user_a = Addr::unchecked("user_a");
+
+    let mut mock = MockEnv::new()
+        .set_params(&[coin_info.clone()])
+        .fund_account(AccountToFund {
+            addr: user_a.clone(),
+            funds: coins(300, coin_info.denom.clone()),
+        })
+        .build()
+        .unwrap();
+
+    let account_id_a = mock.create_credit_account(&user_a).unwrap();
+
+    let position = mock.query_positions(&account_id_a);
+    assert_eq!(position.deposits.len(), 0);
+    assert_eq!(position.lends.len(), 0);
+
+    mock.update_credit_account(
+        &account_id_a,
+        &user_a,
+        vec![Deposit(coin_info.to_coin(300))],
+        &[coin(300, coin_info.denom.clone())],
+    )
+    .unwrap();
+
+    let red_bank_collateral = mock.query_red_bank_collateral(&coin_info.denom);
+    assert_eq!(red_bank_collateral.amount, Uint128::zero());
+
+    let res = mock.update_credit_account(
+        &account_id_a,
+        &user_a,
+        vec![Lend {
+            0: ActionCoin {
+                denom: "uatom".to_string(),
+                amount: ActionAmount::AccountBalance,
+            },
+        }],
+        &[],
+    );
+
+    assert_err(res, ContractError::NotWhitelisted("uatom".to_string()))
+}
+
+#[test]
 fn successful_lend() {
     let coin_info = uosmo_info();
 
@@ -183,6 +231,102 @@ fn successful_lend() {
     assert_eq!(red_bank_collateral.amount, lent_amount);
 
     // Second user comes and performs a lend
+    let account_id_b = mock.create_credit_account(&user_b).unwrap();
+    mock.update_credit_account(
+        &account_id_b,
+        &user_b,
+        vec![Deposit(coin_info.to_coin(300)), Lend(coin_info.to_action_coin(50))],
+        &[coin(300, coin_info.denom)],
+    )
+    .unwrap();
+
+    // Assert lend position shares amount is proportionally right given existing participant in pool
+    let position = mock.query_positions(&account_id_b);
+    let expected_shares = total.shares.multiply_ratio(Uint128::new(50), red_bank_collateral.amount);
+    assert_eq!(position.lends.first().unwrap().shares, expected_shares);
+}
+
+#[test]
+fn successful_account_balance_lend() {
+    let coin_info = uosmo_info();
+
+    let user_a = Addr::unchecked("user_a");
+    let user_b = Addr::unchecked("user_b");
+
+    let mut mock = MockEnv::new()
+        .set_params(&[coin_info.clone()])
+        .fund_account(AccountToFund {
+            addr: user_a.clone(),
+            funds: coins(300, coin_info.denom.clone()),
+        })
+        .fund_account(AccountToFund {
+            addr: user_b.clone(),
+            funds: coins(300, coin_info.denom.clone()),
+        })
+        .build()
+        .unwrap();
+
+    let account_id_a = mock.create_credit_account(&user_a).unwrap();
+
+    let position = mock.query_positions(&account_id_a);
+    assert_eq!(position.deposits.len(), 0);
+    assert_eq!(position.lends.len(), 0);
+
+    mock.update_credit_account(
+        &account_id_a,
+        &user_a,
+        vec![Deposit(coin_info.to_coin(300))],
+        &[coin(300, coin_info.denom.clone())],
+    )
+    .unwrap();
+
+    let red_bank_collateral = mock.query_red_bank_collateral(&coin_info.denom);
+    assert_eq!(red_bank_collateral.amount, Uint128::zero());
+
+    mock.update_credit_account(
+        &account_id_a,
+        &user_a,
+        vec![Lend {
+            0: ActionCoin {
+                denom: "uosmo".to_string(),
+                amount: ActionAmount::AccountBalance,
+            },
+        }],
+        &[],
+    )
+    .unwrap();
+
+    // Assert deposits decreased
+    let position = mock.query_positions(&account_id_a);
+    assert_eq!(position.deposits.len(), 0);
+
+    // Assert lend position amount increased
+    let lent_res = position.lends.first().unwrap();
+    assert_eq!(position.lends.len(), 1);
+    assert_eq!(lent_res.denom, coin_info.denom);
+    let lent_amount = Uint128::new(300) + Uint128::new(1); // account balance + simulated yield
+    assert_eq!(lent_res.amount, lent_amount);
+    assert_eq!(lent_res.shares, Uint128::new(300).mul(DEFAULT_LENT_SHARES_PER_COIN));
+
+    // Assert total lent positions increased
+    let total = mock.query_total_lent_shares(&coin_info.denom);
+    assert_eq!(total.denom, coin_info.denom);
+    assert_eq!(total.shares, DEFAULT_LENT_SHARES_PER_COIN.mul(Uint128::new(300)));
+
+    // Assert Rover has indeed sent those tokens to Red Bank
+    let balance = mock.query_balance(&mock.rover, &coin_info.denom);
+    assert_eq!(balance.amount, Uint128::new(0)); //total deposited minus account balance -> 300-300=0
+
+    let config = mock.query_config();
+    let red_bank_addr = Addr::unchecked(config.red_bank);
+    let balance = mock.query_balance(&red_bank_addr, &coin_info.denom);
+    assert_eq!(balance.amount, DEFAULT_RED_BANK_COIN_BALANCE.add(Uint128::new(300)));
+
+    // Assert Rover's collateral balance in Red bank
+    let red_bank_collateral = mock.query_red_bank_collateral(&coin_info.denom);
+    assert_eq!(red_bank_collateral.amount, lent_amount);
+
+    // Second user comes and performs a lend using an Exact Amount
     let account_id_b = mock.create_credit_account(&user_b).unwrap();
     mock.update_credit_account(
         &account_id_b,
