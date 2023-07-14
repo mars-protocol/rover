@@ -3,8 +3,8 @@ import { DeploymentConfig, VaultType } from '../../types/config'
 // Note: since osmo-test-5 upgrade, testnet and mainnet denoms are no longer the same. Reference asset info here: https://docs.osmosis.zone/osmosis-core/asset-info/
 const uosmo = 'uosmo'
 const ion = 'uion'
-const aUSDC = 'ibc/D189335C6E4A68B513C10AB227BF1C1D38C746766278BA3EEB4FB14124F1D858' // axelar USDC
-const atom = 'ibc/27394FB092D2ECCD56123C74F36E4C1F926001CEADA9CA97EA622B25F41E5EB2'
+const aUSDC = 'ibc/6F34E1BD664C36CE49ACC28E60D62559A5F96C4F9A6CCE4FC5A67B2852E24CFE' // axelar USDC
+const atom = 'ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477'
 
 const atom_osmo = 'gamm/pool12'
 const aUSDC_osmo = 'gamm/pool/5'
@@ -52,16 +52,16 @@ export const osmosisTestnetConfig: DeploymentConfig = {
   maxUnlockingPositions: '10',
   maxValueForBurn: '1000000',
   // Latest from: https://github.com/mars-protocol/outposts/blob/master/scripts/deploy/addresses/osmo-test-5.json
-  oracle: { addr: 'osmo1m8kefut732j0slz9cv0wzycty5ndfd460yrhpkrqxfenrcz9wvnq5vd0hc' },
-  redBank: { addr: 'osmo1lygdqcp400zzkwvsp4vqy96pfuxx2dwv7gus55v0vkvjs30fd0hsedetd9' },
-  params: { addr: 'osmo1qkdre77sgeqyyt9e4w66d6faa77p8h63anmj4tj64lfcefd3zk9qc63wqs' },
+  oracle: { addr: 'osmo1nm8nu6m28mq9r7aatumpgqcr293l74x6psaqr5g5hjyp9wdk7t8s3ucqwf' },
+  redBank: { addr: 'osmo144gcs7qn5ts940ymyq209xhv67k5ntnnjc6szygq2lz0dgmkk82qa9fyn8' },
+  params: { addr: 'osmo13utqnfnn3p5kapsttulhgdsn77dk0t4072t6nvlp0r269wz04r5sspt5sq' },
   swapRoutes: [
-    { denomIn: uosmo, denomOut: aUSDC, route: [{ token_out_denom: aUSDC, pool_id: aUSDC_osmo }] },
-    { denomIn: aUSDC, denomOut: uosmo, route: [{ token_out_denom: uosmo, pool_id: aUSDC_osmo }] },
-    { denomIn: uosmo, denomOut: ion, route: [{ token_out_denom: ion, pool_id: ion_osmo }] },
-    { denomIn: ion, denomOut: uosmo, route: [{ token_out_denom: uosmo, pool_id: ion_osmo }] },
-    { denomIn: uosmo, denomOut: atom, route: [{ token_out_denom: atom, pool_id: atom_osmo }] },
-    { denomIn: atom, denomOut: uosmo, route: [{ token_out_denom: uosmo, pool_id: atom_osmo }] },
+    // { denomIn: uosmo, denomOut: aUSDC, route: [{ token_out_denom: aUSDC, pool_id: '5' }] },
+    // { denomIn: aUSDC, denomOut: uosmo, route: [{ token_out_denom: uosmo, pool_id: '5' }] },
+    { denomIn: uosmo, denomOut: ion, route: [{ token_out_denom: ion, pool_id: '1' }] },
+    { denomIn: ion, denomOut: uosmo, route: [{ token_out_denom: uosmo, pool_id: '1' }] },
+    { denomIn: uosmo, denomOut: atom, route: [{ token_out_denom: atom, pool_id: '12' }] },
+    { denomIn: atom, denomOut: uosmo, route: [{ token_out_denom: uosmo, pool_id: '12' }] },
   ],
   // Latest from: https://api.apollo.farm/api/graph?query=query+MyQuery+%7B%0A++vaults%28network%3A+osmo_test_5%29+%7B%0A++++label%0A++++contract_address%0A++%7D%0A%7D
   vaults: [
