@@ -52,9 +52,9 @@ export const osmosisTestnetConfig: DeploymentConfig = {
   maxUnlockingPositions: '10',
   maxValueForBurn: '1000000',
   // Latest from: https://github.com/mars-protocol/outposts/blob/master/scripts/deploy/addresses/osmo-test-5.json
-  oracle: { addr: 'osmo1vae2gsgeqw8q2x5ycvcrspsuqrnydveqgca03v8k9p4uvl2fgdlqp5r8fc' },
-  redBank: { addr: 'osmo1r9ks824qewvpa9sqgzs3w2ylxx582c6d0hrnzqf3csufchqneydq60hgrv' },
-  params: { addr: 'osmo1et0qv7acfv0wv3wlqmjtyflw5dectct24nuwjeqdkfzm9fznfunste0hnc' },
+  oracle: { addr: 'osmo1m8kefut732j0slz9cv0wzycty5ndfd460yrhpkrqxfenrcz9wvnq5vd0hc' },
+  redBank: { addr: 'osmo1lygdqcp400zzkwvsp4vqy96pfuxx2dwv7gus55v0vkvjs30fd0hsedetd9' },
+  params: { addr: 'osmo1qkdre77sgeqyyt9e4w66d6faa77p8h63anmj4tj64lfcefd3zk9qc63wqs' },
   swapRoutes: [
     { denomIn: uosmo, denomOut: aUSDC, route: [{ token_out_denom: aUSDC, pool_id: aUSDC_osmo }] },
     { denomIn: aUSDC, denomOut: uosmo, route: [{ token_out_denom: uosmo, pool_id: aUSDC_osmo }] },
