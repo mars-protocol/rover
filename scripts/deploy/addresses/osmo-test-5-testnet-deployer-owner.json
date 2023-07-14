@@ -1,1 +1,8 @@
-{"mockVault":"osmo1x0fh7njcf93645d6s6jnljfy3uel94ady3455yn9wauyyt50ekjsnh3l7m","swapper":"osmo1ku923py3mjd5k3s8mu7f4gmz4pfrx4jx482sm0vhmwrsmpt9psvs06tdlm","zapper":"osmo1x6876uucmysf9qxlug7fnq3e0kp578r8pr657vcl7crvatkmel0sa56wgz","healthContract":"osmo1xql2zr9n2q8k6lea3cy5ne0qzqde72uypgg3pkq3jm2679hmw9vqhydmqn","creditManager":"osmo1998gcj358uprkm9m57fmy4flt5n8wse8z4njyulf8zzqjn2yz06qsxxn92","accountNft":"osmo1gs6sxr3pcv7gs750yythp5emghfve3y0zauhhhnudwcuxwzy2srsxhckpf"}
+{
+  "mockVault": "osmo1x0fh7njcf93645d6s6jnljfy3uel94ady3455yn9wauyyt50ekjsnh3l7m",
+  "swapper": "osmo1ku923py3mjd5k3s8mu7f4gmz4pfrx4jx482sm0vhmwrsmpt9psvs06tdlm",
+  "zapper": "osmo1x6876uucmysf9qxlug7fnq3e0kp578r8pr657vcl7crvatkmel0sa56wgz",
+  "healthContract": "osmo1xql2zr9n2q8k6lea3cy5ne0qzqde72uypgg3pkq3jm2679hmw9vqhydmqn",
+  "creditManager": "osmo1998gcj358uprkm9m57fmy4flt5n8wse8z4njyulf8zzqjn2yz06qsxxn92",
+  "accountNft": "osmo1gs6sxr3pcv7gs750yythp5emghfve3y0zauhhhnudwcuxwzy2srsxhckpf"
+}
