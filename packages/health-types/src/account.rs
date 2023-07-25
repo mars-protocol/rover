@@ -21,4 +21,5 @@ impl fmt::Display for AccountKind {
 pub enum BorrowTarget {
     Deposit,
     Wallet,
+    Vault,
 }

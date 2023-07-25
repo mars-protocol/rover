@@ -207,6 +207,32 @@ impl HealthComputer {
                 .checked_sub(debt_value)?
                 .checked_sub(Uint128::one())?
                 .checked_div_floor(borrow_denom_price)?,
+
+            // When borrowing assets to add to a vault, the amount deposited into the vault counts towards collateral.
+            // The health factor can be calculated as:
+            //     1 = (max ltv adjusted value + (vault amount * vault price * vault max ltv)) / (debt value + (borrow amount * borrow price))
+            // Vault amount has to be replaced by borrow amount (so that there are not 2 unknown variables), which can be done using:
+            //     vault amount = borrow amount * borrow price / vault price
+            // This results in the following formula:
+            //     1 = (max ltv adjusted value + (borrow amount * borrow price / vault price) * vault price * vault max ltv)) / (debt value + (borrow amount * borrow price))
+            // Re-arranging this to isolate borrow amount renders:
+            //     borrow amount = (max ltv adjusted value - debt value) / (borrow price - (borrow price / vault price) * vault price * vault max ltv)
+            BorrowTarget::Vault => {
+                let vault_denom_price = Decimal::from_atomics(100u128, 8).unwrap();
+                let vault_denom_max_ltv = Decimal::from_atomics(8u128, 1).unwrap();
+
+                total_max_ltv_adjusted_value
+                    .checked_sub(debt_value)?
+                    .checked_sub(Uint128::one())?
+                    .checked_div(
+                    borrow_denom_price.checked_sub(
+                        borrow_denom_price
+                            .checked_div(vault_denom_price)?
+                            .checked_mul(vault_denom_price)?
+                            .checked_mul(vault_denom_max_ltv)?,
+                    )?,
+                )?
+            }
         };
 
         Ok(max_borrow_amount)
