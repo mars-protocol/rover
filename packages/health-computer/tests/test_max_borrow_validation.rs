@@ -58,7 +58,7 @@ fn missing_borrow_denom_price_data() {
     };
 
     let err: HealthError =
-        h.max_borrow_amount_estimate(&udai.denom, BorrowTarget::Deposit).unwrap_err();
+        h.max_borrow_amount_estimate(&udai.denom, &BorrowTarget::Deposit).unwrap_err();
     assert_eq!(err, HealthError::MissingPrice(udai.denom));
 }
 
@@ -105,7 +105,7 @@ fn missing_borrow_denom_params() {
     };
 
     let err: HealthError =
-        h.max_borrow_amount_estimate(&umars.denom, BorrowTarget::Deposit).unwrap_err();
+        h.max_borrow_amount_estimate(&umars.denom, &BorrowTarget::Deposit).unwrap_err();
     assert_eq!(err, HealthError::MissingParams(umars.denom));
 }
 
@@ -157,7 +157,7 @@ fn cannot_borrow_when_unhealthy() {
     let health = h.compute_health().unwrap();
     assert!(health.max_ltv_health_factor < Some(Decimal::one()));
     let max_withdraw_amount =
-        h.max_borrow_amount_estimate(&udai.denom, BorrowTarget::Deposit).unwrap();
+        h.max_borrow_amount_estimate(&udai.denom, &BorrowTarget::Deposit).unwrap();
     assert_eq!(Uint128::zero(), max_withdraw_amount);
 }
 
@@ -239,8 +239,8 @@ fn hls_influences_max_borrow() {
         vaults_data,
     };
 
-    let max_before = h.max_borrow_amount_estimate(&ustars.denom, BorrowTarget::Deposit).unwrap();
+    let max_before = h.max_borrow_amount_estimate(&ustars.denom, &BorrowTarget::Deposit).unwrap();
     h.kind = AccountKind::HighLeveredStrategy;
-    let max_after = h.max_borrow_amount_estimate(&ustars.denom, BorrowTarget::Deposit).unwrap();
+    let max_after = h.max_borrow_amount_estimate(&ustars.denom, &BorrowTarget::Deposit).unwrap();
     assert!(max_after > max_before);
 }

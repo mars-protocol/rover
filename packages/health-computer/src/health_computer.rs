@@ -137,13 +137,11 @@ impl HealthComputer {
     pub fn max_borrow_amount_estimate(
         &self,
         borrow_denom: &str,
-        target: BorrowTarget,
+        target: &BorrowTarget,
     ) -> HealthResult<Uint128> {
         // Given the formula:
         //      max ltv health factor = max ltv adjusted value / debt value
         //          where: max ltv adjusted value = price * amount * max ltv
-        // The max borrow can be calculated as:
-        //      1 = (max ltv adjusted value + (borrow denom amount * borrow denom price * borrow denom max ltv)) / (debt value + (borrow denom amount * borrow denom price))
         let total_max_ltv_adjusted_value =
             self.total_collateral_value()?.max_ltv_adjusted_collateral;
         let debt_value = self.total_debt_value()?;
@@ -178,14 +176,16 @@ impl HealthComputer {
             .cloned()
             .ok_or(MissingPrice(borrow_denom.to_string()))?;
 
+        // The formulas look like this in practice:
+        //      hf = rounddown(roundown(amount * price) * max ltv) / debt value
+        // Which means re-arranging this to isolate borrow amount is an estimate,
+        // quite close, but never precisely right. For this reason, the - 1 of the formulas
+        // below are meant to err on the side of being more conservative vs aggressive.
         let max_borrow_amount = match target {
-            // The formulas look like this in practice:
-            //      hf = rounddown(roundown(amount * price) * max ltv) / debt value
-            // Which means re-arranging this to isolate borrow amount is an estimate,
-            // quite close, but never precisely right. For this reason, the - 1 fo the formulas
-            // below are meant to err on the side of being more conservative vs aggressive.
-
-            // max_borrow_denom_amount = (max_ltv_adjusted_value - debt_value) / (borrow_denom_price * (1 - borrow_denom_max_ltv))
+            // The max borrow for deposit can be calculated as:
+            //      1 = (max ltv adjusted value + (borrow denom amount * borrow denom price * borrow denom max ltv)) / (debt value + (borrow denom amount * borrow denom price))
+            // Re-arranging this to isolate borrow denom amount renders:
+            //      max_borrow_denom_amount = (max_ltv_adjusted_value - debt_value) / (borrow_denom_price * (1 - borrow_denom_max_ltv))
             BorrowTarget::Deposit => total_max_ltv_adjusted_value
                 .checked_sub(debt_value)?
                 .checked_sub(Uint128::one())?
@@ -195,7 +195,11 @@ impl HealthComputer {
                         .checked_mul(borrow_denom_price)?,
                 )?,
 
-            // borrow denom amount = (max ltv adjusted value - debt_value) / denom_price
+            // Borrowing assets to wallet does not count towards collateral.
+            // Hence, the max borrow to wallet can be calculated as:
+            //      1 = (max ltv adjusted value) / (debt value + (borrow denom amount * borrow denom price))
+            // Re-arranging this to isolate borrow denom amount renders:
+            //      borrow denom amount = (max ltv adjusted value - debt_value) / denom_price
             BorrowTarget::Wallet => total_max_ltv_adjusted_value
                 .checked_sub(debt_value)?
                 .checked_sub(Uint128::one())?

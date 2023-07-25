@@ -10,7 +10,7 @@ use crate::helpers::{udai_info, umars_info};
 pub mod helpers;
 
 #[test]
-fn max_borrow_offset_good() {
+fn max_borrow_wallet_offset_good() {
     let udai = udai_info();
 
     let denoms_data = DenomsData {
@@ -37,12 +37,12 @@ fn max_borrow_offset_good() {
     };
 
     let max_borrow_amount =
-        h.max_borrow_amount_estimate(&udai.denom, BorrowTarget::Wallet).unwrap();
+        h.max_borrow_amount_estimate(&udai.denom, &BorrowTarget::Wallet).unwrap();
     assert_eq!(Uint128::new(1014), max_borrow_amount);
 }
 
 #[test]
-fn max_borrow_offset_margin_of_error() {
+fn max_borrow_wallet_offset_margin_of_error() {
     let umars = umars_info();
 
     let denoms_data = DenomsData {
@@ -69,8 +69,8 @@ fn max_borrow_offset_margin_of_error() {
     };
 
     let max_borrow_amount =
-        h.max_borrow_amount_estimate(&umars.denom, BorrowTarget::Wallet).unwrap();
+        h.max_borrow_amount_estimate(&umars.denom, &BorrowTarget::Wallet).unwrap();
 
-    // Normally could be 4800, but conservative offset rounding has a margin of error
+    // Normally could be 960, but conservative offset rounding has a margin of error
     assert_eq!(Uint128::new(959), max_borrow_amount);
 }
