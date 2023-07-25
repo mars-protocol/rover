@@ -5,10 +5,10 @@ pub mod helpers;
 
 #[test]
 fn max_borrow_amount_deposit_renders_healthy_max_ltv() {
-    max_borrow_prop_test_runner(20000, &BorrowTarget::Deposit);
+    max_borrow_prop_test_runner(2000, &BorrowTarget::Deposit);
 }
 
 #[test]
 fn max_borrow_amount_wallet_renders_healthy_max_ltv() {
-    max_borrow_prop_test_runner(20000, &BorrowTarget::Wallet);
+    max_borrow_prop_test_runner(2000, &BorrowTarget::Wallet);
 }

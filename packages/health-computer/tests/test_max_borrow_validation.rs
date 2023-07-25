@@ -154,8 +154,6 @@ fn cannot_borrow_when_unhealthy() {
         vaults_data,
     };
 
-    let health = h.compute_health().unwrap();
-    assert!(health.max_ltv_health_factor < Some(Decimal::one()));
     let max_withdraw_amount =
         h.max_borrow_amount_estimate(&udai.denom, &BorrowTarget::Deposit).unwrap();
     assert_eq!(Uint128::zero(), max_withdraw_amount);

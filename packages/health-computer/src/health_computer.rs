@@ -195,7 +195,7 @@ impl HealthComputer {
                         .checked_mul(borrow_denom_price)?,
                 )?,
 
-            // Borrowing assets to wallet does not count towards collateral.
+            // Borrowing assets to wallet does not count towards collateral. It only adds to debts.
             // Hence, the max borrow to wallet can be calculated as:
             //      1 = (max ltv adjusted value) / (debt value + (borrow denom amount * borrow denom price))
             // Re-arranging this to isolate borrow denom amount renders:
