@@ -1,6 +1,7 @@
 use std::fmt;
 
 use cosmwasm_schema::cw_serde;
+use cosmwasm_std::Addr;
 use tsify::Tsify;
 
 #[cw_serde]
@@ -21,5 +22,7 @@ impl fmt::Display for AccountKind {
 pub enum BorrowTarget {
     Deposit,
     Wallet,
-    Vault,
+    Vault {
+        address: Addr,
+    },
 }

@@ -210,27 +210,44 @@ impl HealthComputer {
 
             // When borrowing assets to add to a vault, the amount deposited into the vault counts towards collateral.
             // The health factor can be calculated as:
-            //     1 = (max ltv adjusted value + (vault amount * vault price * vault max ltv)) / (debt value + (borrow amount * borrow price))
-            // Vault amount has to be replaced by borrow amount (so that there are not 2 unknown variables), which can be done using:
-            //     vault amount = borrow amount * borrow price / vault price
-            // This results in the following formula:
-            //     1 = (max ltv adjusted value + (borrow amount * borrow price / vault price) * vault price * vault max ltv)) / (debt value + (borrow amount * borrow price))
+            //     1 = (max ltv adjusted value + (borrow amount * borrow price * vault max ltv)) / (debt value + (borrow amount * borrow price))
             // Re-arranging this to isolate borrow amount renders:
-            //     borrow amount = (max ltv adjusted value - debt value) / (borrow price - (borrow price / vault price) * vault price * vault max ltv)
-            BorrowTarget::Vault => {
-                let vault_denom_price = Decimal::from_atomics(100u128, 8).unwrap();
-                let vault_denom_max_ltv = Decimal::from_atomics(8u128, 1).unwrap();
+            //     borrow amount = (max ltv adjusted value - debt value) / (borrow price * (1 - vault max ltv)
+            BorrowTarget::Vault {
+                address,
+            } => {
+                let VaultConfig {
+                    addr,
+                    max_loan_to_value,
+                    whitelisted,
+                    hls,
+                    ..
+                } = self
+                    .vaults_data
+                    .vault_configs
+                    .get(address)
+                    .ok_or(MissingVaultConfig(address.to_string()))?;
+
+                // If vault or base token has been de-listed, drop MaxLTV to zero
+                let checked_vault_max_ltv = if *whitelisted {
+                    match self.kind {
+                        AccountKind::Default => *max_loan_to_value,
+                        AccountKind::HighLeveredStrategy => {
+                            hls.as_ref()
+                                .ok_or(MissingHLSParams(addr.to_string()))?
+                                .max_loan_to_value
+                        }
+                    }
+                } else {
+                    Decimal::zero()
+                };
 
                 total_max_ltv_adjusted_value
                     .checked_sub(debt_value)?
                     .checked_sub(Uint128::one())?
-                    .checked_div(
-                    borrow_denom_price.checked_sub(
-                        borrow_denom_price
-                            .checked_div(vault_denom_price)?
-                            .checked_mul(vault_denom_price)?
-                            .checked_mul(vault_denom_max_ltv)?,
-                    )?,
+                    .checked_div_floor(
+                    borrow_denom_price
+                        .checked_div(Decimal::one().checked_sub(checked_vault_max_ltv)?)?,
                 )?
             }
         };
