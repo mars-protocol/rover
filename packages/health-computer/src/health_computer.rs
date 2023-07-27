@@ -247,7 +247,7 @@ impl HealthComputer {
                     .checked_sub(Uint128::one())?
                     .checked_div_floor(
                     borrow_denom_price
-                        .checked_div(Decimal::one().checked_sub(checked_vault_max_ltv)?)?,
+                        .checked_mul(Decimal::one().checked_sub(checked_vault_max_ltv)?)?,
                 )?
             }
         };

@@ -48,7 +48,8 @@ fn max_borrow_vault_offset_good() {
             },
         )
         .unwrap();
-    assert_eq!(Uint128::new(1014), max_borrow_amount);
+
+    assert_eq!(Uint128::new(3381), max_borrow_amount);
 }
 
 #[test]
@@ -91,6 +92,6 @@ fn max_borrow_vault_offset_margin_of_error() {
         )
         .unwrap();
 
-    // Normally could be 960, but conservative offset rounding has a margin of error
-    assert_eq!(Uint128::new(959), max_borrow_amount);
+    // Normally could be 3200, but conservative offset rounding has a margin of error
+    assert_eq!(Uint128::new(3196), max_borrow_amount);
 }
