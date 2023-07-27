@@ -1,4 +1,5 @@
-use helpers::{max_borrow_prop_test_runner, osmo_atom_1_config};
+use cosmwasm_std::Addr;
+use helpers::max_borrow_prop_test_runner;
 use mars_rover_health_types::BorrowTarget;
 
 pub mod helpers;
@@ -15,11 +16,10 @@ fn max_borrow_amount_wallet_renders_healthy_max_ltv() {
 
 #[test]
 fn max_borrow_amount_vault_renders_healthy_max_ltv() {
-    let osmo_atom_1_config = osmo_atom_1_config();
     max_borrow_prop_test_runner(
         2000,
         &BorrowTarget::Vault {
-            address: osmo_atom_1_config.addr.clone(),
+            address: Addr::unchecked("123"),
         },
     );
 }
