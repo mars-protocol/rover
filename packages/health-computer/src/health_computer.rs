@@ -13,7 +13,7 @@ use mars_rover_health_types::{
         DenomNotPresent, MissingHLSParams, MissingParams, MissingPrice, MissingVaultConfig,
         MissingVaultValues,
     },
-    HealthResult,
+    HealthResult, SwapKind,
 };
 use tsify::Tsify;
 
@@ -132,6 +132,137 @@ impl HealthComputer {
             .checked_div_floor(withdraw_denom_price.checked_mul(withdraw_denom_max_ltv)?)?;
 
         Ok(min(max_withdraw_amount, withdraw_coin.amount))
+    }
+
+    pub fn max_swap_amount_estimate(
+        &self,
+        from_denom: &str,
+        to_denom: &str,
+        kind: &SwapKind,
+    ) -> HealthResult<Uint128> {
+        let from_coin = self
+            .positions
+            .deposits
+            .iter()
+            .find(|c| c.denom == from_denom.to_string())
+            .ok_or(DenomNotPresent(from_denom.to_string()))?;
+
+        let from_params =
+            self.denoms_data.params.get(from_denom).ok_or(MissingParams(from_denom.to_string()))?;
+
+        let to_params =
+            self.denoms_data.params.get(to_denom).ok_or(MissingParams(to_denom.to_string()))?;
+
+        // If no debt the total amount deposited can be swapped
+        if self.positions.debts.is_empty() {
+            return Ok(from_coin.amount);
+        }
+
+        let total_max_ltv_adjusted_value =
+            self.total_collateral_value()?.max_ltv_adjusted_collateral;
+
+        let debt_value = self.total_debt_value()?;
+
+        if debt_value >= total_max_ltv_adjusted_value {
+            return Ok(Uint128::zero());
+        }
+
+        let from_denom_max_ltv = if from_params.credit_manager.whitelisted {
+            match self.kind {
+                AccountKind::Default => from_params.max_loan_to_value,
+                AccountKind::HighLeveredStrategy => {
+                    from_params
+                        .credit_manager
+                        .hls
+                        .as_ref()
+                        .ok_or(MissingHLSParams(from_denom.to_string()))?
+                        .max_loan_to_value
+                }
+            }
+        } else {
+            Decimal::zero()
+        };
+
+        let to_denom_max_ltv = if to_params.credit_manager.whitelisted {
+            match self.kind {
+                AccountKind::Default => to_params.max_loan_to_value,
+                AccountKind::HighLeveredStrategy => {
+                    to_params
+                        .credit_manager
+                        .hls
+                        .as_ref()
+                        .ok_or(MissingHLSParams(to_denom.to_string()))?
+                        .max_loan_to_value
+                }
+            }
+        } else {
+            Decimal::zero()
+        };
+
+        // Don't allow swapping when one of the assets is blacklisted
+        if from_denom_max_ltv == Decimal::zero() || to_denom_max_ltv == Decimal::zero() {
+            return Ok(Uint128::zero());
+        }
+
+        let from_denom_price =
+            self.denoms_data.prices.get(from_denom).ok_or(MissingPrice(from_denom.to_string()))?;
+
+        let to_denom_price =
+            self.denoms_data.prices.get(to_denom).ok_or(MissingPrice(to_denom.to_string()))?;
+
+        // When to_denom_max_ltv is equal or larger it means the net_collaral_value will stay the same or increase, so we
+        // should allow all of the balance to be swapped.
+        let swappable_amount = if to_denom_max_ltv >= from_denom_max_ltv {
+            from_coin.amount
+        } else {
+            // In order to calculate the output of the swap, we the formula looks like this:
+            //     1 = (total_max_ltv_adjusted_value + to_amount * to_denom_price * (from_ltv - to_ltv)) / debt_value
+            // Rearranging this to isolate amount results in the following formula
+            //     to_amount = ((collateral - debt_value) / to_denom_price) / (from_ltv - to_ltv)
+            // This is then multiplied by the price conversion between the two assets to get the from_denom swappable amount.
+            total_max_ltv_adjusted_value
+                .checked_sub(debt_value)?
+                .checked_div_floor(*to_denom_price)?
+                .checked_div_floor(from_denom_max_ltv - to_denom_max_ltv)?
+                .checked_mul_floor(*from_denom_price / to_denom_price)?
+        };
+
+        match kind {
+            SwapKind::Default => Ok(min(swappable_amount, from_coin.amount)),
+
+            SwapKind::Margin => {
+                // If the swappable amount is less than the available amount, no need to further calculate
+                // the margin borrow amount.
+                if swappable_amount <= from_coin.amount {
+                    return Ok(swappable_amount);
+                }
+
+                // This represents the max ltv adjusted value of the coin being swapped from
+                let swap_from_ltv_value = from_coin
+                    .amount
+                    .checked_mul_floor(*from_denom_price)?
+                    .checked_mul_floor(from_denom_max_ltv)?;
+
+                // The from_denom is always taken on as debt, as the trade is the bullish direction
+                // of the to_denom (expecting it to outpace the borrow rate from the from_denom)
+                let swap_to_ltv_value = from_coin
+                    .amount
+                    .checked_mul_floor(*from_denom_price)?
+                    .checked_mul_floor(to_denom_max_ltv)?;
+
+                let total_max_ltv_adjust_value_after_swap = total_max_ltv_adjusted_value
+                    .checked_sub(swap_from_ltv_value)?
+                    .checked_add(swap_to_ltv_value)?;
+
+                // The total swappable amount for margin is represented by the available coin balance + the
+                // the maximum amount that can be borrowed (and then swapped).
+                Ok(total_max_ltv_adjust_value_after_swap
+                    .checked_sub(debt_value)?
+                    .checked_sub(Uint128::one())?
+                    .checked_div_floor(Decimal::one().checked_sub(to_denom_max_ltv)?)?
+                    .checked_add(from_coin.amount)?)
+            }
+        }
     }
 
     /// The max this account can borrow of `borrow_denom` and maintain max_ltv >= 1

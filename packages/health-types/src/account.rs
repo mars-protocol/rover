@@ -26,3 +26,8 @@ pub enum BorrowTarget {
         address: Addr,
     },
 }
+
+pub enum SwapKind {
+    Default,
+    Margin,
+}
