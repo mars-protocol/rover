@@ -21,7 +21,7 @@ pub fn max_borrow_prop_test_runner(cases: u32, target: &BorrowTarget) {
                 BorrowTarget::Vault {
                     ..
                 } => {
-                    let Some(address) = h.vaults_data.vault_configs.clone().into_keys().nth(0)
+                    let Some(address) = h.vaults_data.vault_configs.clone().into_keys().next()
                     else {
                         return Ok(());
                     };
