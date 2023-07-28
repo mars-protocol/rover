@@ -21,12 +21,14 @@ pub fn max_borrow_prop_test_runner(cases: u32, target: &BorrowTarget) {
                 BorrowTarget::Vault {
                     ..
                 } => {
-                    let Some(address) = h.vaults_data.vault_configs.clone().into_keys().next()
+                    let Some(vault_position) = h.positions.vaults.iter().next()
+                    // We need to make sure there is at least 1vault that we can add value to.
+                    // Otherwise skip the test case
                     else {
                         return Ok(());
                     };
                     BorrowTarget::Vault {
-                        address: address.clone(),
+                        address: vault_position.vault.address.clone(),
                     }
                 }
             };
@@ -43,7 +45,7 @@ pub fn max_borrow_prop_test_runner(cases: u32, target: &BorrowTarget) {
                 let health_after = h_new.compute_health().unwrap();
 
                 // Ensure still healthy
-                assert!(!health_after.is_above_max_ltv());
+                assert!(!health_after.is_above_max_ltv(),);
             }
             Ok(())
         })
