@@ -22,7 +22,7 @@ pub fn max_borrow_prop_test_runner(cases: u32, target: &BorrowTarget) {
                 match target {
                     BorrowTarget::Vault {
                         ..
-                    } => h.positions.vaults.len() > 0,
+                    } => !h.positions.vaults.is_empty(),
                     _ => true,
                 }
             }),
