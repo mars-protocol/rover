@@ -242,6 +242,13 @@ impl HealthComputer {
                     Decimal::zero()
                 };
 
+                // The max borrow for deposit can be calculated as:
+                //      1 = (total_max_ltv_adjusted_value + (max_borrow_denom_amount * borrow_denom_price * checked_vault_max_ltv)) / (debt_value + (max_borrow_denom_amount * borrow_denom_price))
+                // Re-arranging this to isolate borrow denom amount renders:
+                //      max_borrow_denom_amount = (total_max_ltv_adjusted_value - debt_value) / (borrow_denom_price * (1 - checked_vault_max_ltv))
+                // Which means re-arranging this to isolate borrow amount is an estimate,
+                // quite close, but never precisely right. For this reason, the - 1 of the formulas
+                // below are meant to err on the side of being more conservative vs aggressive.
                 total_max_ltv_adjusted_value
                     .checked_sub(debt_value)?
                     .checked_sub(Uint128::one())?
