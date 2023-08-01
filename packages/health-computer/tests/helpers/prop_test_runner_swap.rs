@@ -2,8 +2,10 @@ use cosmwasm_std::{Coin, StdResult, Uint128};
 use mars_rover::msg::query::DebtAmount;
 use mars_rover_health_computer::HealthComputer;
 use mars_rover_health_types::SwapKind;
-use proptest::strategy::Strategy;
-use proptest::test_runner::{Config, TestRunner};
+use proptest::{
+    strategy::Strategy,
+    test_runner::{Config, TestRunner},
+};
 
 use super::random_health_computer;
 
@@ -66,13 +68,20 @@ fn add_swap(
     let from_price = new_h.denoms_data.prices.get(from_denom).unwrap();
     let to_price = new_h.denoms_data.prices.get(to_denom).unwrap();
 
+    // Subtract the amount from current deposited balance
     if amount < from_coin.amount {
         from_coin.amount -= amount;
     } else {
+        // If there the amount is larger than the balance of the coin, we need to add the remaining to the debts.
         let debt_amount = amount - from_coin.amount;
-        from_coin.amount = Uint128::zero();
+        new_h.positions.deposits.remove(from_coin_index);
 
-        if debt_amount > Uint128::zero() {
+        if let Some(debt_coin_index) =
+            new_h.positions.debts.iter().position(|c| c.denom == from_denom)
+        {
+            let debt_coin = new_h.positions.debts.get_mut(debt_coin_index).unwrap();
+            debt_coin.amount += debt_amount;
+        } else {
             new_h.positions.debts.push(DebtAmount {
                 denom: from_denom.to_string(),
                 shares: debt_amount * Uint128::new(1000),
@@ -81,11 +90,9 @@ fn add_swap(
         }
     }
 
-    if from_coin.amount == Uint128::zero() {
-        new_h.positions.deposits.remove(from_coin_index);
-    }
+    // Add the swapped coins to the deposits
+    let to_coin_amount = amount.mul_ceil(from_price / to_price);
 
-    let to_coin_amount = amount.mul_floor(from_price / to_price);
     if let Some(to_coin_index) = new_h.positions.deposits.iter().position(|c| c.denom == to_denom) {
         let to_coin = new_h.positions.deposits.get_mut(to_coin_index).unwrap();
         to_coin.amount += to_coin_amount;
