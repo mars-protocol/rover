@@ -105,7 +105,7 @@ impl HealthComputer {
             .get(withdraw_denom)
             .ok_or(MissingPrice(withdraw_denom.to_string()))?;
 
-        let withdraw_denom_max_ltv = self.get_coin_max_ltv(&withdraw_denom, false)?;
+        let withdraw_denom_max_ltv = self.get_coin_max_ltv(withdraw_denom, false)?;
 
         if debt_value >= total_max_ltv_adjusted_value {
             return Ok(Uint128::zero());
@@ -134,17 +134,12 @@ impl HealthComputer {
             .positions
             .deposits
             .iter()
-            .find(|c| c.denom == from_denom.to_string())
+            .find(|c| c.denom == *from_denom)
             .ok_or(DenomNotPresent(from_denom.to_string()))?;
 
         // If no debt the total amount deposited can be swapped (only for default swaps)
-        match kind {
-            SwapKind::Default => {
-                if self.positions.debts.is_empty() {
-                    return Ok(from_coin.amount);
-                }
-            }
-            _ => {}
+        if kind == &SwapKind::Default && self.positions.debts.is_empty() {
+            return Ok(from_coin.amount);
         }
 
         let total_max_ltv_adjusted_value =
@@ -156,8 +151,8 @@ impl HealthComputer {
             return Ok(Uint128::zero());
         }
 
-        let from_ltv = self.get_coin_max_ltv(&from_denom, true)?;
-        let to_ltv = self.get_coin_max_ltv(&to_denom, true)?;
+        let from_ltv = self.get_coin_max_ltv(from_denom, true)?;
+        let to_ltv = self.get_coin_max_ltv(to_denom, true)?;
 
         // Don't allow swapping when one of the assets is not whitelisted
         if from_ltv == Decimal::zero() || to_ltv == Decimal::zero() {

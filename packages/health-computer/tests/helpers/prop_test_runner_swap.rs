@@ -19,7 +19,7 @@ pub fn max_swap_prop_test_runner(cases: u32, kind: &SwapKind) {
                 "For swap we need to ensure 2 available denom params and 1 valid deposit",
                 |h| {
                     if h.denoms_data.params.len() < 2 {
-                        return false;
+                        false
                     } else {
                         let from_denom = h.denoms_data.params.keys().next().unwrap();
                         h.positions
