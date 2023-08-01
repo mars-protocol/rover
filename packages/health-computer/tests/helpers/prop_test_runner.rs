@@ -18,7 +18,7 @@ pub fn max_borrow_prop_test_runner(cases: u32, target: &BorrowTarget) {
     let mut runner = TestRunner::new(config);
     runner
         .run(
-            &random_health_computer().prop_filter("At least one vaults needs to be present", |h| {
+            &random_health_computer().prop_filter("At least one vault needs to be present", |h| {
                 match target {
                     BorrowTarget::Vault {
                         ..
