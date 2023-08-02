@@ -207,14 +207,14 @@ impl HealthComputer {
                     return Ok(swappable_amount);
                 }
 
+                let from_coin_value = from_coin.amount.checked_mul_floor(*from_price)?;
+
                 // This represents the max ltv adjusted value of the coin being swapped from
-                let swap_from_ltv_value =
-                    from_coin.amount.checked_mul_floor(*from_price)?.checked_mul_floor(from_ltv)?;
+                let swap_from_ltv_value = from_coin_value.checked_mul_floor(from_ltv)?;
 
                 // The from_denom is always taken on as debt, as the trade is the bullish direction
                 // of the to_denom (expecting it to outpace the borrow rate from the from_denom)
-                let swap_to_ltv_value =
-                    from_coin.amount.checked_mul_floor(*from_price)?.checked_mul_floor(to_ltv)?;
+                let swap_to_ltv_value = from_coin_value.checked_mul_floor(to_ltv)?;
 
                 let total_max_ltv_adjust_value_after_swap = total_max_ltv_adjusted_value
                     .checked_sub(swap_from_ltv_value)?
