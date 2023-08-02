@@ -105,7 +105,17 @@ impl HealthComputer {
             .get(withdraw_denom)
             .ok_or(MissingPrice(withdraw_denom.to_string()))?;
 
-        let withdraw_denom_max_ltv = self.get_coin_max_ltv(withdraw_denom, false)?;
+        let withdraw_denom_max_ltv = match self.kind {
+            AccountKind::Default => params.max_loan_to_value,
+            AccountKind::HighLeveredStrategy => {
+                params
+                    .credit_manager
+                    .hls
+                    .as_ref()
+                    .ok_or(MissingHLSParams(withdraw_denom.to_string()))?
+                    .max_loan_to_value
+            }
+        };
 
         if debt_value >= total_max_ltv_adjusted_value {
             return Ok(Uint128::zero());
@@ -151,8 +161,8 @@ impl HealthComputer {
             return Ok(Uint128::zero());
         }
 
-        let from_ltv = self.get_coin_max_ltv(from_denom, true)?;
-        let to_ltv = self.get_coin_max_ltv(to_denom, true)?;
+        let from_ltv = self.get_coin_max_ltv(from_denom)?;
+        let to_ltv = self.get_coin_max_ltv(to_denom)?;
 
         // Don't allow swapping when one of the assets is not whitelisted
         if from_ltv == Decimal::zero() || to_ltv == Decimal::zero() {
@@ -188,7 +198,7 @@ impl HealthComputer {
         };
 
         match kind {
-            SwapKind::Default => Ok(min(swappable_amount, from_coin.amount)),
+            SwapKind::Default => Ok(swappable_amount),
 
             SwapKind::Margin => {
                 // If the swappable amount is less than the available amount, no need to further calculate
@@ -256,7 +266,17 @@ impl HealthComputer {
             return Ok(Uint128::zero());
         }
 
-        let borrow_denom_max_ltv = self.get_coin_max_ltv(borrow_denom, false)?;
+        let borrow_denom_max_ltv = match self.kind {
+            AccountKind::Default => params.max_loan_to_value,
+            AccountKind::HighLeveredStrategy => {
+                params
+                    .credit_manager
+                    .hls
+                    .as_ref()
+                    .ok_or(MissingHLSParams(borrow_denom.to_string()))?
+                    .max_loan_to_value
+            }
+        };
 
         let borrow_denom_price = self
             .denoms_data
@@ -401,7 +421,7 @@ impl HealthComputer {
                 ..
             } = self.denoms_data.params.get(&c.denom).ok_or(MissingParams(c.denom.clone()))?;
 
-            let checked_max_ltv = self.get_coin_max_ltv(&c.denom, true)?;
+            let checked_max_ltv = self.get_coin_max_ltv(&c.denom)?;
 
             let max_ltv_adjusted = coin_value.checked_mul_floor(checked_max_ltv)?;
             max_ltv_adjusted_collateral =
@@ -510,12 +530,11 @@ impl HealthComputer {
         })
     }
 
-    fn get_coin_max_ltv(&self, denom: &str, drop_ltv_when_delisted: bool) -> HealthResult<Decimal> {
+    fn get_coin_max_ltv(&self, denom: &str) -> HealthResult<Decimal> {
         let params = self.denoms_data.params.get(denom).ok_or(MissingParams(denom.to_string()))?;
 
         // If the coin has been de-listed, drop MaxLTV to zero
-        // unless it's regarding a withdraw action, hence the `drop_ltv_when_delisted` flag
-        if drop_ltv_when_delisted && !params.credit_manager.whitelisted {
+        if !params.credit_manager.whitelisted {
             return Ok(Decimal::zero());
         }
 
