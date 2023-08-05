@@ -122,7 +122,7 @@ fn asserting_deposit_cap(
     // this test
     for (denom, cap) in deposit_caps {
         let mut params: AssetParams = mock.query_asset_params(denom);
-        params.red_bank.deposit_cap = cap.into();
+        params.deposit_cap = cap.into();
         mock.update_asset_params(AssetParamsUpdate::AddOrUpdate {
             params: params.into(),
         });

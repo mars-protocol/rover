@@ -1,6 +1,7 @@
 use std::collections::BTreeSet;
 
 use cosmwasm_std::{Coin, Deps, DepsMut, Response, Uint128};
+use mars_params::msg::TotalDepositResponse;
 use mars_rover::{
     coins::Coins,
     error::{ContractError, ContractResult},
@@ -58,20 +59,26 @@ pub fn assert_deposit_caps(deps: Deps, denoms: BTreeSet<String>) -> ContractResu
     let mut response = Response::new().add_attribute("action", "callback/assert_deposit_caps");
 
     for denom in denoms {
-        let asset_params = params.query_asset_params(&deps.querier, &denom)?;
-        let total_deposit = params.query_total_deposit(&deps.querier, &denom)?;
+        let TotalDepositResponse {
+            denom,
+            amount,
+            cap,
+        } = params.query_total_deposit(&deps.querier, &denom)?;
 
-        if total_deposit.amount > asset_params.red_bank.deposit_cap {
+        if amount > cap {
             return Err(ContractError::AboveAssetDepositCap {
-                new_value: total_deposit,
-                maximum: asset_params.red_bank.deposit_cap,
+                new_value: Coin {
+                    denom,
+                    amount,
+                },
+                maximum: cap,
             });
         }
 
         response = response
             .add_attribute("denom", denom)
-            .add_attribute("total_deposit", total_deposit.amount)
-            .add_attribute("deposit_cap", asset_params.red_bank.deposit_cap);
+            .add_attribute("amount", amount)
+            .add_attribute("cap", cap);
     }
 
     Ok(response)
