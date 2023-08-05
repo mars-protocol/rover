@@ -1,4 +1,5 @@
-mod helpers;
+// must be public module so that clippy doesn't complain "dead code"
+pub mod helpers;
 
 use std::collections::HashMap;
 
