@@ -33,7 +33,7 @@ use crate::helpers::{uatom_info, uosmo_info, AccountToFund, MockEnv};
     vec![
         Action::Deposit(Coin {
             denom: "uatom".into(),
-            amount: Uint128::new(123), // this exceeds the cap of 100
+            amount: Uint128::new(101), // this exceeds the cap of 100
         }),
         Action::Deposit(Coin {
             denom: "uosmo".into(),
@@ -49,7 +49,7 @@ use crate::helpers::{uatom_info, uosmo_info, AccountToFund, MockEnv};
         // this first action exceeds deposit cap...
         Action::Deposit(Coin {
             denom: "uatom".into(),
-            amount: Uint128::new(123),
+            amount: Uint128::new(101),
         }),
         // but we immediately does a swap to uatom, which does not exceed cap
         // therefore, the tx should be successful
