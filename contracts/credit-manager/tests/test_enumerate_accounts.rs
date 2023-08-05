@@ -42,7 +42,7 @@ fn pagination_on_accounts_query_works() {
     mock.create_hls_account(&user_c);
 
     let user_a_accounts = mock.query_accounts(user_a.as_str(), None, Some(2));
-    assert_eq!(user_a_accounts, vec![account_default("2"), account_default("2")]);
+    assert_eq!(user_a_accounts, vec![account_default("2"), account_default("3")]);
 
     let user_a_accounts = mock.query_accounts(user_a.as_str(), Some("3".to_string()), Some(2));
     assert_eq!(user_a_accounts, vec![account_hls("5"), account_default("7")]);
