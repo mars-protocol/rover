@@ -41,11 +41,11 @@ export const osmosisTestnetConfig: DeploymentConfig = {
   maxUnlockingPositions: '10',
   maxValueForBurn: '1000000',
   // Latest from: https://github.com/mars-protocol/outposts/blob/master/scripts/deploy/addresses/osmo-test-5.json
-  oracle: { addr: 'osmo1dxu93scjdnx42txdp9d4hm3snffvnzmkp4jpc9sml8xlu3ncgamsl2lx58' },
-  redBank: { addr: 'osmo1hs4sm0fah9rk4mz8e56v4n76g0q9fffdkkjm3f8tjagkdx78pqcq75pk0a' },
-  params: { addr: 'osmo1h334tvddn82m4apm08rm9k6kt32ws7vy0c4n30ngrvu6h6yxh8eq9l9jfh' },
-  incentives: { addr: 'osmo1nu0k6g294jela67vyth6nwr3l42gutq2m07pg9927f7v7tuv0d4sre9fr7' },
-  swapper: { addr: 'osmo1ee9cq8dcknmw43znznx6vuupx5ku0tt505agccgaz5gn48mhe45s3kwwfm' },
+  oracle: { addr: 'osmo18re397f67a9tg24z0y0jc5uqxpzh650u756vayc7m8z5kduxc26qcezun3' },
+  redBank: { addr: 'osmo1p8ace9lvs3epc224tj37rye3pydc5g94zp96avsp0xu0gqtvj0tsrye9zj' },
+  params: { addr: 'osmo1c6wlwq5zedr4l6qum0qyqsqsk4xmz9kfqzg3vchmdh95lxwgjmrqw8gy33' },
+  incentives: { addr: 'osmo1fvprlqakgcdc863pvr849yhdste4w4zasx2d9a35pr7wlm7myjzqh2jth5' },
+  swapper: { addr: 'osmo16lu9am0khx5ng0xgn9ckxqdzzth4f4rfyegss4l0qjgra952u8xsrn449m' },
   // Latest from: https://api.apollo.farm/api/graph?query=query+MyQuery+%7B%0A++vaults%28network%3A+osmo_test_5%29+%7B%0A++++label%0A++++contract_address%0A++%7D%0A%7D
   vaults: [aUSDC_OSMO_Config(ausdcOsmoVault), ATOM_OSMO_Config(atomOsmoVault)],
   swapperContractName: 'mars_swapper_osmosis',
