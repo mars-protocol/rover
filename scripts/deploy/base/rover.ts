@@ -120,9 +120,11 @@ export class Rover {
 
   async reclaim() {
     const positions = await this.query.positions({ accountId: this.accountId! })
-    printGreen(JSON.stringify(positions))
+    printGreen(JSON.stringify(positions.lends))
 
     const amount = this.actions.reclaimAmount
+    printGreen(JSON.stringify(amount))
+    printGreen(this.config.chain.baseDenom)
     await this.updateCreditAccount([
       { reclaim: { amount: { exact: amount }, denom: this.config.chain.baseDenom } },
     ])
