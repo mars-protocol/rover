@@ -17,7 +17,7 @@ pub fn refund_coin_balances(deps: DepsMut, env: Env, account_id: &str) -> Contra
         .map(|coin| {
             let action_amount = ActionAmount::AccountBalance;
             let action_coin = ActionCoin {
-                denom: coin.denom.to_string(),
+                denom: coin.denom,
                 amount: action_amount,
             };
             Ok(CosmosMsg::Wasm(WasmMsg::Execute {
