@@ -1,9 +1,11 @@
 use cosmwasm_std::{to_binary, Addr, CosmosMsg, DepsMut, Env, Response, WasmMsg};
 use mars_rover::{
     error::ContractResult,
-    msg::{execute::CallbackMsg, ExecuteMsg},
+    msg::{
+        execute::{ActionAmount, ActionCoin, CallbackMsg},
+        ExecuteMsg,
+    },
 };
-use mars_rover::msg::execute::{ActionAmount, ActionCoin};
 
 use crate::{query::query_coin_balances, utils::query_nft_token_owner};
 

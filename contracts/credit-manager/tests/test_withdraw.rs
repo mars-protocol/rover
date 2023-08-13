@@ -19,7 +19,7 @@ fn only_owner_of_token_can_withdraw() {
     let res = mock.update_credit_account(
         &account_id,
         &another_user,
-        vec![Action::Withdraw(coin(382, coin_info.denom))],
+        vec![Action::Withdraw(coin_info.to_action_coin(382))],
         &[],
     );
 
@@ -45,7 +45,7 @@ fn withdraw_nothing() {
     let res = mock.update_credit_account(
         &account_id,
         &user,
-        vec![Action::Withdraw(coin(0, coin_info.denom))],
+        vec![Action::Withdraw(coin_info.to_action_coin(0))],
         &[],
     );
 
@@ -65,7 +65,7 @@ fn withdraw_but_no_funds() {
     let res = mock.update_credit_account(
         &account_id,
         &user,
-        vec![Action::Withdraw(coin_info.to_coin(234))],
+        vec![Action::Withdraw(coin_info.to_action_coin(234))],
         &[],
     );
 
@@ -99,7 +99,10 @@ fn withdraw_but_not_enough_funds() {
     let res = mock.update_credit_account(
         &account_id,
         &user,
-        vec![Action::Deposit(coin_info.to_coin(300)), Action::Withdraw(coin_info.to_coin(400))],
+        vec![
+            Action::Deposit(coin_info.to_coin(300)),
+            Action::Withdraw(coin_info.to_action_coin(400)),
+        ],
         &[coin(300, coin_info.denom)],
     );
 
@@ -136,7 +139,7 @@ fn cannot_withdraw_more_than_healthy() {
         vec![
             Action::Deposit(coin_info.to_coin(200)),
             Action::Borrow(coin_info.to_coin(400)),
-            Action::Withdraw(coin_info.to_coin(50)),
+            Action::Withdraw(coin_info.to_action_coin(50)),
         ],
         &[coin(200, coin_info.denom)],
     );
@@ -173,7 +176,7 @@ fn withdraw_success() {
         &user,
         vec![
             Action::Deposit(coin_info.to_coin(deposit_amount)),
-            Action::Withdraw(coin_info.to_coin(deposit_amount)),
+            Action::Withdraw(coin_info.to_action_coin(deposit_amount)),
         ],
         &[Coin::new(deposit_amount, coin_info.denom.clone())],
     )
@@ -228,7 +231,7 @@ fn multiple_withdraw_actions() {
     mock.update_credit_account(
         &account_id,
         &user,
-        vec![Action::Withdraw(uosmo_info.to_coin(uosmo_amount.u128()))],
+        vec![Action::Withdraw(uosmo_info.to_action_coin(uosmo_amount.u128()))],
         &[],
     )
     .unwrap();
@@ -245,7 +248,7 @@ fn multiple_withdraw_actions() {
     mock.update_credit_account(
         &account_id,
         &user,
-        vec![Action::Withdraw(uatom_info.to_coin(20))],
+        vec![Action::Withdraw(uatom_info.to_action_coin(20))],
         &[],
     )
     .unwrap();
@@ -262,7 +265,7 @@ fn multiple_withdraw_actions() {
     mock.update_credit_account(
         &account_id,
         &user,
-        vec![Action::Withdraw(uatom_info.to_coin(5))],
+        vec![Action::Withdraw(uatom_info.to_action_coin(5))],
         &[],
     )
     .unwrap();
