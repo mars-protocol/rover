@@ -1,4 +1,5 @@
 use cosmwasm_std::{Addr, Coin, Deps, DepsMut, StdResult, Storage, Uint128};
+use cw_utils::Duration;
 use mars_red_bank_types::oracle::ActionKind;
 use mars_rover::{
     adapters::vault::{
@@ -49,6 +50,18 @@ pub fn assert_under_max_unlocking_limit(
         });
     }
     Ok(())
+}
+
+pub fn assert_lockup_duration(duration: Option<Duration>) -> Result<(), ContractError> {
+    match duration {
+        None => Err(ContractError::RequirementsNotMet(
+            "This vault does not require lockup. Call withdraw directly.".to_string(),
+        )),
+        Some(Duration::Height(0)) | Some(Duration::Time(0)) => {
+            Err(ContractError::RequirementsNotMet("Duration cannot be zero.".to_string()))
+        }
+        _ => Ok(()),
+    }
 }
 
 pub fn update_vault_position(

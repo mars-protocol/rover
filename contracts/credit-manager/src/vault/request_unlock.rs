@@ -11,7 +11,7 @@ use mars_rover::{
 use crate::{
     state::VAULT_REQUEST_TEMP_STORAGE,
     vault::{
-        assert_under_max_unlocking_limit,
+        assert_lockup_duration, assert_under_max_unlocking_limit,
         utils::{assert_vault_is_whitelisted, update_vault_position},
     },
 };
@@ -35,6 +35,10 @@ pub fn request_vault_unlock(
             "This vault does not require lockup. Call withdraw directly.".to_string(),
         )
     })?;
+
+    let duration = vault.query_lockup_duration(&deps.querier).ok();
+    assert_lockup_duration(duration).unwrap();
+
     assert_under_max_unlocking_limit(deps.storage, account_id, &vault)?;
 
     update_vault_position(
