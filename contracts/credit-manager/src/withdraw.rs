@@ -12,10 +12,7 @@ pub fn withdraw(
     coin: &ActionCoin,
     recipient: Addr,
 ) -> ContractResult<Response> {
-    let amount_to_withdraw = Coin {
-        denom: coin.denom.to_string(),
-        amount: get_withdraw_amount(deps.as_ref(), account_id, coin)?,
-    };
+    let amount_to_withdraw = get_withdraw_amount(deps.as_ref(), account_id, coin)?;
 
     decrement_coin_balance(deps.storage, account_id, &amount_to_withdraw)?;
 
@@ -29,19 +26,29 @@ pub fn withdraw(
         .add_message(transfer_msg)
         .add_attribute("action", "callback/withdraw")
         .add_attribute("account_id", account_id)
-        .add_attribute("coin_withdrawn", format!("{}{}",&coin.denom, amount_to_withdraw.amount)))
+        .add_attribute("coin_withdrawn", amount_to_withdraw.to_string()))
 }
 
 /// Queries
 /// Also asserts the amount is greater than zero.
-fn get_withdraw_amount(deps: Deps, account_id: &str, coin: &ActionCoin) -> ContractResult<Uint128> {
+fn get_withdraw_amount(deps: Deps, account_id: &str, coin: &ActionCoin) -> ContractResult<Coin> {
     if let Some(amount) = coin.amount.value() {
-        return Ok(amount);
+        let coin = Coin {
+            denom: coin.denom.clone(),
+            amount,
+        };
+        return Ok(coin);
     }
 
-    let Some(amount) = COIN_BALANCES.may_load(deps.storage, (account_id, &coin.denom))? else {
-        return Err(ContractError::NoAmount);
-    };
+    let amount = COIN_BALANCES.may_load(deps.storage, (account_id, &coin.denom))?;
 
-    Ok(amount)
+    if let Some(amount) = amount {
+        let coin = Coin {
+            denom: coin.denom.clone(),
+            amount,
+        };
+        return Ok(coin);
+    }
+
+    Err(ContractError::NoAmount)
 }

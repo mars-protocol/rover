@@ -213,7 +213,7 @@ fn withdraw_account_balance() {
         ],
         &[Coin::new(deposit_amount, coin_info.denom.clone())],
     )
-        .unwrap();
+    .unwrap();
 
     let res = mock.query_positions(&account_id);
     assert_eq!(res.deposits.len(), 0);
