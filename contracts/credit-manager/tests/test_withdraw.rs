@@ -190,6 +190,39 @@ fn withdraw_success() {
 }
 
 #[test]
+fn withdraw_account_balance() {
+    let coin_info = uosmo_info();
+    let user = Addr::unchecked("user");
+    let mut mock = MockEnv::new()
+        .set_params(&[coin_info.clone()])
+        .fund_account(AccountToFund {
+            addr: user.clone(),
+            funds: coins(300, coin_info.denom.clone()),
+        })
+        .build()
+        .unwrap();
+    let account_id = mock.create_credit_account(&user).unwrap();
+
+    let deposit_amount = 234;
+    mock.update_credit_account(
+        &account_id,
+        &user,
+        vec![
+            Action::Deposit(coin_info.to_coin(deposit_amount)),
+            Action::Withdraw(coin_info.to_action_coin_full_balance()),
+        ],
+        &[Coin::new(deposit_amount, coin_info.denom.clone())],
+    )
+        .unwrap();
+
+    let res = mock.query_positions(&account_id);
+    assert_eq!(res.deposits.len(), 0);
+
+    let coin = mock.query_balance(&mock.rover, &coin_info.denom);
+    assert_eq!(coin.amount, Uint128::zero())
+}
+
+#[test]
 fn multiple_withdraw_actions() {
     let uosmo_info = uosmo_info();
     let uatom_info = uatom_info();

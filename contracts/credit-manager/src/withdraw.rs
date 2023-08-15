@@ -29,21 +29,19 @@ pub fn withdraw(
         .add_message(transfer_msg)
         .add_attribute("action", "callback/withdraw")
         .add_attribute("account_id", account_id)
-        .add_attribute("coin_withdrawn", amount_to_withdraw.denom))
+        .add_attribute("coin_withdrawn", format!("{}{}",&coin.denom, amount_to_withdraw.amount)))
 }
 
-/// Queries balance to ensure passing EXACT is not too high.
+/// Queries
 /// Also asserts the amount is greater than zero.
 fn get_withdraw_amount(deps: Deps, account_id: &str, coin: &ActionCoin) -> ContractResult<Uint128> {
-    let amount_to_withdraw = if let Some(amount) = coin.amount.value() {
-        amount
-    } else {
-        COIN_BALANCES.may_load(deps.storage, (account_id, &coin.denom))?.unwrap_or(Uint128::zero())
+    if let Some(amount) = coin.amount.value() {
+        return Ok(amount);
+    }
+
+    let Some(amount) = COIN_BALANCES.may_load(deps.storage, (account_id, &coin.denom))? else {
+        return Err(ContractError::NoAmount);
     };
 
-    if amount_to_withdraw.is_zero() {
-        Err(ContractError::NoAmount)
-    } else {
-        Ok(amount_to_withdraw)
-    }
+    Ok(amount)
 }
