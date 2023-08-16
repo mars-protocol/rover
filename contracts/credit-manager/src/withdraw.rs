@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, Deps, DepsMut, Response, Uint128};
+use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, Deps, DepsMut, Response};
 use mars_rover::{
     error::{ContractError, ContractResult},
     msg::execute::ActionCoin,
@@ -40,15 +40,14 @@ fn get_withdraw_amount(deps: Deps, account_id: &str, coin: &ActionCoin) -> Contr
         return Ok(coin);
     }
 
-    let amount = COIN_BALANCES.may_load(deps.storage, (account_id, &coin.denom))?;
+    let Some(amount) = COIN_BALANCES.may_load(deps.storage, (account_id, &coin.denom))? else {
+        return Err(ContractError::NoAmount);
+    };
 
-    if let Some(amount) = amount {
-        let coin = Coin {
-            denom: coin.denom.clone(),
-            amount,
-        };
-        return Ok(coin);
-    }
+    let coin = Coin {
+        denom: coin.denom.clone(),
+        amount,
+    };
 
-    Err(ContractError::NoAmount)
+    Ok(coin)
 }

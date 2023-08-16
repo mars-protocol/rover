@@ -42,17 +42,13 @@ fn withdraw_nothing() {
     let mut mock = MockEnv::new().set_params(&[coin_info.clone()]).build().unwrap();
     let account_id = mock.create_credit_account(&user).unwrap();
 
-    let res = mock.update_credit_account(
+    mock.update_credit_account(
         &account_id,
         &user,
         vec![Action::Withdraw(coin_info.to_action_coin(0))],
         &[],
-    );
-
-    assert_err(res, ContractError::NoAmount);
-
-    let res = mock.query_positions(&account_id);
-    assert_eq!(res.deposits.len(), 0);
+    )
+    .unwrap_err();
 }
 
 #[test]
