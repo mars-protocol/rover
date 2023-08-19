@@ -15,7 +15,7 @@ pub fn refund_coin_balances(deps: DepsMut, env: Env, account_id: &str) -> Contra
     let withdraw_msgs = coins
         .into_iter()
         .map(|coin| {
-            let action_amount = ActionAmount::AccountBalance;
+            let action_amount = ActionAmount::Exact(coin.amount);
             let action_coin = ActionCoin {
                 denom: coin.denom,
                 amount: action_amount,

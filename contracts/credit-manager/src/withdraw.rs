@@ -29,10 +29,13 @@ pub fn withdraw(
         .add_attribute("coin_withdrawn", amount_to_withdraw.to_string()))
 }
 
-/// Queries
+/// Checks if Exact or Account Balance is passed through Action Coin
 /// Also asserts the amount is greater than zero.
 fn get_withdraw_amount(deps: Deps, account_id: &str, coin: &ActionCoin) -> ContractResult<Coin> {
     if let Some(amount) = coin.amount.value() {
+        if amount.is_zero() {
+            return Err(ContractError::NoAmount);
+        }
         let coin = Coin {
             denom: coin.denom.clone(),
             amount,
