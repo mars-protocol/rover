@@ -1,9 +1,8 @@
 use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, Deps, DepsMut, Response};
 use mars_rover::{
     error::{ContractError, ContractResult},
-    msg::execute::ActionCoin,
+    msg::execute::{ActionAmount, ActionCoin},
 };
-use mars_rover::msg::execute::ActionAmount;
 
 use crate::{state::COIN_BALANCES, utils::decrement_coin_balance};
 
