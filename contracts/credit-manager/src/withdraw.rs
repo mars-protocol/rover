@@ -3,6 +3,7 @@ use mars_rover::{
     error::{ContractError, ContractResult},
     msg::execute::ActionCoin,
 };
+use mars_rover::msg::execute::ActionAmount;
 
 use crate::{state::COIN_BALANCES, utils::decrement_coin_balance};
 
@@ -32,20 +33,16 @@ pub fn withdraw(
 /// Checks if Exact or Account Balance is passed through Action Coin
 /// Also asserts the amount is greater than zero.
 fn get_withdraw_amount(deps: Deps, account_id: &str, coin: &ActionCoin) -> ContractResult<Coin> {
-    if let Some(amount) = coin.amount.value() {
-        if amount.is_zero() {
-            return Err(ContractError::NoAmount);
+    let amount = match coin.amount {
+        ActionAmount::Exact(amount) => amount,
+        ActionAmount::AccountBalance => {
+            COIN_BALANCES.may_load(deps.storage, (account_id, &coin.denom))?.unwrap_or_default()
         }
-        let coin = Coin {
-            denom: coin.denom.clone(),
-            amount,
-        };
-        return Ok(coin);
-    }
-
-    let Some(amount) = COIN_BALANCES.may_load(deps.storage, (account_id, &coin.denom))? else {
-        return Err(ContractError::NoAmount);
     };
+
+    if amount.is_zero() {
+        return Err(ContractError::NoAmount);
+    }
 
     let coin = Coin {
         denom: coin.denom.clone(),
