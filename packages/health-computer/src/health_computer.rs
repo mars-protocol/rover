@@ -201,7 +201,9 @@ impl HealthComputer {
         match kind {
             SwapKind::Default => Ok(swappable_amount),
 
-            SwapKind::Margin => {
+            SwapKind::Margin {
+                slippage,
+            } => {
                 // If the swappable amount is less than the available amount, no need to further calculate
                 // the margin borrow amount.
                 if swappable_amount < from_coin.amount {
@@ -215,11 +217,14 @@ impl HealthComputer {
 
                 // The from_denom is always taken on as debt, as the trade is the bullish direction
                 // of the to_denom (expecting it to outpace the borrow rate from the from_denom)
-                let swap_to_ltv_value = from_coin_value.checked_mul_floor(to_ltv)?;
+                // The output value is corrected for slippage to more accurately represent market behaviour
+                let swap_to_ltv_value_slippage_adjusted = from_coin_value
+                    .checked_mul_floor(to_ltv)?
+                    .checked_mul_floor(Decimal::one() - slippage)?;
 
                 let total_max_ltv_adjust_value_after_swap = total_max_ltv_adjusted_value
                     .checked_sub(swap_from_ltv_value)?
-                    .checked_add(swap_to_ltv_value)?;
+                    .checked_add(swap_to_ltv_value_slippage_adjusted)?;
 
                 // The total swappable amount for margin is represented by the available coin balance + the
                 // the maximum amount that can be borrowed (and then swapped).

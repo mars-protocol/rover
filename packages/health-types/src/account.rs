@@ -1,7 +1,7 @@
 use std::fmt;
 
 use cosmwasm_schema::cw_serde;
-use cosmwasm_std::Addr;
+use cosmwasm_std::{Addr, Decimal};
 #[cfg(feature = "javascript")]
 use tsify::Tsify;
 
@@ -32,5 +32,7 @@ pub enum BorrowTarget {
 #[cfg_attr(feature = "javascript", tsify(into_wasm_abi, from_wasm_abi))]
 pub enum SwapKind {
     Default,
-    Margin,
+    Margin {
+        slippage: Decimal,
+    },
 }

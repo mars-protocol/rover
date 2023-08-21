@@ -53,6 +53,6 @@ export interface HealthValuesResponse {
   above_max_ltv: boolean
 }
 
-export type SwapKind = 'default' | 'margin'
+export type SwapKind = 'default' | { margin: { slippage: Decimal } }
 
 export type BorrowTarget = 'deposit' | 'wallet' | { vault: { address: Addr } }
