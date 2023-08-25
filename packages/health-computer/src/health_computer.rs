@@ -446,11 +446,16 @@ impl HealthComputer {
     }
 
     fn vaults_value(&self) -> HealthResult<CollateralValue> {
+        use web_sys::console;
+
+        console::log_1(&"vaults_value computation 1 ...".into());
+
         let mut total_collateral_value = Uint128::zero();
         let mut max_ltv_adjusted_collateral = Uint128::zero();
         let mut liquidation_threshold_adjusted_collateral = Uint128::zero();
 
         for v in &self.positions.vaults {
+            console::log_1(&"vaults_value computation 2 ...".into());
             // Step 1: Calculate Vault coin values
             let values = self
                 .vaults_data
@@ -459,6 +464,8 @@ impl HealthComputer {
                 .ok_or(MissingVaultValues(v.vault.address.to_string()))?;
 
             total_collateral_value = total_collateral_value.checked_add(values.vault_coin.value)?;
+
+            console::log_1(&"vaults_value computation 3 ...".into());
 
             let VaultConfig {
                 addr,
@@ -491,6 +498,8 @@ impl HealthComputer {
                 Decimal::zero()
             };
 
+            console::log_1(&"vaults_value computation 4 ...".into());
+
             max_ltv_adjusted_collateral = values
                 .vault_coin
                 .value
@@ -504,17 +513,25 @@ impl HealthComputer {
                 }
             };
 
+            console::log_1(&"vaults_value computation 5 ...".into());
+
             liquidation_threshold_adjusted_collateral = values
                 .vault_coin
                 .value
                 .checked_mul_floor(checked_liquidation_threshold)?
                 .checked_add(liquidation_threshold_adjusted_collateral)?;
 
+            console::log_1(&"vaults_value computation 6 ...".into());
+
             // Step 2: Calculate Base coin values
-            let res = self.coins_value(&[Coin {
+            // @bob - this line is problematic, there is no price for base_coin ;)
+            let res = self.coins_value(&[Coin { 
                 denom: values.base_coin.denom.clone(),
                 amount: v.amount.unlocking().total(),
             }])?;
+
+            console::log_1(&"vaults_value computation 7 ...".into());
+
             total_collateral_value =
                 total_collateral_value.checked_add(res.total_collateral_value)?;
             max_ltv_adjusted_collateral =
@@ -522,7 +539,11 @@ impl HealthComputer {
             liquidation_threshold_adjusted_collateral =
                 liquidation_threshold_adjusted_collateral
                     .checked_add(res.liquidation_threshold_adjusted_collateral)?;
+
+            console::log_1(&"vaults_value computation 8 ...".into());
         }
+
+        console::log_1(&"vaults_value computation 7 ...".into());
 
         Ok(CollateralValue {
             total_collateral_value,

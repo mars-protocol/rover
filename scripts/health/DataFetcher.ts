@@ -125,219 +125,223 @@ export class DataFetcher {
   computeHealth = async (accountId: string): Promise<HealthValuesResponse> => {
     // const positions = await this.assembleComputer(accountId)
     const positions: HealthComputer = {
-      "denoms_data": {
-        "params": {
-          "gamm/pool/12": {
-            "denom": "gamm/pool/12",
-            "credit_manager": {
-              "whitelisted": true,
-              "hls": null
+      denoms_data: {
+        params: {
+          'gamm/pool/12': {
+            denom: 'gamm/pool/12',
+            credit_manager: {
+              whitelisted: true,
+              hls: null,
             },
-            "red_bank": {
-              "deposit_enabled": false,
-              "borrow_enabled": false
+            red_bank: {
+              deposit_enabled: false,
+              borrow_enabled: false,
             },
-            "max_loan_to_value": "0.68",
-            "liquidation_threshold": "0.7",
-            "liquidation_bonus": {
-              "starting_lb": "0",
-              "slope": "2",
-              "min_lb": "0",
-              "max_lb": "0.05"
+            max_loan_to_value: '0.68',
+            liquidation_threshold: '0.7',
+            liquidation_bonus: {
+              starting_lb: '0',
+              slope: '2',
+              min_lb: '0',
+              max_lb: '0.05',
             },
-            "protocol_liquidation_fee": "0.5",
-            "deposit_cap": "100000000000"
+            protocol_liquidation_fee: '0.5',
+            deposit_cap: '100000000000',
           },
-          "gamm/pool/5": {
-            "denom": "gamm/pool/5",
-            "credit_manager": {
-              "whitelisted": true,
-              "hls": null
+          'gamm/pool/5': {
+            denom: 'gamm/pool/5',
+            credit_manager: {
+              whitelisted: true,
+              hls: null,
             },
-            "red_bank": {
-              "deposit_enabled": false,
-              "borrow_enabled": false
+            red_bank: {
+              deposit_enabled: false,
+              borrow_enabled: false,
             },
-            "max_loan_to_value": "0.68",
-            "liquidation_threshold": "0.7",
-            "liquidation_bonus": {
-              "starting_lb": "0",
-              "slope": "2",
-              "min_lb": "0",
-              "max_lb": "0.05"
+            max_loan_to_value: '0.68',
+            liquidation_threshold: '0.7',
+            liquidation_bonus: {
+              starting_lb: '0',
+              slope: '2',
+              min_lb: '0',
+              max_lb: '0.05',
             },
-            "protocol_liquidation_fee": "0.5",
-            "deposit_cap": "100000000000"
+            protocol_liquidation_fee: '0.5',
+            deposit_cap: '100000000000',
           },
-          "ibc/6F34E1BD664C36CE49ACC28E60D62559A5F96C4F9A6CCE4FC5A67B2852E24CFE": {
-            "denom": "ibc/6F34E1BD664C36CE49ACC28E60D62559A5F96C4F9A6CCE4FC5A67B2852E24CFE",
-            "credit_manager": {
-              "whitelisted": true,
-              "hls": null
+          'ibc/6F34E1BD664C36CE49ACC28E60D62559A5F96C4F9A6CCE4FC5A67B2852E24CFE': {
+            denom: 'ibc/6F34E1BD664C36CE49ACC28E60D62559A5F96C4F9A6CCE4FC5A67B2852E24CFE',
+            credit_manager: {
+              whitelisted: true,
+              hls: null,
             },
-            "red_bank": {
-              "deposit_enabled": true,
-              "borrow_enabled": true
+            red_bank: {
+              deposit_enabled: true,
+              borrow_enabled: true,
             },
-            "max_loan_to_value": "0.74",
-            "liquidation_threshold": "0.75",
-            "liquidation_bonus": {
-              "starting_lb": "0",
-              "slope": "2",
-              "min_lb": "0",
-              "max_lb": "0.05"
+            max_loan_to_value: '0.74',
+            liquidation_threshold: '0.75',
+            liquidation_bonus: {
+              starting_lb: '0',
+              slope: '2',
+              min_lb: '0',
+              max_lb: '0.05',
             },
-            "protocol_liquidation_fee": "0.5",
-            "deposit_cap": "500000000000"
+            protocol_liquidation_fee: '0.5',
+            deposit_cap: '500000000000',
           },
-          "ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477": {
-            "denom": "ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477",
-            "credit_manager": {
-              "whitelisted": true,
-              "hls": null
+          'ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477': {
+            denom: 'ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477',
+            credit_manager: {
+              whitelisted: true,
+              hls: null,
             },
-            "red_bank": {
-              "deposit_enabled": true,
-              "borrow_enabled": true
+            red_bank: {
+              deposit_enabled: true,
+              borrow_enabled: true,
             },
-            "max_loan_to_value": "0.68",
-            "liquidation_threshold": "0.7",
-            "liquidation_bonus": {
-              "starting_lb": "0",
-              "slope": "2",
-              "min_lb": "0",
-              "max_lb": "0.05"
+            max_loan_to_value: '0.68',
+            liquidation_threshold: '0.7',
+            liquidation_bonus: {
+              starting_lb: '0',
+              slope: '2',
+              min_lb: '0',
+              max_lb: '0.05',
             },
-            "protocol_liquidation_fee": "0.5",
-            "deposit_cap": "100000000000"
+            protocol_liquidation_fee: '0.5',
+            deposit_cap: '100000000000',
           },
-          "uosmo": {
-            "denom": "uosmo",
-            "credit_manager": {
-              "whitelisted": true,
-              "hls": null
+          uosmo: {
+            denom: 'uosmo',
+            credit_manager: {
+              whitelisted: true,
+              hls: null,
             },
-            "red_bank": {
-              "deposit_enabled": true,
-              "borrow_enabled": true
+            red_bank: {
+              deposit_enabled: true,
+              borrow_enabled: true,
             },
-            "max_loan_to_value": "0.59",
-            "liquidation_threshold": "0.61",
-            "liquidation_bonus": {
-              "starting_lb": "0",
-              "slope": "2",
-              "min_lb": "0",
-              "max_lb": "0.05"
+            max_loan_to_value: '0.59',
+            liquidation_threshold: '0.61',
+            liquidation_bonus: {
+              starting_lb: '0',
+              slope: '2',
+              min_lb: '0',
+              max_lb: '0.05',
             },
-            "protocol_liquidation_fee": "0.5",
-            "deposit_cap": "2500000000000"
-          }
+            protocol_liquidation_fee: '0.5',
+            deposit_cap: '2500000000000',
+          },
         },
-        "prices": {
-          "uosmo": "1",
-          "ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477": "18.032601591187270502",
-          "ibc/6F34E1BD664C36CE49ACC28E60D62559A5F96C4F9A6CCE4FC5A67B2852E24CFE": "2.44810249694002448",
-          "ibc/DB9D326CF53EA07610C394D714D78F8BB4DC7E312D4213193791A9046BF45E20": "0.12466728549597313",
-          "usd": "2.447980416156670747"
-        }
-      },
-      "vaults_data": {
-        "vault_configs": {
-          "osmo1m45ap4rq4m2mfjkcqu9ks9mxmyx2hvx0cdca9sjmrg46q7lghzqqhxxup5": {
-            "addr": "osmo1m45ap4rq4m2mfjkcqu9ks9mxmyx2hvx0cdca9sjmrg46q7lghzqqhxxup5",
-            "deposit_cap": {
-              "denom": "ibc/6F34E1BD664C36CE49ACC28E60D62559A5F96C4F9A6CCE4FC5A67B2852E24CFE",
-              "amount": "1000000000"
-            },
-            "max_loan_to_value": "0.63",
-            "liquidation_threshold": "0.65",
-            "whitelisted": true,
-            "hls": null
-          }
+        prices: {
+          uosmo: '1',
+          'ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477':
+            '18.032601591187270502',
+          'ibc/6F34E1BD664C36CE49ACC28E60D62559A5F96C4F9A6CCE4FC5A67B2852E24CFE':
+            '2.44810249694002448',
+          'ibc/DB9D326CF53EA07610C394D714D78F8BB4DC7E312D4213193791A9046BF45E20':
+            '0.12466728549597313',
+          usd: '2.447980416156670747',
         },
-        "vault_values": {
-          "osmo1m45ap4rq4m2mfjkcqu9ks9mxmyx2hvx0cdca9sjmrg46q7lghzqqhxxup5": {
-            "base_coin": {
-              "amount": "0",
-              "denom": "gamm/pool/12",
-              "value": "0"
-            },
-            "vault_coin": {
-              "amount": "0",
-              "denom": "factory/osmo1m45ap4rq4m2mfjkcqu9ks9mxmyx2hvx0cdca9sjmrg46q7lghzqqhxxup5/cwVTT",
-              "value": "1930432"
-            }
-          }
-        }
       },
-      "positions": {
-        "account_id": "10",
-        "debts": [
-          {
-            "shares": "0",
-            "amount": "1000455",
-            "denom": "ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477"
-          },
-          {
-            "shares": "0",
-            "amount": "121681959",
-            "denom": "uosmo"
-          }
-        ],
-        "deposits": [
-          {
-            "denom": "ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477",
-            "amount": "947986"
-          },
-          {
-            "denom": "uosmo",
-            "amount": "144046916"
-          }
-        ],
-        "lends": [
-          {
-            "shares": "0",
-            "amount": "63792919",
-            "denom": "ibc/6F34E1BD664C36CE49ACC28E60D62559A5F96C4F9A6CCE4FC5A67B2852E24CFE"
-          },
-          {
-            "shares": "0",
-            "amount": "13283922",
-            "denom": "ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477"
-          },
-          {
-            "shares": "0",
-            "amount": "267835023",
-            "denom": "uosmo"
-          }
-        ],
-        "vaults": [
-          {
-            "vault": {
-              "address": "osmo1m45ap4rq4m2mfjkcqu9ks9mxmyx2hvx0cdca9sjmrg46q7lghzqqhxxup5"
+      vaults_data: {
+        vault_configs: {
+          osmo1m45ap4rq4m2mfjkcqu9ks9mxmyx2hvx0cdca9sjmrg46q7lghzqqhxxup5: {
+            addr: 'osmo1m45ap4rq4m2mfjkcqu9ks9mxmyx2hvx0cdca9sjmrg46q7lghzqqhxxup5',
+            deposit_cap: {
+              denom: 'ibc/6F34E1BD664C36CE49ACC28E60D62559A5F96C4F9A6CCE4FC5A67B2852E24CFE',
+              amount: '1000000000',
             },
-            "amount": {
-              "locking": {
-                "locked": "55679789900460000000",
-                "unlocking": [
+            max_loan_to_value: '0.63',
+            liquidation_threshold: '0.65',
+            whitelisted: true,
+            hls: null,
+          },
+        },
+        vault_values: {
+          osmo1m45ap4rq4m2mfjkcqu9ks9mxmyx2hvx0cdca9sjmrg46q7lghzqqhxxup5: {
+            base_coin: {
+              amount: '0',
+              denom: 'gamm/pool/12',
+              value: '0',
+            },
+            vault_coin: {
+              amount: '0',
+              denom:
+                'factory/osmo1m45ap4rq4m2mfjkcqu9ks9mxmyx2hvx0cdca9sjmrg46q7lghzqqhxxup5/cwVTT',
+              value: '1930432',
+            },
+          },
+        },
+      },
+      positions: {
+        account_id: '10',
+        debts: [
+          {
+            shares: '0',
+            amount: '1000455',
+            denom: 'ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477',
+          },
+          {
+            shares: '0',
+            amount: '121681959',
+            denom: 'uosmo',
+          },
+        ],
+        deposits: [
+          {
+            denom: 'ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477',
+            amount: '947986',
+          },
+          {
+            denom: 'uosmo',
+            amount: '144046916',
+          },
+        ],
+        lends: [
+          {
+            shares: '0',
+            amount: '63792919',
+            denom: 'ibc/6F34E1BD664C36CE49ACC28E60D62559A5F96C4F9A6CCE4FC5A67B2852E24CFE',
+          },
+          {
+            shares: '0',
+            amount: '13283922',
+            denom: 'ibc/A8C2D23A1E6F95DA4E48BA349667E322BD7A6C996D8A4AAE8BA72E190F3D1477',
+          },
+          {
+            shares: '0',
+            amount: '267835023',
+            denom: 'uosmo',
+          },
+        ],
+        vaults: [
+          {
+            vault: {
+              address: 'osmo1m45ap4rq4m2mfjkcqu9ks9mxmyx2hvx0cdca9sjmrg46q7lghzqqhxxup5',
+            },
+            amount: {
+              locking: {
+                locked: '55679789900460000000',
+                unlocking: [
                   {
-                    "id": 0,
-                    "coin": {
-                      "amount": "0",
-                      "denom": "gamm/pool/12"
-                    }
-                  }
-                ]
-              }
-            }
-          }
-        ]
+                    id: 0,
+                    coin: {
+                      amount: '0',
+                      denom: 'gamm/pool/12',
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        ],
       },
-      "kind": "default"
+      kind: 'default',
     }
     console.log('adjusted positions', positions)
     try {
-      const res =  this.computeHealthFn(positions)
+      const res = this.computeHealthFn(positions)
       console.log('res', res)
     } catch (err) {
       console.error('err ', err)

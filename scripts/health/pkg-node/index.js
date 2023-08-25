@@ -1,15 +1,29 @@
 let imports = {}
 imports['__wbindgen_placeholder__'] = module.exports
 let wasm
-const { TextEncoder, TextDecoder } = require(`util`)
+const { TextDecoder, TextEncoder } = require(`util`)
+
+let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true })
+
+cachedTextDecoder.decode()
+
+let cachedUint8Memory0 = null
+
+function getUint8Memory0() {
+  if (cachedUint8Memory0 === null || cachedUint8Memory0.byteLength === 0) {
+    cachedUint8Memory0 = new Uint8Array(wasm.memory.buffer)
+  }
+  return cachedUint8Memory0
+}
+
+function getStringFromWasm0(ptr, len) {
+  ptr = ptr >>> 0
+  return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len))
+}
 
 const heap = new Array(128).fill(undefined)
 
 heap.push(undefined, null, true, false)
-
-function getObject(idx) {
-  return heap[idx]
-}
 
 let heap_next = heap.length
 
@@ -20,6 +34,10 @@ function addHeapObject(obj) {
 
   heap[idx] = obj
   return idx
+}
+
+function getObject(idx) {
+  return heap[idx]
 }
 
 function dropObject(idx) {
@@ -35,15 +53,6 @@ function takeObject(idx) {
 }
 
 let WASM_VECTOR_LEN = 0
-
-let cachedUint8Memory0 = null
-
-function getUint8Memory0() {
-  if (cachedUint8Memory0 === null || cachedUint8Memory0.byteLength === 0) {
-    cachedUint8Memory0 = new Uint8Array(wasm.memory.buffer)
-  }
-  return cachedUint8Memory0
-}
 
 let cachedTextEncoder = new TextEncoder('utf-8')
 
@@ -111,15 +120,6 @@ function getInt32Memory0() {
     cachedInt32Memory0 = new Int32Array(wasm.memory.buffer)
   }
   return cachedInt32Memory0
-}
-
-let cachedTextDecoder = new TextDecoder('utf-8', { ignoreBOM: true, fatal: true })
-
-cachedTextDecoder.decode()
-
-function getStringFromWasm0(ptr, len) {
-  ptr = ptr >>> 0
-  return cachedTextDecoder.decode(getUint8Memory0().subarray(ptr, ptr + len))
 }
 /**
  * @param {HealthComputer} c
@@ -215,6 +215,15 @@ function handleError(f, args) {
   }
 }
 
+module.exports.__wbindgen_string_new = function (arg0, arg1) {
+  const ret = getStringFromWasm0(arg0, arg1)
+  return addHeapObject(ret)
+}
+
+module.exports.__wbindgen_object_drop_ref = function (arg0) {
+  takeObject(arg0)
+}
+
 module.exports.__wbindgen_object_clone_ref = function (arg0) {
   const ret = getObject(arg0)
   return addHeapObject(ret)
@@ -225,8 +234,8 @@ module.exports.__wbindgen_is_undefined = function (arg0) {
   return ret
 }
 
-module.exports.__wbindgen_object_drop_ref = function (arg0) {
-  takeObject(arg0)
+module.exports.__wbg_log_1d3ae0273d8f4f8a = function (arg0) {
+  console.log(getObject(arg0))
 }
 
 module.exports.__wbindgen_string_get = function (arg0, arg1) {

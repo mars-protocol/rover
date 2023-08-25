@@ -14,7 +14,7 @@ const getFetcher = (cmAddress: string) => {
     compute_health_js,
     max_withdraw_estimate_js,
     max_borrow_estimate_js,
-    "osmo1zwugj8tz9nq63m3lxcfpunp0xr5lnlxdr0yyn4gpftx3ham09m4skn73ew",
+    'osmo1zwugj8tz9nq63m3lxcfpunp0xr5lnlxdr0yyn4gpftx3ham09m4skn73ew',
     osmosisTestnetConfig.oracle.addr,
     osmosisTestnetConfig.params.addr,
     osmosisTestnetConfig.chain.rpcEndpoint,

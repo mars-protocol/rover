@@ -1714,6 +1714,7 @@ dependencies = [
  "serde_json",
  "tsify",
  "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]
