@@ -71,12 +71,9 @@ impl HealthComputer {
     /// Note: This is an estimate. Guarantees to leave account healthy, but in edge cases,
     /// due to rounding, it may be slightly too conservative.
     pub fn max_withdraw_amount_estimate(&self, withdraw_denom: &str) -> HealthResult<Uint128> {
-        let withdraw_coin = self
-            .positions
-            .deposits
-            .iter()
-            .find(|c| c.denom == withdraw_denom)
-            .ok_or(DenomNotPresent(withdraw_denom.to_string()))?;
+        // Both deposits and lends should be considered, as the funds can automatically be un-lent and
+        // and also used to withdraw.
+        let withdraw_coin = self.get_coin_from_deposits_and_lends(withdraw_denom)?;
 
         let params = self
             .denoms_data
@@ -141,12 +138,9 @@ impl HealthComputer {
         to_denom: &str,
         kind: &SwapKind,
     ) -> HealthResult<Uint128> {
-        let from_coin = self
-            .positions
-            .deposits
-            .iter()
-            .find(|c| c.denom == *from_denom)
-            .ok_or(DenomNotPresent(from_denom.to_string()))?;
+        // Both deposits and lends should be considered, as the funds can automatically be un-lent and
+        // and also used to swap.
+        let from_coin = self.get_coin_from_deposits_and_lends(from_denom)?;
 
         // If no debt the total amount deposited can be swapped (only for default swaps)
         if kind == &SwapKind::Default && self.positions.debts.is_empty() {
@@ -548,5 +542,28 @@ impl HealthComputer {
                 .ok_or(MissingHLSParams(denom.to_string()))?
                 .max_loan_to_value),
         }
+    }
+
+    fn get_coin_from_deposits_and_lends(&self, denom: &str) -> HealthResult<Coin> {
+        let deposited_amount = self
+            .positions
+            .deposits
+            .iter()
+            .find(|c| c.denom == denom)
+            .ok_or(DenomNotPresent(denom.to_string()))?
+            .amount;
+
+        let lent_amount = self
+            .positions
+            .lends
+            .iter()
+            .find(|c| c.denom == denom)
+            .ok_or(DenomNotPresent(denom.to_string()))?
+            .amount;
+
+        Ok(Coin {
+            denom: denom.to_string(),
+            amount: deposited_amount.checked_add(lent_amount)?,
+        })
     }
 }
