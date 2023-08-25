@@ -242,6 +242,7 @@ export class DataFetcher {
           'ibc/DB9D326CF53EA07610C394D714D78F8BB4DC7E312D4213193791A9046BF45E20':
             '0.12466728549597313',
           usd: '2.447980416156670747',
+          'gamm/pool/12': '0.000000013879087463',
         },
       },
       vaults_data: {
