@@ -10,8 +10,7 @@ use mars_rover::msg::query::Positions;
 use mars_rover_health_types::{
     AccountKind, BorrowTarget, Health,
     HealthError::{
-        DenomNotPresent, MissingHLSParams, MissingParams, MissingPrice, MissingVaultConfig,
-        MissingVaultValues,
+        MissingHLSParams, MissingParams, MissingPrice, MissingVaultConfig, MissingVaultValues,
     },
     HealthResult, SwapKind,
 };
@@ -74,6 +73,9 @@ impl HealthComputer {
         // Both deposits and lends should be considered, as the funds can automatically be un-lent and
         // and also used to withdraw.
         let withdraw_coin = self.get_coin_from_deposits_and_lends(withdraw_denom)?;
+        if withdraw_coin.amount.is_zero() {
+            return Ok(Uint128::zero());
+        };
 
         let params = self
             .denoms_data
@@ -141,6 +143,9 @@ impl HealthComputer {
         // Both deposits and lends should be considered, as the funds can automatically be un-lent and
         // and also used to swap.
         let from_coin = self.get_coin_from_deposits_and_lends(from_denom)?;
+        if from_coin.amount.is_zero() {
+            return Ok(Uint128::zero());
+        };
 
         // If no debt the total amount deposited can be swapped (only for default swaps)
         if kind == &SwapKind::Default && self.positions.debts.is_empty() {
@@ -212,8 +217,8 @@ impl HealthComputer {
                 let swap_to_ltv_value = from_coin_value.checked_mul_floor(to_ltv)?;
 
                 let total_max_ltv_adjust_value_after_swap = total_max_ltv_adjusted_value
-                    .checked_sub(swap_from_ltv_value)?
-                    .checked_add(swap_to_ltv_value)?;
+                    .checked_add(swap_to_ltv_value)?
+                    .checked_sub(swap_from_ltv_value)?;
 
                 // The total swappable amount for margin is represented by the available coin balance + the
                 // the maximum amount that can be borrowed (and then swapped).
@@ -545,21 +550,11 @@ impl HealthComputer {
     }
 
     fn get_coin_from_deposits_and_lends(&self, denom: &str) -> HealthResult<Coin> {
-        let deposited_amount = self
-            .positions
-            .deposits
-            .iter()
-            .find(|c| c.denom == denom)
-            .ok_or(DenomNotPresent(denom.to_string()))?
-            .amount;
+        let deposited_coin = self.positions.deposits.iter().find(|c| c.denom == denom);
+        let deposited_amount = deposited_coin.unwrap_or(&Coin::default()).amount;
 
-        let lent_amount = self
-            .positions
-            .lends
-            .iter()
-            .find(|c| c.denom == denom)
-            .ok_or(DenomNotPresent(denom.to_string()))?
-            .amount;
+        let lent_coin = self.positions.lends.iter().find(|c| c.denom == denom);
+        let lent_amount = lent_coin.unwrap_or(&Coin::default()).amount;
 
         Ok(Coin {
             denom: denom.to_string(),
