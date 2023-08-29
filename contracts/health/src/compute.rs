@@ -7,6 +7,7 @@ use mars_rover_health_computer::{DenomsData, HealthComputer, VaultsData};
 use mars_rover_health_types::{AccountKind, HealthResult, HealthState, HealthValuesResponse};
 
 use crate::querier::HealthQuerier;
+use crate::state::CREDIT_MANAGER;
 
 /// Uses `mars-rover-health-computer` which is a data agnostic package given
 /// it's compiled to .wasm and shared with the frontend.
@@ -75,6 +76,9 @@ pub fn health_values(
 ) -> HealthResult<HealthValuesResponse> {
     let q = HealthQuerier::new(&deps)?;
     let positions = q.query_positions(account_id)?;
+    if !CREDIT_MANAGER {
+
+    }
     compute_health(deps, kind, q, positions, action)
 }
 
