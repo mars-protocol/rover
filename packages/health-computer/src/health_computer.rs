@@ -6,9 +6,6 @@ use mars_params::types::{
     asset::{AssetParams, CmSettings},
     vault::VaultConfig,
 };
-#[cfg(feature = "javascript")]
-use tsify::Tsify;
-
 use mars_rover::msg::query::Positions;
 use mars_rover_health_types::{
     AccountKind, BorrowTarget, Health,
@@ -17,6 +14,8 @@ use mars_rover_health_types::{
     },
     HealthResult, SwapKind,
 };
+#[cfg(feature = "javascript")]
+use tsify::Tsify;
 
 use crate::{CollateralValue, DenomsData, VaultsData};
 
@@ -357,9 +356,9 @@ impl HealthComputer {
                     .checked_sub(debt_value)?
                     .checked_sub(Uint128::one())?
                     .checked_div_floor(
-                        borrow_denom_price
-                            .checked_mul(Decimal::one().checked_sub(checked_vault_max_ltv)?)?,
-                    )?
+                    borrow_denom_price
+                        .checked_mul(Decimal::one().checked_sub(checked_vault_max_ltv)?)?,
+                )?
             }
         };
 
@@ -411,10 +410,10 @@ impl HealthComputer {
 
             let AssetParams {
                 credit_manager:
-                CmSettings {
-                    hls,
-                    ..
-                },
+                    CmSettings {
+                        hls,
+                        ..
+                    },
                 liquidation_threshold,
                 ..
             } = self.denoms_data.params.get(&c.denom).ok_or(MissingParams(c.denom.clone()))?;
