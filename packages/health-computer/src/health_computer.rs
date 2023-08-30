@@ -6,6 +6,9 @@ use mars_params::types::{
     asset::{AssetParams, CmSettings},
     vault::VaultConfig,
 };
+#[cfg(feature = "javascript")]
+use tsify::Tsify;
+
 use mars_rover::msg::query::Positions;
 use mars_rover_health_types::{
     AccountKind, BorrowTarget, Health,
@@ -14,8 +17,6 @@ use mars_rover_health_types::{
     },
     HealthResult, SwapKind,
 };
-#[cfg(feature = "javascript")]
-use tsify::Tsify;
 
 use crate::{CollateralValue, DenomsData, VaultsData};
 
@@ -143,9 +144,6 @@ impl HealthComputer {
         // Both deposits and lends should be considered, as the funds can automatically be un-lent and
         // and also used to swap.
         let from_coin = self.get_coin_from_deposits_and_lends(from_denom)?;
-        if from_coin.amount.is_zero() {
-            return Ok(Uint128::zero());
-        };
 
         // If no debt the total amount deposited can be swapped (only for default swaps)
         if kind == &SwapKind::Default && self.positions.debts.is_empty() {
@@ -359,9 +357,9 @@ impl HealthComputer {
                     .checked_sub(debt_value)?
                     .checked_sub(Uint128::one())?
                     .checked_div_floor(
-                    borrow_denom_price
-                        .checked_mul(Decimal::one().checked_sub(checked_vault_max_ltv)?)?,
-                )?
+                        borrow_denom_price
+                            .checked_mul(Decimal::one().checked_sub(checked_vault_max_ltv)?)?,
+                    )?
             }
         };
 
@@ -413,10 +411,10 @@ impl HealthComputer {
 
             let AssetParams {
                 credit_manager:
-                    CmSettings {
-                        hls,
-                        ..
-                    },
+                CmSettings {
+                    hls,
+                    ..
+                },
                 liquidation_threshold,
                 ..
             } = self.denoms_data.params.get(&c.denom).ok_or(MissingParams(c.denom.clone()))?;
