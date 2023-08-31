@@ -5,6 +5,7 @@ use mars_red_bank_types::oracle::ActionKind;
 use mars_rover::msg::query::Positions;
 use mars_rover_health_computer::{DenomsData, HealthComputer, VaultsData};
 use mars_rover_health_types::{AccountKind, HealthResult, HealthState, HealthValuesResponse};
+use crate::error::ContractError;
 
 use crate::querier::HealthQuerier;
 use crate::state::CREDIT_MANAGER;
@@ -76,8 +77,8 @@ pub fn health_values(
 ) -> HealthResult<HealthValuesResponse> {
     let q = HealthQuerier::new(&deps)?;
     let positions = q.query_positions(account_id)?;
-    if !CREDIT_MANAGER {
-
+    if CREDIT_MANAGER.is_none() {
+        ContractError::NoCreditManager {}
     }
     compute_health(deps, kind, q, positions, action)
 }
