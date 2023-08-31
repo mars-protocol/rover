@@ -295,7 +295,7 @@ fn successful_account_balance_lend() {
 }
 
 #[test]
-fn query_positions_succesfully_with_paginated_lends() {
+fn query_positions_successfully_with_paginated_lends() {
     let coins_info = vec![
         coin_info("coin_1"),
         coin_info("coin_2"),
