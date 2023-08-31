@@ -77,9 +77,6 @@ pub fn health_values(
 ) -> HealthResult<HealthValuesResponse> {
     let q = HealthQuerier::new(&deps)?;
     let positions = q.query_positions(account_id)?;
-    if CREDIT_MANAGER.is_none() {
-        ContractError::NoCreditManager {}
-    }
     compute_health(deps, kind, q, positions, action)
 }
 
