@@ -5,10 +5,8 @@ use mars_red_bank_types::oracle::ActionKind;
 use mars_rover::msg::query::Positions;
 use mars_rover_health_computer::{DenomsData, HealthComputer, VaultsData};
 use mars_rover_health_types::{AccountKind, HealthResult, HealthState, HealthValuesResponse};
-use crate::error::ContractError;
 
-use crate::querier::HealthQuerier;
-use crate::state::CREDIT_MANAGER;
+use crate::{error::ContractError, querier::HealthQuerier, state::CREDIT_MANAGER};
 
 /// Uses `mars-rover-health-computer` which is a data agnostic package given
 /// it's compiled to .wasm and shared with the frontend.
