@@ -1,11 +1,14 @@
-use cosmwasm_std::{coin, coins, Addr, Uint128};
+use cosmwasm_std::{coin, coins, Addr, StdError, Uint128};
 use mars_red_bank_types::oracle::ActionKind;
-use mars_rover::msg::execute::{
-    Action::{Borrow, Deposit, Repay, Withdraw},
-    ActionAmount, ActionCoin,
+use mars_rover::{
+    error::ContractError,
+    msg::execute::{
+        Action::{Borrow, Deposit, Repay, Withdraw},
+        ActionAmount, ActionCoin,
+    },
 };
 
-use crate::helpers::{get_coin, get_debt, uosmo_info, AccountToFund, MockEnv};
+use crate::helpers::{assert_err, get_coin, get_debt, uosmo_info, AccountToFund, MockEnv};
 
 pub mod helpers;
 
@@ -89,7 +92,7 @@ fn deposit_and_repay_works_without_hf_check() {
     .unwrap();
 
     // Repay for recepient should fail because of HF check
-    mock.update_credit_account(
+    let res = mock.update_credit_account(
         &account_id,
         &user,
         vec![Repay {
@@ -97,11 +100,13 @@ fn deposit_and_repay_works_without_hf_check() {
             coin: coin_info.to_action_coin(20),
         }],
         &[],
-    )
-    .unwrap_err();
+    );
+    assert_err(res, ContractError::Std(StdError::generic_err(
+        "Querier contract error: Generic error: Querier contract error: cosmwasm_std::math::decimal::Decimal not found".to_string()
+    )));
 
     // Deposit, repay and withdraw in the same TX. Should fail because of HF check
-    mock.update_credit_account(
+    let res = mock.update_credit_account(
         &account_id,
         &user,
         vec![
@@ -116,8 +121,10 @@ fn deposit_and_repay_works_without_hf_check() {
             }),
         ],
         &[coin(12, &coin_info.denom)],
-    )
-    .unwrap_err();
+    );
+    assert_err(res, ContractError::Std(StdError::generic_err(
+        "Querier contract error: Generic error: Querier contract error: cosmwasm_std::math::decimal::Decimal not found".to_string()
+    )));
 
     let position = mock.query_positions(&account_id);
     assert_eq!(position.deposits.len(), 1);
@@ -173,7 +180,7 @@ fn withdraw_works_without_hf_check_if_no_debt() {
     mock.remove_price(&coin_info.denom, ActionKind::Default);
 
     // Withdraw with existing debt in the account. Should fail because of HF check
-    mock.update_credit_account(
+    let res = mock.update_credit_account(
         &account_id,
         &user,
         vec![Withdraw(ActionCoin {
@@ -181,8 +188,10 @@ fn withdraw_works_without_hf_check_if_no_debt() {
             amount: ActionAmount::AccountBalance,
         })],
         &[],
-    )
-    .unwrap_err();
+    );
+    assert_err(res, ContractError::Std(StdError::generic_err(
+        "Querier contract error: Generic error: Querier contract error: cosmwasm_std::math::decimal::Decimal not found".to_string()
+    )));
 
     // Repay full debt. HF check should be skipped
     mock.update_credit_account(
