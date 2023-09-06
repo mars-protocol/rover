@@ -153,9 +153,9 @@ export class Deployer {
     await this.instantiate('creditManager', this.storage.codeIds.creditManager!, msg)
   }
 
-  async setConfigOnNftContractViaCreditManagerContract() {
-    if (this.storage.actions.nftContractConfigUpdate) {
-      printGray('NFT contract config already updated')
+  async setConfigOnCreditManagerContract() {
+    if (this.storage.actions.creditManagerContractConfigUpdate) {
+      printGray('credit manager contract config already updated')
     } else {
       const hExec = new MarsCreditManagerClient(
         this.cwClient,
@@ -163,14 +163,14 @@ export class Deployer {
         this.storage.addresses.creditManager!,
       )
 
-      printBlue('Setting health contract address in nft contract via credit manager')
+      printBlue('Setting health contract address in nft contract via credit manager contract')
       await hExec.updateNftConfig({
         config: {
           health_contract_addr: this.storage.addresses.healthContract!
         }
       })
     }
-    this.storage.actions.nftContractConfigUpdate = true
+    this.storage.actions.creditManagerContractConfigUpdate = true
   }
 
   async transferNftContractOwnership() {
