@@ -21,6 +21,7 @@ export interface DeploymentConfig {
     baseDenom: string
   }
   deployerMnemonic: string
+  addressProvider: { addr: string }
   oracle: { addr: string }
   redBank: { addr: string }
   incentives: { addr: string }
@@ -32,7 +33,6 @@ export interface DeploymentConfig {
   maxUnlockingPositions: string
   maxSlippage: string
   testActions?: TestActions
-  swapperContractName: string
   zapperContractName: string
   multisigAddr?: string
   runTests: boolean

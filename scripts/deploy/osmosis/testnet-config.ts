@@ -42,6 +42,7 @@ export const osmosisTestnetConfig: DeploymentConfig = {
   maxSlippage: '0.2',
   maxValueForBurn: '1000000',
   // Latest from: https://github.com/mars-protocol/outposts/blob/master/scripts/deploy/addresses/osmo-test-5.json
+  addressProvider: { addr: 'osmo1wlm6dc0vnncu2v5z26rv97plmlkmalm84uwqatrlftc4gmp8ahgqs6r4py' },
   redBank: { addr: 'osmo1hs4sm0fah9rk4mz8e56v4n76g0q9fffdkkjm3f8tjagkdx78pqcq75pk0a' },
   incentives: { addr: 'osmo1nu0k6g294jela67vyth6nwr3l42gutq2m07pg9927f7v7tuv0d4sre9fr7' },
   oracle: { addr: 'osmo1dxu93scjdnx42txdp9d4hm3snffvnzmkp4jpc9sml8xlu3ncgamsl2lx58' },
@@ -49,7 +50,6 @@ export const osmosisTestnetConfig: DeploymentConfig = {
   params: { addr: 'osmo1h334tvddn82m4apm08rm9k6kt32ws7vy0c4n30ngrvu6h6yxh8eq9l9jfh' },
   // Latest from: https://api.apollo.farm/api/graph?query=query+MyQuery+%7B%0A++vaults%28network%3A+osmo_test_5%29+%7B%0A++++label%0A++++contract_address%0A++%7D%0A%7D
   vaults: [aUSDC_OSMO_Config(ausdcOsmoVault), ATOM_OSMO_Config(atomOsmoVault)],
-  swapperContractName: 'mars_swapper_osmosis',
   zapperContractName: 'mars_v2_zapper_osmosis',
   runTests: true,
   testActions: {

@@ -93,6 +93,7 @@ export class Deployer {
     }
     this.storage.actions.healthContractConfigUpdate = true
   }
+
   async instantiateNftContract() {
     const msg: NftInstantiateMsg = {
       max_value_for_burn: this.config.maxValueForBurn,
@@ -150,6 +151,26 @@ export class Deployer {
     }
 
     await this.instantiate('creditManager', this.storage.codeIds.creditManager!, msg)
+  }
+
+  async setConfigOnNftContractViaCreditManagerContract() {
+    if (this.storage.actions.nftContractConfigUpdate) {
+      printGray('NFT contract config already updated')
+    } else {
+      const hExec = new MarsCreditManagerClient(
+        this.cwClient,
+        this.deployerAddr,
+        this.storage.addresses.creditManager!,
+      )
+
+      printBlue('Setting health contract address in nft contract via credit manager')
+      await hExec.updateNftConfig({
+        config: {
+          health_contract_addr: this.storage.addresses.healthContract!
+        }
+      })
+    }
+    this.storage.actions.nftContractConfigUpdate = true
   }
 
   async transferNftContractOwnership() {
@@ -232,6 +253,24 @@ export class Deployer {
     }
 
     this.storage.actions.grantedCreditLines = true
+  }
+
+  async updateAddressProviderWithNewAddrs() {
+    const wallet = await getWallet(
+      this.config.deployerMnemonic,
+      this.config.chain.prefix,
+    )
+    const client = await setupClient(this.config, wallet)
+    const addr = await getAddress(wallet)
+
+    const msg = {
+      set_address: {
+        address: this.storage.addresses.creditManager!,
+        address_type: 'credit_manager'
+      },
+    }
+    printBlue('Updating address-provider contract with new CM address')
+    await client.execute(addr, this.config.addressProvider.addr, msg, 'auto')
   }
 
   async updateCreditManagerOwner() {

@@ -22,6 +22,7 @@ export const osmosisMainnetConfig: DeploymentConfig = {
   maxSlippage: '0.2',
   maxValueForBurn: '10000',
   // oracle and redbank contract addresses can be found:  https://github.com/mars-protocol/red-bank/blob/master/README.md#osmosis-1
+  addressProvider: { addr: 'osmo1g677w7mfvn78eeudzwylxzlyz69fsgumqrscj6tekhdvs8fye3asufmvxr' },
   oracle: { addr: 'osmo1mhznfr60vjdp2gejhyv2gax9nvyyzhd3z0qcwseyetkfustjauzqycsy2g' },
   redBank: { addr: 'osmo1c3ljch9dfw5kf52nfwpxd2zmj2ese7agnx0p9tenkrryasrle5sqf3ftpg' },
   incentives: { addr: 'osmo1nkahswfr8shg8rlxqwup0vgahp0dk4x8w6tkv3rra8rratnut36sk22vrm' },
@@ -44,7 +45,6 @@ export const osmosisMainnetConfig: DeploymentConfig = {
       whitelisted: true,
     },
   ],
-  swapperContractName: 'mars_swapper_osmosis',
   zapperContractName: 'mars_zapper_osmosis',
 }
 
