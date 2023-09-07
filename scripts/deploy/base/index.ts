@@ -30,10 +30,10 @@ export const taskRunner = async ({ config, label }: TaskRunnerProps) => {
     await deployer.updateAddressProviderWithNewAddrs()
     await deployer.saveDeploymentAddrsToFile(label)
 
+    await deployer.grantCreditLines()
+
     // Test basic user flows
     if (config.runTests && config.testActions) {
-      await deployer.grantCreditLines()
-
       const rover = await deployer.newUserRoverClient(config.testActions)
       await rover.createCreditAccount()
       await rover.deposit()

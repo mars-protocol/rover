@@ -230,24 +230,22 @@ export class Deployer {
     }
 
     const wallet = await getWallet(
-      this.config.testActions!.outpostsDeployerMnemonic,
+      this.config.deployerMnemonic,
       this.config.chain.prefix,
     )
     const client = await setupClient(this.config, wallet)
     const addr = await getAddress(wallet)
 
-    for (const denom of this.config.testActions?.allowedCoinsConfig
-      .filter((c) => c.grantCreditLine)
-      .map((c) => c.denom) ?? []) {
+    for (const creditLineCoin of this.config.creditLineCoins) {
       const msg = {
         update_uncollateralized_loan_limit: {
           user: this.storage.addresses.creditManager,
-          denom,
-          new_limit: this.config.testActions!.defaultCreditLine,
+          denom: creditLineCoin.denom,
+          new_limit: creditLineCoin.creditLine,
         },
       }
       printBlue(
-        `Granting credit line to Rover for: ${this.config.testActions!.defaultCreditLine} ${denom}`,
+        `Granting credit line to Rover for: ${creditLineCoin.creditLine} ${creditLineCoin.denom}`,
       )
       await client.execute(addr, this.config.redBank.addr, msg, 'auto')
     }
