@@ -10,6 +10,7 @@ use mars_account_nft::{
     },
     msg::QueryMsg::NftInfo,
 };
+use mars_rover_health_types::AccountKind;
 
 use crate::helpers::{below_max_for_burn, generate_health_response, MockEnv, MAX_VALUE_FOR_BURN};
 
@@ -21,7 +22,7 @@ fn only_token_owner_can_burn() {
 
     let user = Addr::unchecked("user");
     let token_id = mock.mint(&user).unwrap();
-    mock.set_health_response(&user, &token_id, &below_max_for_burn());
+    mock.set_health_response(&user, &token_id, AccountKind::Default, &below_max_for_burn());
 
     let bad_guy = Addr::unchecked("bad_guy");
     let res = mock.burn(&bad_guy, &token_id);
@@ -47,7 +48,12 @@ fn burn_not_allowed_if_debt_balance() {
 
     let user = Addr::unchecked("user");
     let token_id = mock.mint(&user).unwrap();
-    mock.set_health_response(&user, &token_id, &generate_health_response(10_000, 0));
+    mock.set_health_response(
+        &user,
+        &token_id,
+        AccountKind::Default,
+        &generate_health_response(10_000, 0),
+    );
 
     let res = mock.burn(&user, &token_id);
     let error: ContractError = res.unwrap_err().downcast().unwrap();
@@ -68,6 +74,7 @@ fn burn_not_allowed_if_too_much_collateral() {
     mock.set_health_response(
         &user,
         &token_id,
+        AccountKind::Default,
         &generate_health_response(0, MAX_VALUE_FOR_BURN.add(Uint128::one()).into()),
     );
 
@@ -90,6 +97,7 @@ fn burn_allowance_at_exactly_max() {
     mock.set_health_response(
         &user,
         &token_id,
+        AccountKind::Default,
         &generate_health_response(0, MAX_VALUE_FOR_BURN.into()),
     );
 
@@ -102,7 +110,12 @@ fn burn_allowance_when_under_max() {
 
     let user = Addr::unchecked("user");
     let token_id = mock.mint(&user).unwrap();
-    mock.set_health_response(&user, &token_id, &generate_health_response(0, 500));
+    mock.set_health_response(
+        &user,
+        &token_id,
+        AccountKind::Default,
+        &generate_health_response(0, 500),
+    );
 
     // Assert no errors on calling for NftInfo
     let _: NftInfoResponse<Empty> = mock
@@ -116,7 +129,7 @@ fn burn_allowance_when_under_max() {
         )
         .unwrap();
 
-    mock.set_health_response(&user, &token_id, &below_max_for_burn());
+    mock.set_health_response(&user, &token_id, AccountKind::Default, &below_max_for_burn());
     mock.burn(&user, &token_id).unwrap();
 
     let res: StdResult<NftInfoResponse<Empty>> = mock.app.wrap().query_wasm_smart(

@@ -76,6 +76,7 @@ impl MockEnv {
         &mut self,
         sender: &Addr,
         account_id: &str,
+        kind: AccountKind,
         response: &HealthValuesResponse,
     ) -> AppResponse {
         let config = self.query_config();
@@ -86,7 +87,7 @@ impl MockEnv {
                 Addr::unchecked(config.health_contract_addr.unwrap()),
                 &SetHealthResponse {
                     account_id: account_id.to_string(),
-                    kind: AccountKind::Default,
+                    kind,
                     response: response.clone(),
                 },
                 &[],
