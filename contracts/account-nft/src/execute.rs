@@ -6,6 +6,7 @@ use cw721_base::{
     ContractError::Ownership,
     OwnershipError::{NoOwner, NotOwner},
 };
+use mars_account_nft_types::nft_config::NftConfigUpdates;
 use mars_red_bank_types::oracle::ActionKind;
 use mars_rover_health_types::{AccountKind, HealthValuesResponse, QueryMsg::HealthValues};
 
@@ -15,7 +16,6 @@ use crate::{
         ContractError,
         ContractError::{BaseError, BurnNotAllowed, HealthContractNotSet},
     },
-    nft_config::NftConfigUpdates,
     state::{CONFIG, NEXT_ID},
 };
 

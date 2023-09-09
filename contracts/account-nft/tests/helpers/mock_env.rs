@@ -7,7 +7,7 @@ use cw721_base::{
     Ownership,
 };
 use cw_multi_test::{App, AppResponse, BasicApp, Executor};
-use mars_account_nft::{
+use mars_account_nft_types::{
     msg::{ExecuteMsg, ExecuteMsg::UpdateConfig, QueryMsg},
     nft_config::{NftConfigUpdates, UncheckedNftConfig},
 };

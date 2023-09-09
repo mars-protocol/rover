@@ -1,5 +1,3 @@
-use std::convert::TryInto;
-
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
@@ -7,13 +5,15 @@ use cosmwasm_std::{
 };
 use cw2::set_contract_version;
 use cw721_base::Cw721Contract;
+use mars_account_nft_types::{
+    msg::{ExecuteMsg, InstantiateMsg, QueryMsg},
+    nft_config::NftConfig,
+};
 
 use crate::{
     error::ContractError,
     execute::{burn, mint, update_config},
     migrations,
-    msg::{ExecuteMsg, InstantiateMsg, QueryMsg},
-    nft_config::NftConfig,
     query::{query_config, query_next_id},
     state::{CONFIG, NEXT_ID},
 };

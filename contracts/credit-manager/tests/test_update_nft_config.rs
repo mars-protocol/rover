@@ -2,7 +2,7 @@ extern crate core;
 
 use cosmwasm_std::{Addr, Uint128};
 use cw_multi_test::Executor;
-use mars_account_nft::{msg::ExecuteMsg, nft_config::NftConfigUpdates};
+use mars_account_nft_types::{msg::ExecuteMsg, nft_config::NftConfigUpdates};
 use mars_owner::OwnerError::NotOwner;
 use mars_rover::error::ContractError;
 

@@ -3,7 +3,7 @@ use std::mem::take;
 use anyhow::Result as AnyResult;
 use cosmwasm_std::{Addr, Empty};
 use cw_multi_test::{BasicApp, Executor};
-use mars_account_nft::msg::InstantiateMsg;
+use mars_account_nft_types::msg::InstantiateMsg;
 
 use crate::helpers::{mock_health_contract, mock_nft_contract, MockEnv, MAX_VALUE_FOR_BURN};
 

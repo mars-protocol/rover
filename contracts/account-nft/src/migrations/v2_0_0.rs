@@ -1,10 +1,10 @@
 use cosmwasm_std::{DepsMut, Empty, Response};
 use cw2::set_contract_version;
+use mars_account_nft_types::nft_config::NftConfig;
 
 use crate::{
     contract::{CONTRACT_NAME, CONTRACT_VERSION},
     error::ContractError,
-    nft_config::NftConfig,
     state::CONFIG,
 };
 

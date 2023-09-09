@@ -3,13 +3,11 @@ use std::ops::Add;
 use cosmwasm_std::{Addr, Empty, StdResult, Uint128};
 use cw721::NftInfoResponse;
 use cw721_base::{ContractError::Ownership, OwnershipError::NotOwner};
-use mars_account_nft::{
-    error::{
-        ContractError,
-        ContractError::{BaseError, BurnNotAllowed, HealthContractNotSet},
-    },
-    msg::QueryMsg::NftInfo,
+use mars_account_nft::error::{
+    ContractError,
+    ContractError::{BaseError, BurnNotAllowed, HealthContractNotSet},
 };
+use mars_account_nft_types::msg::QueryMsg::NftInfo;
 use mars_rover_health_types::AccountKind;
 
 use crate::helpers::{below_max_for_burn, generate_health_response, MockEnv, MAX_VALUE_FOR_BURN};
