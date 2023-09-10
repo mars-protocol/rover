@@ -1,7 +1,7 @@
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Empty, Env, MessageInfo, Response, StdResult,
+    to_binary, Addr, Binary, Deps, DepsMut, Empty, Env, MessageInfo, Response, StdResult,
 };
 use cw2::set_contract_version;
 use cw721_base::Cw721Contract;
@@ -35,17 +35,12 @@ pub fn instantiate(
 
     NEXT_ID.save(deps.storage, &1)?;
 
-    let health_contract_addr = msg
-        .health_contract
-        .as_ref()
-        .map(|unchecked| deps.api.addr_validate(unchecked))
-        .transpose()?;
+    let validate_func = |contract: Option<&String>| -> StdResult<Option<Addr>> {
+        contract.map(|unchecked| deps.api.addr_validate(unchecked)).transpose()
+    };
 
-    let credit_manager_contract_addr = msg
-        .credit_manager_contract
-        .as_ref()
-        .map(|unchecked| deps.api.addr_validate(unchecked))
-        .transpose()?;
+    let health_contract_addr = validate_func(msg.health_contract.as_ref())?;
+    let credit_manager_contract_addr = validate_func(msg.credit_manager_contract.as_ref())?;
 
     CONFIG.save(
         deps.storage,
