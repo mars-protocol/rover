@@ -30,15 +30,15 @@ pub fn update_config(
         let account_nft = unchecked.check(deps.api)?;
         ACCOUNT_NFT.save(deps.storage, &account_nft)?;
 
-        // Accept minter role. NFT contract minter must have proposed Rover as a new minter first.
-        let accept_minter_role_msg = CosmosMsg::Wasm(WasmMsg::Execute {
+        // Accept ownership. NFT contract owner must have proposed Rover as a new owner first.
+        let accept_ownership_msg = CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: account_nft.address().into(),
             funds: vec![],
             msg: to_binary(&NftExecuteMsg::UpdateOwnership(Action::AcceptOwnership))?,
         });
 
         response = response
-            .add_message(accept_minter_role_msg)
+            .add_message(accept_ownership_msg)
             .add_attribute("key", "account_nft")
             .add_attribute("value", unchecked.address());
     }
