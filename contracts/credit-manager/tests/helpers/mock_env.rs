@@ -1384,6 +1384,7 @@ fn deploy_nft_contract(app: &mut App, minter: &Addr) -> Addr {
             name: "Rover Credit Account".to_string(),
             symbol: "RCA".to_string(),
             minter: minter.to_string(),
+            credit_manager_contract: None,
         },
         &[],
         "manager-mock-account-nft",

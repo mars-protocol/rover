@@ -138,3 +138,40 @@ fn burn_allowance_when_under_max() {
     );
     res.unwrap_err();
 }
+
+#[test]
+fn burn_uses_correct_account_kind_for_health_check() {
+    let mut mock = MockEnv::new().build().unwrap();
+
+    let user = Addr::unchecked("user");
+    let token_id = mock.mint(&user).unwrap();
+
+    // Provide different health responses for different account kinds
+    mock.set_health_response(
+        &user,
+        &token_id,
+        AccountKind::Default,
+        &generate_health_response(10_000, 0),
+    );
+    mock.set_health_response(
+        &user,
+        &token_id,
+        AccountKind::HighLeveredStrategy,
+        &generate_health_response(0, 0),
+    );
+
+    // Burn should fail for default account kind
+    mock.set_account_kind_response(&user, &token_id, AccountKind::Default);
+    let res = mock.burn(&user, &token_id);
+    let error: ContractError = res.unwrap_err().downcast().unwrap();
+    assert_eq!(
+        error,
+        BurnNotAllowed {
+            reason: "Account has a debt balance. Value: 10000.".to_string(),
+        }
+    );
+
+    // Override account kind. Burn should succeed for high levered strategy account kind
+    mock.set_account_kind_response(&user, &token_id, AccountKind::HighLeveredStrategy);
+    mock.burn(&user, &token_id).unwrap();
+}

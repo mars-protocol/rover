@@ -33,8 +33,10 @@ mars-rover-old          = { workspace = true }
 thiserror               = { workspace = true }
 
 [dev-dependencies]
-anyhow                 = { workspace = true }
-cw721-base-v16         = { package = "cw721-base", version = "0.16.0" }
-cw-multi-test          = { workspace = true }
-mars-mock-rover-health = { workspace = true }
-serde_json             = { workspace = true }
+anyhow                   = { workspace = true }
+cw721-base-v16           = { package = "cw721-base", version = "0.16.0" }
+cw-multi-test            = { workspace = true }
+mars-mock-credit-manager = { workspace = true }
+mars-mock-rover-health   = { workspace = true }
+mars-owner               = { workspace = true }
+serde_json               = { workspace = true }

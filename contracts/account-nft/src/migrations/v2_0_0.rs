@@ -31,8 +31,10 @@ pub fn migrate(deps: DepsMut) -> Result<Response, ContractError> {
     CONFIG.save(
         deps.storage,
         &NftConfig {
+            // health_contract_addr and credit_manager_contract_addr can be updated via update_config
             max_value_for_burn: old_config_state.max_value_for_burn,
-            health_contract_addr: None, // this can be updated via update_config
+            health_contract_addr: None,
+            credit_manager_contract_addr: None,
         },
     )?;
 

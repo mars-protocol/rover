@@ -41,11 +41,18 @@ pub fn instantiate(
         .map(|unchecked| deps.api.addr_validate(unchecked))
         .transpose()?;
 
+    let credit_manager_contract_addr = msg
+        .credit_manager_contract
+        .as_ref()
+        .map(|unchecked| deps.api.addr_validate(unchecked))
+        .transpose()?;
+
     CONFIG.save(
         deps.storage,
         &NftConfig {
             max_value_for_burn: msg.max_value_for_burn,
             health_contract_addr,
+            credit_manager_contract_addr,
         },
     )?;
 
