@@ -33,7 +33,7 @@ use crate::{
         enter_vault, exit_vault, exit_vault_unlocked, liquidate_vault, request_vault_unlock,
         update_vault_coin_balance,
     },
-    withdraw::withdraw,
+    withdraw::{send, withdraw},
     zap::{provide_liquidity, withdraw_liquidity},
 };
 
@@ -161,6 +161,7 @@ pub fn dispatch_actions(
             }),
             Action::ClaimRewards {} => callbacks.push(CallbackMsg::ClaimRewards {
                 account_id: account_id.to_string(),
+                recipient: info.sender.clone(),
             }),
             Action::EnterVault {
                 vault,
@@ -348,7 +349,8 @@ pub fn execute_callback(
         } => reclaim(deps, &account_id, &coin),
         CallbackMsg::ClaimRewards {
             account_id,
-        } => claim_rewards(deps, env, &account_id),
+            recipient,
+        } => claim_rewards(deps, env, &account_id, recipient),
         CallbackMsg::AssertMaxLTV {
             account_id,
             prev_health_state,
@@ -465,5 +467,10 @@ pub fn execute_callback(
             account_id,
         } => assert_hls_rules(deps.as_ref(), &account_id),
         CallbackMsg::RemoveReentrancyGuard {} => REENTRANCY_GUARD.try_unlock(deps.storage),
+        CallbackMsg::Send {
+            account_id,
+            previous_balances,
+            recipient,
+        } => send(deps, &env.contract.address, &account_id, recipient, previous_balances),
     }
 }

@@ -141,6 +141,28 @@ pub fn update_balance_after_vault_liquidation_msg(
     }))
 }
 
+pub fn send_balances_msgs(
+    querier: &QuerierWrapper,
+    rover_addr: &Addr,
+    account_id: &str,
+    recipient: Addr,
+    denoms: Vec<&str>,
+) -> StdResult<CosmosMsg> {
+    let coins = denoms
+        .iter()
+        .map(|denom| query_balance(querier, rover_addr, denom))
+        .collect::<StdResult<Vec<_>>>()?;
+    Ok(CosmosMsg::Wasm(WasmMsg::Execute {
+        contract_addr: rover_addr.to_string(),
+        funds: vec![],
+        msg: to_binary(&ExecuteMsg::Callback(CallbackMsg::Send {
+            account_id: account_id.to_string(),
+            previous_balances: coins,
+            recipient,
+        }))?,
+    }))
+}
+
 pub fn debt_shares_to_amount(deps: Deps, denom: &str, shares: Uint128) -> ContractResult<Coin> {
     // total shares of debt issued for denom
     let total_debt_shares = TOTAL_DEBT_SHARES.load(deps.storage, denom).unwrap_or(Uint128::zero());
