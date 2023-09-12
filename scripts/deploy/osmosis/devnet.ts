@@ -13,7 +13,8 @@ const defaultCreditLine = '1000000000000'
 
 export const osmosisDevnetConfig: DeploymentConfig = {
   // multisigAddr: 'osmo14w4x949nwcrqgfe53pxs3k7x53p0gvlrq34l5n',
-  creditLineCoins: [ // AXL and stAtom has borrowing disabled
+  creditLineCoins: [
+    // AXL and stAtom has borrowing disabled
     { denom: osmo, creditLine: defaultCreditLine },
     { denom: atom, creditLine: defaultCreditLine },
     { denom: wbtc, creditLine: defaultCreditLine },
@@ -27,16 +28,17 @@ export const osmosisDevnetConfig: DeploymentConfig = {
     prefix: 'osmo',
     rpcEndpoint: 'https://rpc.devnet.osmosis.zone',
   },
-  deployerMnemonic: 'TODO',
+  deployerMnemonic:
+    'TODO',
   maxUnlockingPositions: '1',
   maxValueForBurn: '10000',
   // oracle and redbank contract addresses can be found:  https://github.com/mars-protocol/red-bank/blob/master/README.md#osmosis-1
-  addressProvider: { addr: 'osmo1mgt372t6vjmxpax53746ywcecum7wg0ye5ptaf42rjwat9qcqnhqgvfp8q' },
-  oracle: { addr: 'osmo1ht8js7p6y5jxthze8hy3egfxflh8t9mvkl79w75mg6atu4ssfc0s7z8jd6' },
-  redBank: { addr: 'osmo1wpqx4mhe5hmgte8s4etam4syfxjt83zwvejhgsmcludfpt5hd6kqg5zwy5' },
-  incentives: { addr: 'osmo1kg8uzrhqnjp0a4rp6c6wtnl3y4prth7v54h5gwnkwgtn82yealxsdysvp0' },
-  params: { addr: 'osmo1ytn4v3pd9ecklqf32pusephxpnfvnev7657rprr3jh43rchygvmq3fjp85' },
-  swapper: { addr: 'osmo1x6ttpp3vpzaknxcc25u0mjrlnagu3agvwnyl0wpwhtjdljaw8aks6e28hv' },
+  addressProvider: { addr: 'osmo1x7udlkawmkz2u5th5x3cjxht2yvjgph7pg8l9rumaa3lak922dgsr3lmhc' },
+  oracle: { addr: 'osmo1dh8f3rhg4eruc9w7c9d5e06eupqqrth7v32ladwkyphvnn66muzqxcfe60' },
+  redBank: { addr: 'osmo1pvrlpmdv3ee6lgmxd37n29gtdahy4tec7c5nyer9aphvfr526z6sff9zdg' },
+  incentives: { addr: 'osmo1aemnaq5x3jkttnd38g7lewh24nh90r9zwh8853qv3tkf47p2hnasaae0e4' },
+  params: { addr: 'osmo1dpwu03xc45vpqur6ry69xjhltq4v0snrhaukcp4fvhucx0wypzhs978lnp' },
+  swapper: { addr: 'osmo17c4retwuyxjxzv9f2q9r0272s8smktpzhjetssttxxdavarjtujsjqafa2' },
   runTests: false,
   vaults: [],
   zapperContractName: 'mars_v2_zapper_osmosis',

@@ -166,8 +166,9 @@ export class Deployer {
       printBlue('Setting health contract address in nft contract via credit manager contract')
       await hExec.updateNftConfig({
         config: {
-          health_contract_addr: this.storage.addresses.healthContract!
-        }
+          health_contract_addr: this.storage.addresses.healthContract!,
+          credit_manager_contract_addr: this.storage.addresses.creditManager!,
+        },
       })
     }
     this.storage.actions.creditManagerContractConfigUpdate = true
@@ -229,10 +230,7 @@ export class Deployer {
       return
     }
 
-    const wallet = await getWallet(
-      this.config.deployerMnemonic,
-      this.config.chain.prefix,
-    )
+    const wallet = await getWallet(this.config.deployerMnemonic, this.config.chain.prefix)
     const client = await setupClient(this.config, wallet)
     const addr = await getAddress(wallet)
 
@@ -254,17 +252,14 @@ export class Deployer {
   }
 
   async updateAddressProviderWithNewAddrs() {
-    const wallet = await getWallet(
-      this.config.deployerMnemonic,
-      this.config.chain.prefix,
-    )
+    const wallet = await getWallet(this.config.deployerMnemonic, this.config.chain.prefix)
     const client = await setupClient(this.config, wallet)
     const addr = await getAddress(wallet)
 
     const msg = {
       set_address: {
         address: this.storage.addresses.creditManager!,
-        address_type: 'credit_manager'
+        address_type: 'credit_manager',
       },
     }
     printBlue('Updating address-provider contract with new CM address')

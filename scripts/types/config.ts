@@ -27,7 +27,7 @@ export interface DeploymentConfig {
   params: { addr: string }
   swapper: { addr: string }
   vaults: VaultConfigBaseForString[]
-  creditLineCoins: { denom: string; creditLine: String }[],
+  creditLineCoins: { denom: string; creditLine: String }[]
   maxValueForBurn: string
   maxUnlockingPositions: string
   maxSlippage: string
