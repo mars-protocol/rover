@@ -31,6 +31,15 @@ pub fn assert_is_token_owner(deps: &DepsMut, user: &Addr, account_id: &str) -> C
     Ok(())
 }
 
+pub fn assert_max_slippage(max_slippage: Decimal) -> ContractResult<()> {
+    if max_slippage.is_zero() || max_slippage >= Decimal::one() {
+        return Err(ContractError::InvalidConfig {
+            reason: "Max slippage must be between 0 and 1".to_string(),
+        });
+    }
+    Ok(())
+}
+
 pub fn query_nft_token_owner(deps: Deps, account_id: &str) -> ContractResult<String> {
     let contract_addr = ACCOUNT_NFT.load(deps.storage)?;
     let res: OwnerOfResponse = deps.querier.query_wasm_smart(

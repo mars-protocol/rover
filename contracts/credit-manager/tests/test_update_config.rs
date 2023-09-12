@@ -29,6 +29,7 @@ fn only_owner_can_update_config() {
             red_bank: None,
             incentives: None,
             max_unlocking_positions: None,
+            max_slippage: None,
             swapper: None,
             zapper: None,
             health_contract: None,
@@ -52,6 +53,7 @@ fn update_config_works_with_full_config() {
     let new_incentives = IncentivesUnchecked::new("new_incentives".to_string());
     let new_zapper = ZapperBase::new("new_zapper".to_string());
     let new_unlocking_max = Uint128::new(321);
+    let new_max_slippage = Decimal::percent(12);
     let new_swapper = SwapperBase::new("new_swapper".to_string());
     let new_health_contract = HealthContractUnchecked::new("new_health_contract".to_string());
     let new_rewards_collector = "rewards_collector_contract_new".to_string();
@@ -64,6 +66,7 @@ fn update_config_works_with_full_config() {
             red_bank: Some(new_red_bank.clone()),
             incentives: Some(new_incentives.clone()),
             max_unlocking_positions: Some(new_unlocking_max),
+            max_slippage: Some(new_max_slippage),
             swapper: Some(new_swapper.clone()),
             zapper: Some(new_zapper.clone()),
             health_contract: Some(new_health_contract.clone()),
@@ -93,6 +96,9 @@ fn update_config_works_with_full_config() {
 
     assert_eq!(new_config.max_unlocking_positions, new_unlocking_max);
     assert_ne!(new_config.max_unlocking_positions, original_config.max_unlocking_positions);
+
+    assert_eq!(new_config.max_slippage, new_max_slippage);
+    assert_ne!(new_config.max_slippage, original_config.max_slippage);
 
     assert_eq!(&new_config.swapper, new_swapper.address());
     assert_ne!(new_config.swapper, original_config.swapper);
