@@ -1,5 +1,6 @@
 use cosmwasm_std::{Addr, Decimal, Empty, Uint128};
 use cw_multi_test::{BasicApp, Executor};
+use helpers::assert_err;
 use mars_mock_oracle::msg::{CoinPrice, InstantiateMsg as OracleInstantiateMsg};
 use mars_red_bank_types::oracle::ActionKind;
 use mars_rover::{
@@ -8,6 +9,7 @@ use mars_rover::{
         red_bank::RedBankUnchecked, rewards_collector::RewardsCollector, swap::SwapperBase,
         zapper::ZapperBase,
     },
+    error::ContractError,
     msg::instantiate::ConfigUpdates,
 };
 use mars_rover_health_types::AccountKind;
@@ -40,6 +42,40 @@ fn only_owner_can_update_config() {
     if res.is_ok() {
         panic!("only owner should be able to update config");
     }
+}
+
+#[test]
+fn invalid_max_slippage() {
+    let mut mock = MockEnv::new().build().unwrap();
+    let original_config = mock.query_config();
+
+    let res = mock.update_config(
+        &Addr::unchecked(original_config.ownership.owner.clone().unwrap()),
+        ConfigUpdates {
+            max_slippage: Some(Decimal::zero()),
+            ..Default::default()
+        },
+    );
+    assert_err(
+        res,
+        ContractError::InvalidConfig {
+            reason: "Max slippage must be between 0 and 1".to_string(),
+        },
+    );
+
+    let res = mock.update_config(
+        &Addr::unchecked(original_config.ownership.owner.unwrap()),
+        ConfigUpdates {
+            max_slippage: Some(Decimal::one()),
+            ..Default::default()
+        },
+    );
+    assert_err(
+        res,
+        ContractError::InvalidConfig {
+            reason: "Max slippage must be between 0 and 1".to_string(),
+        },
+    );
 }
 
 #[test]
