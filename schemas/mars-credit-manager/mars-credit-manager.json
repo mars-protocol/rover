@@ -1369,13 +1369,13 @@
             "additionalProperties": false
           },
           {
-            "description": "Send specified amount of coin from credit manager to recepient",
+            "description": "Send reward amounts of coin from credit manager to recipient by querying balance, claiming rewards, and comparing previous balance to new balance after reward claim - send the diff to the recipient.",
             "type": "object",
             "required": [
-              "send"
+              "send_rewards_to_addr"
             ],
             "properties": {
-              "send": {
+              "send_rewards_to_addr": {
                 "type": "object",
                 "required": [
                   "account_id",

@@ -322,7 +322,7 @@ export type CallbackMsg =
       remove_reentrancy_guard: {}
     }
   | {
-      send: {
+      send_rewards_to_addr: {
         account_id: string
         previous_balances: Coin[]
         recipient: Addr

@@ -1,14 +1,21 @@
-use cosmwasm_std::{Addr, DepsMut, Env, Response};
+use cosmwasm_std::{
+    to_binary, Addr, BankMsg, Coin, CosmosMsg, DepsMut, Env, QuerierWrapper, Response, StdResult,
+    WasmMsg,
+};
 use mars_rover::{
     error::{ContractError, ContractResult},
-    msg::execute::ChangeExpected,
+    msg::{
+        execute::{CallbackMsg, ChangeExpected},
+        ExecuteMsg,
+    },
     traits::Denoms,
 };
 use mars_rover_health_types::AccountKind;
 
 use crate::{
     state::INCENTIVES,
-    utils::{get_account_kind, send_balances_msgs, update_balances_msgs},
+    update_coin_balances::query_balance,
+    utils::{get_account_kind, update_balances_msgs},
 };
 
 pub fn claim_rewards(
@@ -38,11 +45,11 @@ pub fn claim_rewards(
             ChangeExpected::Increase,
         )?,
         AccountKind::HighLeveredStrategy => {
-            let msg = send_balances_msgs(
+            let msg = send_rewards_msg(
                 &deps.querier,
                 &env.contract.address,
                 account_id,
-                recipient,
+                recipient.clone(),
                 unclaimed_rewards.to_denoms(),
             )?;
             vec![msg]
@@ -53,5 +60,60 @@ pub fn claim_rewards(
         .add_message(incentives.claim_rewards_msg(account_id)?)
         .add_messages(msgs)
         .add_attribute("action", "claim_rewards")
-        .add_attribute("account_id", account_id))
+        .add_attribute("account_id", account_id)
+        .add_attribute("recipient", recipient.to_string()))
+}
+
+fn send_rewards_msg(
+    querier: &QuerierWrapper,
+    credit_manager_addr: &Addr,
+    account_id: &str,
+    recipient: Addr,
+    denoms: Vec<&str>,
+) -> StdResult<CosmosMsg> {
+    let coins = denoms
+        .iter()
+        .map(|denom| query_balance(querier, credit_manager_addr, denom))
+        .collect::<StdResult<Vec<_>>>()?;
+    Ok(CosmosMsg::Wasm(WasmMsg::Execute {
+        contract_addr: credit_manager_addr.to_string(),
+        funds: vec![],
+        msg: to_binary(&ExecuteMsg::Callback(CallbackMsg::SendRewardsToAddr {
+            account_id: account_id.to_string(),
+            previous_balances: coins,
+            recipient,
+        }))?,
+    }))
+}
+
+pub fn send_rewards(
+    deps: DepsMut,
+    credit_manager_addr: &Addr,
+    account_id: &str,
+    recipient: Addr,
+    previous_balances: Vec<Coin>,
+) -> ContractResult<Response> {
+    let coins = previous_balances
+        .into_iter()
+        .map(|coin| {
+            let current_balance = query_balance(&deps.querier, credit_manager_addr, &coin.denom)?;
+            let amount_to_withdraw = current_balance.amount.checked_sub(coin.amount)?;
+            Ok(Coin {
+                denom: coin.denom,
+                amount: amount_to_withdraw,
+            })
+        })
+        .collect::<StdResult<Vec<_>>>()?;
+
+    // send coin to recipient
+    let transfer_msg = CosmosMsg::Bank(BankMsg::Send {
+        to_address: recipient.to_string(),
+        amount: coins,
+    });
+
+    Ok(Response::new()
+        .add_message(transfer_msg)
+        .add_attribute("action", "callback/send_rewards")
+        .add_attribute("account_id", account_id)
+        .add_attribute("recipient", recipient.to_string()))
 }

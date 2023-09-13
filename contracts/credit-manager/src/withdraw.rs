@@ -1,11 +1,11 @@
-use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, Deps, DepsMut, Response, StdResult};
+use cosmwasm_std::{Addr, BankMsg, Coin, CosmosMsg, Deps, DepsMut, Response};
 use mars_rover::{
     error::{ContractError, ContractResult},
     msg::execute::{ActionAmount, ActionCoin},
 };
 
 use crate::{
-    state::COIN_BALANCES, update_coin_balances::query_balance, utils::decrement_coin_balance,
+    state::COIN_BALANCES, utils::decrement_coin_balance,
 };
 
 pub fn withdraw(
@@ -51,35 +51,4 @@ fn get_withdraw_amount(deps: Deps, account_id: &str, coin: &ActionCoin) -> Contr
     };
 
     Ok(coin)
-}
-
-pub fn send(
-    deps: DepsMut,
-    rover_addr: &Addr,
-    account_id: &str,
-    recipient: Addr,
-    previous_balances: Vec<Coin>,
-) -> ContractResult<Response> {
-    let coins = previous_balances
-        .into_iter()
-        .map(|coin| {
-            let current_balance = query_balance(&deps.querier, rover_addr, &coin.denom)?;
-            let amount_to_withdraw = current_balance.amount.checked_sub(coin.amount)?;
-            Ok(Coin {
-                denom: coin.denom,
-                amount: amount_to_withdraw,
-            })
-        })
-        .collect::<StdResult<Vec<_>>>()?;
-
-    // send coin to recipient
-    let transfer_msg = CosmosMsg::Bank(BankMsg::Send {
-        to_address: recipient.to_string(),
-        amount: coins,
-    });
-
-    Ok(Response::new()
-        .add_message(transfer_msg)
-        .add_attribute("action", "callback/send")
-        .add_attribute("account_id", account_id))
 }

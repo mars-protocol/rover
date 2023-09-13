@@ -14,7 +14,7 @@ use mars_rover_health_types::AccountKind;
 
 use crate::{
     borrow::borrow,
-    claim_rewards::claim_rewards,
+    claim_rewards::{claim_rewards, send_rewards},
     deposit::{assert_deposit_caps, deposit},
     health::{assert_max_ltv, query_health_state},
     hls::assert_hls_rules,
@@ -33,7 +33,7 @@ use crate::{
         enter_vault, exit_vault, exit_vault_unlocked, liquidate_vault, request_vault_unlock,
         update_vault_coin_balance,
     },
-    withdraw::{send, withdraw},
+    withdraw::withdraw,
     zap::{provide_liquidity, withdraw_liquidity},
 };
 
@@ -467,10 +467,10 @@ pub fn execute_callback(
             account_id,
         } => assert_hls_rules(deps.as_ref(), &account_id),
         CallbackMsg::RemoveReentrancyGuard {} => REENTRANCY_GUARD.try_unlock(deps.storage),
-        CallbackMsg::Send {
+        CallbackMsg::SendRewardsToAddr {
             account_id,
             previous_balances,
             recipient,
-        } => send(deps, &env.contract.address, &account_id, recipient, previous_balances),
+        } => send_rewards(deps, &env.contract.address, &account_id, recipient, previous_balances),
     }
 }

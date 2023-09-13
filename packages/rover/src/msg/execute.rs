@@ -342,8 +342,9 @@ pub enum CallbackMsg {
     /// At the end of the execution of dispatched actions, this callback removes the guard
     /// and allows subsequent dispatches.
     RemoveReentrancyGuard {},
-    /// Send specified amount of coin from credit manager to recepient
-    Send {
+    /// Send reward amounts of coin from credit manager to recipient by querying balance, claiming rewards,
+    /// and comparing previous balance to new balance after reward claim - send the diff to the recipient.
+    SendRewardsToAddr {
         account_id: String,
         previous_balances: Vec<Coin>,
         recipient: Addr,
