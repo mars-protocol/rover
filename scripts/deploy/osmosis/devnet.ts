@@ -30,6 +30,7 @@ export const osmosisDevnetConfig: DeploymentConfig = {
   },
   deployerMnemonic: 'TODO',
   maxUnlockingPositions: '1',
+  maxSlippage: '0.2',
   maxValueForBurn: '10000',
   // oracle and redbank contract addresses can be found:  https://github.com/mars-protocol/red-bank/blob/master/README.md#osmosis-1
   addressProvider: { addr: 'osmo1x7udlkawmkz2u5th5x3cjxht2yvjgph7pg8l9rumaa3lak922dgsr3lmhc' },
