@@ -59,7 +59,7 @@ fn invalid_max_slippage() {
     assert_err(
         res,
         ContractError::InvalidConfig {
-            reason: "Max slippage must be between 0 and 1".to_string(),
+            reason: "Max slippage must be greater than 0 and less than 1".to_string(),
         },
     );
 
@@ -73,7 +73,7 @@ fn invalid_max_slippage() {
     assert_err(
         res,
         ContractError::InvalidConfig {
-            reason: "Max slippage must be between 0 and 1".to_string(),
+            reason: "Max slippage must be greater than 0 and less than 1".to_string(),
         },
     );
 }

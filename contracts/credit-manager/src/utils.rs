@@ -37,7 +37,7 @@ pub fn assert_is_token_owner(deps: &DepsMut, user: &Addr, account_id: &str) -> C
 pub fn assert_max_slippage(max_slippage: Decimal) -> ContractResult<()> {
     if max_slippage.is_zero() || max_slippage >= Decimal::one() {
         return Err(ContractError::InvalidConfig {
-            reason: "Max slippage must be between 0 and 1".to_string(),
+            reason: "Max slippage must be greater than 0 and less than 1".to_string(),
         });
     }
     Ok(())
