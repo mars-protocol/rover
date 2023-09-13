@@ -4,9 +4,7 @@ use mars_rover::{
     msg::execute::{ActionAmount, ActionCoin},
 };
 
-use crate::{
-    state::COIN_BALANCES, utils::decrement_coin_balance,
-};
+use crate::{state::COIN_BALANCES, utils::decrement_coin_balance};
 
 pub fn withdraw(
     deps: DepsMut,
