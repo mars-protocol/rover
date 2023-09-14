@@ -11,7 +11,7 @@ const getFetcher = (cmAddress: string) => {
         max_borrow_estimate_js,
         'osmo1m83kw2vehyt9urxf79qa9rxk8chgs4464e5h8s37yhnw3pwauuqq7lux8r',
         'osmo156elt2tp5455q9a6vfrvnpncxyd33cxm9z2lgguwg6dgws9tedps5tq3rc',
-        'osmo1vxpdcw092n9rngvekve8g324c2yjx56496ck98ag4sdxr4p4zd4q0wr7x6',
+        'osmo1pzszwkyy0x9cu6p2uknwa3wccr79xwmqn9gj66fnjnayr28tzp6qh2n4qg',
         'https://rpc.devnet.osmosis.zone/',
     )
 }
