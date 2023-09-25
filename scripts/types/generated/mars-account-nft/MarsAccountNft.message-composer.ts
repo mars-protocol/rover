@@ -13,13 +13,13 @@ import {
   Uint128,
   InstantiateMsg,
   ExecuteMsg,
+  MigrateV1ToV2,
   Binary,
   Expiration,
   Timestamp,
   Uint64,
   Action,
   NftConfigUpdates,
-  BurnEmptyAccounts,
   QueryMsg,
   AllNftInfoResponseForEmpty,
   OwnerOfResponse,
@@ -65,14 +65,7 @@ export interface MarsAccountNftMessage {
     },
     _funds?: Coin[],
   ) => MsgExecuteContractEncodeObject
-  migrate: (
-    {
-      limit,
-    }: {
-      limit?: number
-    },
-    _funds?: Coin[],
-  ) => MsgExecuteContractEncodeObject
+  migrate: (migrateV1ToV2: MigrateV1ToV2, _funds?: Coin[]) => MsgExecuteContractEncodeObject
   transferNft: (
     {
       recipient,
@@ -229,14 +222,7 @@ export class MarsAccountNftMessageComposer implements MarsAccountNftMessage {
       }),
     }
   }
-  migrate = (
-    {
-      limit,
-    }: {
-      limit?: number
-    },
-    _funds?: Coin[],
-  ): MsgExecuteContractEncodeObject => {
+  migrate = (migrateV1ToV2: MigrateV1ToV2, _funds?: Coin[]): MsgExecuteContractEncodeObject => {
     return {
       typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
       value: MsgExecuteContract.fromPartial({
@@ -244,9 +230,7 @@ export class MarsAccountNftMessageComposer implements MarsAccountNftMessage {
         contract: this.contractAddress,
         msg: toUtf8(
           JSON.stringify({
-            migrate: {
-              limit,
-            },
+            migrate: migrateV1ToV2,
           }),
         ),
         funds: _funds,

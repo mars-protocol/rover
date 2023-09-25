@@ -133,7 +133,7 @@
         ],
         "properties": {
           "migrate": {
-            "$ref": "#/definitions/BurnEmptyAccounts"
+            "$ref": "#/definitions/MigrateV1ToV2"
           }
         },
         "additionalProperties": false
@@ -380,21 +380,6 @@
         "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.",
         "type": "string"
       },
-      "BurnEmptyAccounts": {
-        "description": "Burns empty accounts in batches",
-        "type": "object",
-        "properties": {
-          "limit": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "format": "uint32",
-            "minimum": 0.0
-          }
-        },
-        "additionalProperties": false
-      },
       "Expiration": {
         "description": "Expiration represents a point in time when some event happens. It can compare with a BlockInfo and will return is_expired() == true once the condition is hit (and for every block in the future)",
         "oneOf": [
@@ -435,6 +420,35 @@
             "properties": {
               "never": {
                 "type": "object",
+                "additionalProperties": false
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      },
+      "MigrateV1ToV2": {
+        "description": "Migrate from V1 to V2",
+        "oneOf": [
+          {
+            "description": "Burns empty accounts in batches",
+            "type": "object",
+            "required": [
+              "burn_empty_accounts"
+            ],
+            "properties": {
+              "burn_empty_accounts": {
+                "type": "object",
+                "properties": {
+                  "limit": {
+                    "type": [
+                      "integer",
+                      "null"
+                    ],
+                    "format": "uint32",
+                    "minimum": 0.0
+                  }
+                },
                 "additionalProperties": false
               }
             },

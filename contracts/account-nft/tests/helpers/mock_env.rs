@@ -8,7 +8,7 @@ use cw721_base::{
 };
 use cw_multi_test::{App, AppResponse, BasicApp, Executor};
 use mars_account_nft_types::{
-    msg::{BurnEmptyAccounts, ExecuteMsg, ExecuteMsg::UpdateConfig, QueryMsg},
+    msg::{ExecuteMsg, ExecuteMsg::UpdateConfig, MigrateV1ToV2, QueryMsg},
     nft_config::{NftConfigUpdates, UncheckedNftConfig},
 };
 use mars_mock_credit_manager::msg::ExecuteMsg::SetAccountKindResponse;
@@ -160,7 +160,7 @@ impl MockEnv {
         self.app.execute_contract(
             sender.clone(),
             self.nft_contract.clone(),
-            &ExecuteMsg::Migrate(BurnEmptyAccounts {
+            &ExecuteMsg::Migrate(MigrateV1ToV2::BurnEmptyAccounts {
                 limit,
             }),
             &[],

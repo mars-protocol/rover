@@ -12,13 +12,13 @@ import {
   Uint128,
   InstantiateMsg,
   ExecuteMsg,
+  MigrateV1ToV2,
   Binary,
   Expiration,
   Timestamp,
   Uint64,
   Action,
   NftConfigUpdates,
-  BurnEmptyAccounts,
   QueryMsg,
   AllNftInfoResponseForEmpty,
   OwnerOfResponse,
@@ -529,9 +529,7 @@ export function useMarsAccountNftTransferNftMutation(
 }
 export interface MarsAccountNftMigrateMutation {
   client: MarsAccountNftClient
-  msg: {
-    limit?: number
-  }
+  msg: MigrateV1ToV2
   args?: {
     fee?: number | StdFee | 'auto'
     memo?: string

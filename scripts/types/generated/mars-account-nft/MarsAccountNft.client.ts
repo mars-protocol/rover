@@ -11,13 +11,13 @@ import {
   Uint128,
   InstantiateMsg,
   ExecuteMsg,
+  MigrateV1ToV2,
   Binary,
   Expiration,
   Timestamp,
   Uint64,
   Action,
   NftConfigUpdates,
-  BurnEmptyAccounts,
   QueryMsg,
   AllNftInfoResponseForEmpty,
   OwnerOfResponse,
@@ -308,11 +308,7 @@ export interface MarsAccountNftInterface extends MarsAccountNftReadOnlyInterface
     _funds?: Coin[],
   ) => Promise<ExecuteResult>
   migrate: (
-    {
-      limit,
-    }: {
-      limit?: number
-    },
+    migrateV1ToV2: MigrateV1ToV2,
     fee?: number | StdFee | 'auto',
     memo?: string,
     _funds?: Coin[],
@@ -494,11 +490,7 @@ export class MarsAccountNftClient
     )
   }
   migrate = async (
-    {
-      limit,
-    }: {
-      limit?: number
-    },
+    migrateV1ToV2: MigrateV1ToV2,
     fee: number | StdFee | 'auto' = 'auto',
     memo?: string,
     _funds?: Coin[],
@@ -507,9 +499,7 @@ export class MarsAccountNftClient
       this.sender,
       this.contractAddress,
       {
-        migrate: {
-          limit,
-        },
+        migrate: migrateV1ToV2,
       },
       fee,
       memo,

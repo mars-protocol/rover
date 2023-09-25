@@ -3,7 +3,7 @@ use cosmwasm_std::{
 };
 use cw2::set_contract_version;
 use cw721::Cw721Query;
-use mars_account_nft_types::{msg::BurnEmptyAccounts, nft_config::NftConfig};
+use mars_account_nft_types::nft_config::NftConfig;
 use mars_red_bank_types::oracle::ActionKind;
 use mars_rover_health_types::{AccountKind, HealthValuesResponse, QueryMsg::HealthValues};
 
@@ -50,7 +50,7 @@ pub fn migrate(deps: DepsMut) -> Result<Response, ContractError> {
 
 pub fn burn_empty_accounts(
     mut deps: DepsMut,
-    msg: BurnEmptyAccounts,
+    limit: Option<u32>,
 ) -> Result<Response, ContractError> {
     let config = CONFIG.load(deps.storage)?;
     let Some(health_contract_addr) = config.health_contract_addr else {
@@ -69,7 +69,7 @@ pub fn burn_empty_accounts(
         None => None,
     };
 
-    let res = Parent::default().all_tokens(deps.as_ref(), start_after, msg.limit)?;
+    let res = Parent::default().all_tokens(deps.as_ref(), start_after, limit)?;
 
     let status = if let Some(last_token) = res.tokens.last() {
         // Save last token for next iteration

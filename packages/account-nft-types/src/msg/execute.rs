@@ -29,7 +29,7 @@ pub enum ExecuteMsg {
     //--------------------------------------------------------------------------------------------------
     // Migrate message to work in batches
     //--------------------------------------------------------------------------------------------------
-    Migrate(BurnEmptyAccounts),
+    Migrate(MigrateV1ToV2),
 
     //--------------------------------------------------------------------------------------------------
     // Base cw721 messages
@@ -72,10 +72,13 @@ pub enum ExecuteMsg {
     UpdateOwnership(Action),
 }
 
-/// Burns empty accounts in batches
+/// Migrate from V1 to V2
 #[cw_serde]
-pub struct BurnEmptyAccounts {
-    pub limit: Option<u32>,
+pub enum MigrateV1ToV2 {
+    /// Burns empty accounts in batches
+    BurnEmptyAccounts {
+        limit: Option<u32>,
+    },
 }
 
 impl TryInto<ParentExecuteMsg<Empty, Empty>> for ExecuteMsg {
