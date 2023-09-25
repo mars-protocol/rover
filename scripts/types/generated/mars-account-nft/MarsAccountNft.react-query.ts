@@ -18,7 +18,7 @@ import {
   Uint64,
   Action,
   NftConfigUpdates,
-  ClearEmptyAccounts,
+  BurnEmptyAccounts,
   QueryMsg,
   AllNftInfoResponseForEmpty,
   OwnerOfResponse,

@@ -3,14 +3,14 @@ use cosmwasm_std::{
 };
 use cw2::set_contract_version;
 use cw721::Cw721Query;
-use mars_account_nft_types::{msg::ClearEmptyAccounts, nft_config::NftConfig};
+use mars_account_nft_types::{msg::BurnEmptyAccounts, nft_config::NftConfig};
 use mars_red_bank_types::oracle::ActionKind;
 use mars_rover_health_types::{AccountKind, HealthValuesResponse, QueryMsg::HealthValues};
 
 use crate::{
     contract::{Parent, CONTRACT_NAME, CONTRACT_VERSION},
     error::ContractError::{self, HealthContractNotSet},
-    state::{ClearingMarker, CONFIG, MIGRATION_CLEARING_MARKER},
+    state::{BurningMarker, CONFIG, MIGRATION_BURNING_MARKER},
 };
 
 const FROM_VERSION: &str = "1.0.0";
@@ -48,55 +48,65 @@ pub fn migrate(deps: DepsMut) -> Result<Response, ContractError> {
     Ok(cw721_base::upgrades::v0_17::migrate::<Empty, Empty, Empty, Empty>(deps)?)
 }
 
-pub fn clear_empty_accounts(
+pub fn burn_empty_accounts(
     mut deps: DepsMut,
-    msg: ClearEmptyAccounts,
+    msg: BurnEmptyAccounts,
 ) -> Result<Response, ContractError> {
-    let clearing_marker_opt = MIGRATION_CLEARING_MARKER.may_load(deps.storage)?;
-    let start_after = match clearing_marker_opt {
-        Some(ClearingMarker::Finished) => {
-            return Err(StdError::generic_err(
-                "Migration completed. All empty accounts already burned.",
-            )
-            .into())
-        }
-        Some(ClearingMarker::StartAfter(start_after)) => Some(start_after),
-        None => None,
-    };
-
-    let res = Parent::default().all_tokens(deps.as_ref(), start_after, msg.limit)?;
-
-    if let Some(last_token) = res.tokens.last() {
-        // Save last token for next iteration
-        MIGRATION_CLEARING_MARKER
-            .save(deps.storage, &ClearingMarker::StartAfter(last_token.clone()))?;
-    } else {
-        // No more tokens. Migration finished
-        MIGRATION_CLEARING_MARKER.save(deps.storage, &ClearingMarker::Finished)?;
-    }
-
-    for token in res.tokens.into_iter() {
-        burn_empty_account(deps.branch(), token)?;
-    }
-
-    Ok(Response::new().add_attribute("action", "burn_empty_accounts"))
-}
-
-/// A few checks to ensure accounts are not accidentally deleted:
-/// - Cannot burn if debt balance
-/// - Cannot burn if collateral balance
-fn burn_empty_account(deps: DepsMut, token_id: String) -> Result<(), ContractError> {
     let config = CONFIG.load(deps.storage)?;
     let Some(health_contract_addr) = config.health_contract_addr else {
         return Err(HealthContractNotSet);
     };
 
+    let burning_marker_opt = MIGRATION_BURNING_MARKER.may_load(deps.storage)?;
+    let start_after = match burning_marker_opt {
+        Some(BurningMarker::Finished) => {
+            return Err(StdError::generic_err(
+                "Migration completed. All empty accounts already burned.",
+            )
+            .into())
+        }
+        Some(BurningMarker::StartAfter(start_after)) => Some(start_after),
+        None => None,
+    };
+
+    let res = Parent::default().all_tokens(deps.as_ref(), start_after, msg.limit)?;
+
+    let status = if let Some(last_token) = res.tokens.last() {
+        // Save last token for next iteration
+        MIGRATION_BURNING_MARKER
+            .save(deps.storage, &BurningMarker::StartAfter(last_token.clone()))?;
+
+        for token in res.tokens.into_iter() {
+            burn_empty_account(deps.branch(), health_contract_addr.to_string(), token)?;
+        }
+
+        "in_progress".to_string()
+    } else {
+        // No more tokens. Migration finished
+        MIGRATION_BURNING_MARKER.save(deps.storage, &BurningMarker::Finished)?;
+
+        "done".to_string()
+    };
+
+    Ok(Response::new()
+        .add_attribute("action", "burn_empty_accounts")
+        .add_attribute("status", status))
+}
+
+/// A few checks to ensure accounts are not accidentally deleted:
+/// - Cannot burn if debt balance
+/// - Cannot burn if collateral balance
+fn burn_empty_account(
+    deps: DepsMut,
+    health_contract: String,
+    token_id: String,
+) -> Result<(), ContractError> {
     let response: HealthValuesResponse =
         deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
-            contract_addr: health_contract_addr.into(),
+            contract_addr: health_contract,
             msg: to_binary(&HealthValues {
                 account_id: token_id.clone(),
-                kind: AccountKind::Default,
+                kind: AccountKind::Default, // all current accounts are default
                 action: ActionKind::Default,
             })?,
         }))?;

@@ -29,7 +29,7 @@ pub enum ExecuteMsg {
     //--------------------------------------------------------------------------------------------------
     // Migrate message to work in batches
     //--------------------------------------------------------------------------------------------------
-    Migrate(ClearEmptyAccounts),
+    Migrate(BurnEmptyAccounts),
 
     //--------------------------------------------------------------------------------------------------
     // Base cw721 messages
@@ -72,9 +72,9 @@ pub enum ExecuteMsg {
     UpdateOwnership(Action),
 }
 
-/// Clears empty accounts in batches
+/// Burns empty accounts in batches
 #[cw_serde]
-pub struct ClearEmptyAccounts {
+pub struct BurnEmptyAccounts {
     pub limit: Option<u32>,
 }
 

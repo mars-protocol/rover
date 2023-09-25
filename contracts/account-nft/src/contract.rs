@@ -71,7 +71,7 @@ pub fn execute(
         ExecuteMsg::Burn {
             token_id,
         } => burn(deps, env, info, token_id),
-        ExecuteMsg::Migrate(msg) => migrations::v2_0_0::clear_empty_accounts(deps, msg),
+        ExecuteMsg::Migrate(msg) => migrations::v2_0_0::burn_empty_accounts(deps, msg),
         _ => Parent::default().execute(deps, env, info, msg.try_into()?).map_err(Into::into),
     }
 }

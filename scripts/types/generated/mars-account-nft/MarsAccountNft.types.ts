@@ -31,7 +31,7 @@ export type ExecuteMsg =
       }
     }
   | {
-      migrate: ClearEmptyAccounts
+      migrate: BurnEmptyAccounts
     }
   | {
       transfer_nft: {
@@ -100,7 +100,7 @@ export interface NftConfigUpdates {
   health_contract_addr?: string | null
   max_value_for_burn?: Uint128 | null
 }
-export interface ClearEmptyAccounts {
+export interface BurnEmptyAccounts {
   limit?: number | null
 }
 export type QueryMsg =
