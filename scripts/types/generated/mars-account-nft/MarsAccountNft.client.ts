@@ -17,6 +17,7 @@ import {
   Uint64,
   Action,
   NftConfigUpdates,
+  ClearEmptyAccounts,
   QueryMsg,
   AllNftInfoResponseForEmpty,
   OwnerOfResponse,
@@ -306,6 +307,16 @@ export interface MarsAccountNftInterface extends MarsAccountNftReadOnlyInterface
     memo?: string,
     _funds?: Coin[],
   ) => Promise<ExecuteResult>
+  migrate: (
+    {
+      limit,
+    }: {
+      limit?: number
+    },
+    fee?: number | StdFee | 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ) => Promise<ExecuteResult>
   transferNft: (
     {
       recipient,
@@ -403,6 +414,7 @@ export class MarsAccountNftClient
     this.updateConfig = this.updateConfig.bind(this)
     this.mint = this.mint.bind(this)
     this.burn = this.burn.bind(this)
+    this.migrate = this.migrate.bind(this)
     this.transferNft = this.transferNft.bind(this)
     this.sendNft = this.sendNft.bind(this)
     this.approve = this.approve.bind(this)
@@ -474,6 +486,29 @@ export class MarsAccountNftClient
       {
         burn: {
           token_id: tokenId,
+        },
+      },
+      fee,
+      memo,
+      _funds,
+    )
+  }
+  migrate = async (
+    {
+      limit,
+    }: {
+      limit?: number
+    },
+    fee: number | StdFee | 'auto' = 'auto',
+    memo?: string,
+    _funds?: Coin[],
+  ): Promise<ExecuteResult> => {
+    return await this.client.execute(
+      this.sender,
+      this.contractAddress,
+      {
+        migrate: {
+          limit,
         },
       },
       fee,

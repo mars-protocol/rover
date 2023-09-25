@@ -127,6 +127,18 @@
         "additionalProperties": false
       },
       {
+        "type": "object",
+        "required": [
+          "migrate"
+        ],
+        "properties": {
+          "migrate": {
+            "$ref": "#/definitions/ClearEmptyAccounts"
+          }
+        },
+        "additionalProperties": false
+      },
+      {
         "description": "Transfer is a base message to move a token to another account without triggering actions",
         "type": "object",
         "required": [
@@ -367,6 +379,21 @@
       "Binary": {
         "description": "Binary is a wrapper around Vec<u8> to add base64 de/serialization with serde. It also adds some helper methods to help encode inline.\n\nThis is only needed as serde-json-{core,wasm} has a horrible encoding for Vec<u8>. See also <https://github.com/CosmWasm/cosmwasm/blob/main/docs/MESSAGE_TYPES.md>.",
         "type": "string"
+      },
+      "ClearEmptyAccounts": {
+        "description": "Clears empty accounts in batches",
+        "type": "object",
+        "properties": {
+          "limit": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "uint32",
+            "minimum": 0.0
+          }
+        },
+        "additionalProperties": false
       },
       "Expiration": {
         "description": "Expiration represents a point in time when some event happens. It can compare with a BlockInfo and will return is_expired() == true once the condition is hit (and for every block in the future)",

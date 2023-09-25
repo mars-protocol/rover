@@ -18,6 +18,7 @@ import {
   Uint64,
   Action,
   NftConfigUpdates,
+  ClearEmptyAccounts,
   QueryMsg,
   AllNftInfoResponseForEmpty,
   OwnerOfResponse,
@@ -523,6 +524,28 @@ export function useMarsAccountNftTransferNftMutation(
 ) {
   return useMutation<ExecuteResult, Error, MarsAccountNftTransferNftMutation>(
     ({ client, msg, args: { fee, memo, funds } = {} }) => client.transferNft(msg, fee, memo, funds),
+    options,
+  )
+}
+export interface MarsAccountNftMigrateMutation {
+  client: MarsAccountNftClient
+  msg: {
+    limit?: number
+  }
+  args?: {
+    fee?: number | StdFee | 'auto'
+    memo?: string
+    funds?: Coin[]
+  }
+}
+export function useMarsAccountNftMigrateMutation(
+  options?: Omit<
+    UseMutationOptions<ExecuteResult, Error, MarsAccountNftMigrateMutation>,
+    'mutationFn'
+  >,
+) {
+  return useMutation<ExecuteResult, Error, MarsAccountNftMigrateMutation>(
+    ({ client, msg, args: { fee, memo, funds } = {} }) => client.migrate(msg, fee, memo, funds),
     options,
   )
 }

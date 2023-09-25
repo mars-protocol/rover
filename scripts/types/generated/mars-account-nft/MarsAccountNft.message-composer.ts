@@ -19,6 +19,7 @@ import {
   Uint64,
   Action,
   NftConfigUpdates,
+  ClearEmptyAccounts,
   QueryMsg,
   AllNftInfoResponseForEmpty,
   OwnerOfResponse,
@@ -61,6 +62,14 @@ export interface MarsAccountNftMessage {
       tokenId,
     }: {
       tokenId: string
+    },
+    _funds?: Coin[],
+  ) => MsgExecuteContractEncodeObject
+  migrate: (
+    {
+      limit,
+    }: {
+      limit?: number
     },
     _funds?: Coin[],
   ) => MsgExecuteContractEncodeObject
@@ -138,6 +147,7 @@ export class MarsAccountNftMessageComposer implements MarsAccountNftMessage {
     this.updateConfig = this.updateConfig.bind(this)
     this.mint = this.mint.bind(this)
     this.burn = this.burn.bind(this)
+    this.migrate = this.migrate.bind(this)
     this.transferNft = this.transferNft.bind(this)
     this.sendNft = this.sendNft.bind(this)
     this.approve = this.approve.bind(this)
@@ -212,6 +222,30 @@ export class MarsAccountNftMessageComposer implements MarsAccountNftMessage {
           JSON.stringify({
             burn: {
               token_id: tokenId,
+            },
+          }),
+        ),
+        funds: _funds,
+      }),
+    }
+  }
+  migrate = (
+    {
+      limit,
+    }: {
+      limit?: number
+    },
+    _funds?: Coin[],
+  ): MsgExecuteContractEncodeObject => {
+    return {
+      typeUrl: '/cosmwasm.wasm.v1.MsgExecuteContract',
+      value: MsgExecuteContract.fromPartial({
+        sender: this.sender,
+        contract: this.contractAddress,
+        msg: toUtf8(
+          JSON.stringify({
+            migrate: {
+              limit,
             },
           }),
         ),

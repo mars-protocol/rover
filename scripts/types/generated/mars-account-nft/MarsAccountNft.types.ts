@@ -31,6 +31,9 @@ export type ExecuteMsg =
       }
     }
   | {
+      migrate: ClearEmptyAccounts
+    }
+  | {
       transfer_nft: {
         recipient: string
         token_id: string
@@ -96,6 +99,9 @@ export interface NftConfigUpdates {
   credit_manager_contract_addr?: string | null
   health_contract_addr?: string | null
   max_value_for_burn?: Uint128 | null
+}
+export interface ClearEmptyAccounts {
+  limit?: number | null
 }
 export type QueryMsg =
   | {
