@@ -13,7 +13,7 @@ use mars_account_nft_types::{
 use crate::{
     error::ContractError,
     execute::{burn, mint, update_config},
-    migrations,
+    migrations::{self},
     query::{query_config, query_next_id},
     state::{CONFIG, NEXT_ID},
 };
@@ -71,6 +71,7 @@ pub fn execute(
         ExecuteMsg::Burn {
             token_id,
         } => burn(deps, env, info, token_id),
+        ExecuteMsg::Migrate(msg) => migrations::v2_0_0::clear_empty_accounts(deps, msg),
         _ => Parent::default().execute(deps, env, info, msg.try_into()?).map_err(Into::into),
     }
 }

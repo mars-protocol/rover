@@ -27,6 +27,11 @@ pub enum ExecuteMsg {
     },
 
     //--------------------------------------------------------------------------------------------------
+    // Migrate message to work in batches
+    //--------------------------------------------------------------------------------------------------
+    Migrate(ClearEmptyAccounts),
+
+    //--------------------------------------------------------------------------------------------------
     // Base cw721 messages
     //--------------------------------------------------------------------------------------------------
     /// Transfer is a base message to move a token to another account without triggering actions
@@ -65,6 +70,12 @@ pub enum ExecuteMsg {
     },
     /// Propose new owner (minter) and accept new role
     UpdateOwnership(Action),
+}
+
+/// Clears empty accounts in batches
+#[cw_serde]
+pub struct ClearEmptyAccounts {
+    pub limit: Option<u32>,
 }
 
 impl TryInto<ParentExecuteMsg<Empty, Empty>> for ExecuteMsg {
