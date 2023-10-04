@@ -52,7 +52,7 @@ export type ExecuteMsg =
   | {
       update_nft_config: {
         config?: NftConfigUpdates | null
-        ownership?: Action | null
+        ownership?: Action2 | null
       }
     }
   | {
@@ -173,6 +173,27 @@ export type OwnerUpdate =
       }
     }
   | 'clear_emergency_owner'
+export type Action2 =
+  | {
+      transfer_ownership: {
+        expiry?: Expiration | null
+        new_owner: string
+      }
+    }
+  | 'accept_ownership'
+  | 'renounce_ownership'
+export type Expiration =
+  | {
+      at_height: number
+    }
+  | {
+      at_time: Timestamp
+    }
+  | {
+      never: {}
+    }
+export type Timestamp = Uint64
+export type Uint64 = string
 export type CallbackMsg =
   | {
       withdraw: {

@@ -27,6 +27,10 @@ import {
   VaultPositionType,
   AccountNftBaseForString,
   OwnerUpdate,
+  Action2,
+  Expiration,
+  Timestamp,
+  Uint64,
   CallbackMsg,
   Addr,
   HealthState,
@@ -103,7 +107,7 @@ export interface MarsCreditManagerMessage {
       ownership,
     }: {
       config?: NftConfigUpdates
-      ownership?: Action
+      ownership?: Action2
     },
     _funds?: Coin[],
   ) => MsgExecuteContractEncodeObject
@@ -236,7 +240,7 @@ export class MarsCreditManagerMessageComposer implements MarsCreditManagerMessag
       ownership,
     }: {
       config?: NftConfigUpdates
-      ownership?: Action
+      ownership?: Action2
     },
     _funds?: Coin[],
   ): MsgExecuteContractEncodeObject => {

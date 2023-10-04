@@ -27,6 +27,10 @@ import {
   VaultPositionType,
   AccountNftBaseForString,
   OwnerUpdate,
+  Action2,
+  Expiration,
+  Timestamp,
+  Uint64,
   CallbackMsg,
   Addr,
   HealthState,
@@ -478,7 +482,7 @@ export interface MarsCreditManagerUpdateNftConfigMutation {
   client: MarsCreditManagerClient
   msg: {
     config?: NftConfigUpdates
-    ownership?: Action
+    ownership?: Action2
   }
   args?: {
     fee?: number | StdFee | 'auto'

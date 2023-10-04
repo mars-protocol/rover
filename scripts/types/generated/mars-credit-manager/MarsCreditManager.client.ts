@@ -26,6 +26,10 @@ import {
   VaultPositionType,
   AccountNftBaseForString,
   OwnerUpdate,
+  Action2,
+  Expiration,
+  Timestamp,
+  Uint64,
   CallbackMsg,
   Addr,
   HealthState,
@@ -338,7 +342,7 @@ export interface MarsCreditManagerInterface extends MarsCreditManagerReadOnlyInt
       ownership,
     }: {
       config?: NftConfigUpdates
-      ownership?: Action
+      ownership?: Action2
     },
     fee?: number | StdFee | 'auto',
     memo?: string,
@@ -484,7 +488,7 @@ export class MarsCreditManagerClient
       ownership,
     }: {
       config?: NftConfigUpdates
-      ownership?: Action
+      ownership?: Action2
     },
     fee: number | StdFee | 'auto' = 'auto',
     memo?: string,

@@ -39,61 +39,61 @@ documentation = "https://docs.marsprotocol.io/"
 keywords      = ["mars", "cosmos", "cosmwasm"]
 
 [workspace.dependencies]
-anyhow             = "1.0.72"
-cosmwasm-schema    = "1.3.0"
-cosmwasm-std       = "1.3.0"
+anyhow             = "1.0.75"
+cosmwasm-schema    = "1.4.0"
+cosmwasm-std       = "1.4.0"
 cw2                = "1.1.0"
 cw721              = { git = "https://github.com/CosmWasm/cw-nfts/", branch = "main" }
 cw721-base         = { git = "https://github.com/CosmWasm/cw-nfts/", branch = "main", features = ["library"] }
-cw-dex             = { version = "0.3.1", features = ["osmosis"] }
-cw-multi-test      = "0.16.5"
+cw-dex             = { version = "0.4.0", features = ["osmosis"] }
+cw-multi-test      = "0.17.0"
 cw-paginate        = "0.2.1"
 cw-utils           = "1.0.1"
 cw-storage-plus    = "1.1.0"
-cw-vault-standard  = { version = "0.3.1", features = ["lockup", "force-unlock"] }
+cw-vault-standard  = { version = "0.4.0", features = ["lockup", "force-unlock"] }
 itertools          = "0.11.0"
-osmosis-std        = "0.16.1"
-osmosis-test-tube  = "16.0.1"
+osmosis-std        = "0.19.2"
+osmosis-test-tube  = "19.2.0"
 proptest           = "1.2.0"
 schemars           = "0.8.12"
-serde              = { version = "1.0.175", default-features = false, features = ["derive"] }
-serde_json         = "1.0.103"
-serde-wasm-bindgen = "0.5.0"
-test-case          = "3.1.0"
-thiserror          = "1.0.44"
+serde              = { version = "1.0.188", default-features = false, features = ["derive"] }
+serde_json         = "1.0.107"
+serde-wasm-bindgen = "0.6.0"
+test-case          = "3.2.1"
+thiserror          = "1.0.48"
 tsify              = "0.4.5"
 wasm-bindgen       = "0.2.87"
 
 # mars packages
-mars-account-nft-types     = { version = "2.0.0", path = "./packages/account-nft-types" }
+mars-account-nft-types     = { path = "./packages/account-nft-types" }
 mars-health                = { git = "https://github.com/mars-protocol/red-bank", rev = "afaf815" }
 mars-liquidation           = { git = "https://github.com/mars-protocol/red-bank", rev = "afaf815" }
 mars-osmosis               = { git = "https://github.com/mars-protocol/red-bank", rev = "afaf815" }
 mars-owner                 = { version = "2.0.0", features = ["emergency-owner"] }
 mars-red-bank-types        = { git = "https://github.com/mars-protocol/red-bank", rev = "afaf815" }
-mars-rover-health-computer = { version = "2.0.0", path = "./packages/health-computer" }
-mars-rover-health-types    = { version = "2.0.0", path = "./packages/health-types" }
-mars-rover                 = { version = "2.0.0", path = "./packages/rover" }
+mars-rover-health-computer = { path = "./packages/health-computer" }
+mars-rover-health-types    = { path = "./packages/health-types" }
+mars-rover                 = { path = "./packages/rover" }
 # Old rover types used for migration (https://github.com/mars-protocol/v2-fields-of-mars/releases/tag/v1.0.0)
 mars-rover-old             = { package = "mars-rover", git = "https://github.com/mars-protocol/v2-fields-of-mars", rev = "183e4c5" }
 
 # contracts
 mars-address-provider = { git = "https://github.com/mars-protocol/red-bank", rev = "afaf815", features = ["library"] }
-mars-account-nft      = { version = "2.0.0", path = "./contracts/account-nft", features = ["library"] }
+mars-account-nft      = { path = "./contracts/account-nft", features = ["library"] }
 mars-params           = { git = "https://github.com/mars-protocol/red-bank", rev = "afaf815", features = ["library"] }
-mars-rover-health     = { version = "2.0.0", path = "./contracts/health", features = ["library"] }
-mars-swapper-base     = { version = "2.0.0", path = "./contracts/swapper/base", features = ["library"] }
-mars-zapper-base      = { version = "2.0.0", path = "./contracts/v2-zapper/base", features = ["library"] }
+mars-rover-health     = { path = "./contracts/health", features = ["library"] }
+mars-swapper-base     = { path = "./contracts/swapper/base", features = ["library"] }
+mars-zapper-base      = { path = "./contracts/v2-zapper/base", features = ["library"] }
 
 # mocks
-mars-mock-credit-manager = { version = "2.0.0", path = "./contracts/mock-credit-manager", features = ["library"] }
-mars-mock-incentives     = { version = "2.0.0", path = "./contracts/mock-incentives", features = ["library"] }
-mars-mock-oracle         = { version = "2.0.0", path = "./contracts/mock-oracle", features = ["library"] }
-mars-mock-red-bank       = { version = "2.0.0", path = "./contracts/mock-red-bank", features = ["library"] }
-mars-mock-vault          = { version = "2.0.0", path = "./contracts/mock-vault", features = ["library"] }
-mars-mock-rover-health   = { version = "2.0.0", path = "./contracts/mock-health", features = ["library"] }
-mars-swapper-mock        = { version = "2.0.0", path = "./contracts/swapper/mock", features = ["library"] }
-mars-zapper-mock         = { version = "2.0.0", path = "./contracts/v2-zapper/mock", features = ["library"] }
+mars-mock-credit-manager = { path = "./contracts/mock-credit-manager", features = ["library"] }
+mars-mock-incentives     = { path = "./contracts/mock-incentives", features = ["library"] }
+mars-mock-oracle         = { path = "./contracts/mock-oracle", features = ["library"] }
+mars-mock-red-bank       = { path = "./contracts/mock-red-bank", features = ["library"] }
+mars-mock-vault          = { path = "./contracts/mock-vault", features = ["library"] }
+mars-mock-rover-health   = { path = "./contracts/mock-health", features = ["library"] }
+mars-swapper-mock        = { path = "./contracts/swapper/mock", features = ["library"] }
+mars-zapper-mock         = { path = "./contracts/v2-zapper/mock", features = ["library"] }
 
 [profile.release]
 codegen-units    = 1
