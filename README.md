@@ -1,3 +1,7 @@
+# ⛔️ DEPRECATED
+
+This repository is now deprecated. We moved to a mono repository architecture containing all of Mars core contracts that you can find [here](https://github.com/mars-protocol/red-bank).
+
 # Rover
 
 A generalized credit protocol built on Mars lending market
